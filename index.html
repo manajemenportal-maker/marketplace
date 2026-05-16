@@ -2478,14 +2478,24 @@
         }
 
         window.toggleAdminMenu = function(menu) {
+            // Reset semua tombol sidebar admin
             document.querySelectorAll('.admin-menu-item').forEach(el => {
                 el.classList.remove('text-white', 'bg-indigo-600', 'shadow-md', 'font-bold');
                 el.classList.add('text-emerald-400', 'font-medium');
             });
-            document.getElementById(`admin-desain-view`).classList.add('hidden');
-            document.getElementById(`admin-pajak-view`).classList.add('hidden');
-            document.getElementById(`admin-${menu}-view`).classList.remove('hidden');
-            document.getElementById(`menu-admin-${menu}`).classList.add('text-white', 'bg-indigo-600', 'shadow-md', 'font-bold');
+            
+            // Sembunyikan SEMUA halaman konten admin
+            document.querySelectorAll('.admin-content-view').forEach(el => {
+                el.classList.add('hidden');
+            });
+            
+            // Tampilkan hanya halaman yang dipilih
+            const selectedView = document.getElementById(`admin-${menu}-view`);
+            if (selectedView) selectedView.classList.remove('hidden');
+            
+            // Tandai tombol sidebar yang sedang aktif
+            const selectedMenu = document.getElementById(`menu-admin-${menu}`);
+            if (selectedMenu) selectedMenu.classList.add('text-white', 'bg-indigo-600', 'shadow-md', 'font-bold');
         }
 
         window.toggleAddProduct = function(showForm) {
