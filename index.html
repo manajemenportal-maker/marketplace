@@ -1821,183 +1821,183 @@
                     await signInWithEmailAndPassword(auth, email, password);
                     authSuccess.textContent = "Berhasil masuk!";
                 } else {
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    await updateProfile(userCredential.user, { displayName: name });
-                    authSuccess.textContent = "Pendaftaran sukses!";
+                    currentUserRole = 'user'; 
+                    document.getElementById('current-user-email').textContent = "Login / Daftar";
+                    document.querySelector('#auth-display-info span:first-child').textContent = "Klik Untuk Masuk";
+                    authForm.classList.remove('hidden');
+                    document.getElementById('btn-toggle-auth-mode').parentElement.classList.remove('hidden'); 
+                    authLoggedInView.classList.add('hidden');
+                    btnOpenHistory.classList.add('hidden'); 
+                    if (btnEditBanner) btnEditBanner.classList.add('hidden');
                 }
-                authSuccess.classList.remove('hidden'); authError.classList.add('hidden');
-                setTimeout(() => { authModal.classList.add('hidden'); }, 1000);
-            } catch (err) {
-                authError.textContent = "Gagal: Email/Sandi salah atau sudah terdaftar.";
-                authError.classList.remove('hidden');
-            } finally {
-                btn.innerHTML = isLoginMode ? 'Masuk Sekarang' : 'Daftar Akun'; btn.disabled = false;
-            }
-        });
+            });
 
-        document.getElementById('btn-logout').addEventListener('click', () => {
-            signOut(auth).then(() => { authModal.classList.add('hidden'); window.switchAppView('marketplace'); });
-        });
+            // ============================================
+            // DYNAMIC MARKETPLACE BANNERS LOGIC
+            // ============================================
+            window.mpCarouselData = [];
+            const defaultMpData = [
+                { image: 'https://images.unsplash.com/photo-1580982327559-c1202864be05?auto=format&fit=crop&q=80&w=1200&h=500', label: 'B2B TERLENGKAP', title: 'Solusi Lengkap Industri & Pertanian' },
+                { image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=1200&h=500', label: 'DISKON AKHIR TAHUN', title: 'Banting Harga Alat Berat' }
+            ];
 
-        onAuthStateChanged(auth, async (user) => {
-            const btnOpenHistory = document.getElementById('btn-open-history');
-            
-            if (user && !user.isAnonymous) {
-                await loadDraftFromFirestore(user);
-                
-                const email = user.email || 'User';
-                const displayName = user.displayName || email.split('@')[0];
-
-                document.getElementById('current-user-email').textContent = email.substring(0, 15) + '...';
-                document.querySelector('#auth-display-info span:first-child').textContent = "Masuk Sebagai:";
-                
-                authForm.classList.add('hidden');
-                document.getElementById('auth-logged-in-view').classList.remove('hidden');
-                document.getElementById('logged-in-email-display').textContent = email;
-                document.getElementById('btn-toggle-auth-mode').parentElement.classList.add('hidden');
-                
-                // UPDATE NAMA DI DASHBOARD PEMBELI & PENJUAL
-                const buyerSidebarName = document.getElementById('buyer-sidebar-name');
-                const buyerSettingName = document.getElementById('buyer-setting-name');
-                if(buyerSidebarName) buyerSidebarName.textContent = displayName;
-                if(buyerSettingName) buyerSettingName.value = displayName;
-
-                const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=4f46e5&color=fff`;
-                const img1 = document.getElementById('buyer-profile-img');
-                const img2 = document.getElementById('buyer-profile-img-large');
-                if(img1) img1.src = avatarUrl;
-                if(img2) img2.src = avatarUrl;
-
-                const defaultStoreName = `Toko ${displayName}`;
-                const storeSidebarName = document.getElementById('seller-sidebar-name');
-                const storeSettingName = document.getElementById('store-setting-name');
-                if(storeSidebarName && storeSidebarName.textContent.includes("Memuat")) storeSidebarName.textContent = defaultStoreName;
-                if(storeSettingName && storeSettingName.value.includes("Memuat")) storeSettingName.value = defaultStoreName;
-                
-                const storeAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(defaultStoreName)}&background=e0e7ff&color=4f46e5`;
-                const imgStore1 = document.getElementById('seller-store-logo');
-                const imgStore2 = document.getElementById('seller-store-logo-large');
-                if(imgStore1) imgStore1.src = storeAvatarUrl;
-                if(imgStore2) imgStore2.src = storeAvatarUrl;
-
-                // TAMPILKAN TAB RAHASIA
-                document.getElementById('tab-buyer').classList.remove('hidden');
-                btnOpenHistory.classList.remove('hidden'); 
-                
-                if(email.includes('admin') || email.includes('sridamayanti')) {
-                    currentUserRole = 'admin';
-                    document.getElementById('tab-admin').classList.remove('hidden');
-                } else {
-                    currentUserRole = 'user';
-                    document.getElementById('tab-seller').classList.remove('hidden');
-                }
-            } else {
-                currentUserRole = 'user';
-                document.getElementById('current-user-email').textContent = "Login / Daftar";
-                document.querySelector('#auth-display-info span:first-child').textContent = "Klik Untuk Masuk";
-                
-                authForm.classList.remove('hidden');
-                document.getElementById('auth-logged-in-view').classList.add('hidden');
-                document.getElementById('btn-toggle-auth-mode').parentElement.classList.remove('hidden');
-                
-                document.getElementById('tab-buyer').classList.add('hidden');
-                document.getElementById('tab-seller').classList.add('hidden');
-                document.getElementById('tab-admin').classList.add('hidden');
-                btnOpenHistory.classList.add('hidden');
-            }
-        });
-
-        // ============================================
-        // LOGIKA AUTO-SAVE & DRAFT KALKULATOR
-        // ============================================
-        let draftDebounceTimer;
-        const getFormState = () => {
-            return {
-                main: {
-                    originProv: document.getElementById('origin-prov').value,
-                    originCity: document.getElementById('origin-city').value,
-                    destProv: document.getElementById('dest-prov').value,
-                    destCity: document.getElementById('dest-city').value,
-                    weight: document.getElementById('weight').value,
-                    courier: document.getElementById('courier').value
-                },
-                recap: {
-                    companyName: document.getElementById('company-name').value,
-                    companyAddress: document.getElementById('company-address').value,
-                    companyLogo: window.companyLogoKopBase64 || null,
-                    title: document.getElementById('recap-title').value,
-                    originProv: document.getElementById('recap-origin-prov').value,
-                    originCity: document.getElementById('recap-origin-city').value,
-                    scope: document.querySelector('input[name="recap-scope"]:checked')?.value || 'all',
-                    destProv: document.getElementById('recap-dest-prov').value,
-                    destCity: document.getElementById('recap-dest-city').value,
-                    w1Checked: document.getElementById('weight-fixed').checked,
-                    w2Checked: document.querySelector('.custom-weight-cb[data-target="weight-val-2"]').checked,
-                    w2Val: document.getElementById('weight-val-2').value,
-                    w3Checked: document.querySelector('.custom-weight-cb[data-target="weight-val-3"]').checked,
-                    w3Val: document.getElementById('weight-val-3').value,
-                    w4Checked: document.querySelector('.custom-weight-cb[data-target="weight-val-4"]').checked,
-                    w4Val: document.getElementById('weight-val-4').value,
-                    courier: document.getElementById('recap-courier').value,
-                    showCourier: document.getElementById('recap-show-courier').checked,
-                    addFeePct: document.getElementById('recap-additional-fee-percent').value,
-                    showAddFee: document.getElementById('recap-show-additional-fee').checked,
-                    usePpn: document.getElementById('recap-use-ppn').checked
-                },
-                updatedAt: serverTimestamp()
+            window.renderMpCarouselUI = function() {
+                const container = document.getElementById('mp-slide-container');
+                if(!container) return;
+                container.innerHTML = '';
+                window.mpCarouselData.forEach((item, idx) => {
+                    container.innerHTML += `
+                        <div class="min-w-full h-full relative flex-shrink-0">
+                            <img src="${item.image}" class="w-full h-full object-cover absolute inset-0 z-0 opacity-40 mix-blend-overlay" />
+                            <div class="absolute inset-0 bg-gradient-to-r from-indigo-900 via-indigo-900/80 to-transparent z-10"></div>
+                            <div class="relative z-20 flex flex-col justify-center h-full px-6 md:px-16 w-full md:w-3/4 lg:w-2/3">
+                                ${item.label ? `<span class="bg-amber-500 text-indigo-950 text-[10px] md:text-xs font-bold px-3 py-1 rounded-full w-max mb-3 shadow-sm">${item.label}</span>` : ''}
+                                <h1 class="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-2 leading-tight text-white drop-shadow-md">
+                                    ${item.title || 'Promo Menarik'}
+                                </h1>
+                                <button class="bg-amber-500 text-indigo-950 font-bold py-2 px-5 md:py-3 md:px-8 rounded-xl shadow-md hover:bg-amber-400 transition-all w-max text-sm md:text-base mt-4">
+                                    Lihat Detail <i class="fa-solid fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                if(window.initMpSlider) window.initMpSlider(); // Reset & hidupkan perputaran animasinya
             };
-        };
 
-        const scheduleSaveDraft = () => {
-            if (!auth.currentUser || auth.currentUser.isAnonymous) return; 
-            clearTimeout(draftDebounceTimer);
-            draftDebounceTimer = setTimeout(async () => {
+            window.renderAdminMpListUI = function() {
+                const listContainer = document.getElementById('admin-mp-banners-list');
+                const counter = document.getElementById('mp-banner-counter');
+                if(!listContainer || !counter) return;
+
+                counter.textContent = `SLOT TERPAKAI: ${window.mpCarouselData.length} / 5`;
+                listContainer.innerHTML = '';
+
+                if(window.mpCarouselData.length === 0) {
+                    listContainer.innerHTML = '<div class="text-center p-4 text-slate-500 text-sm border border-dashed border-slate-300 rounded-xl bg-slate-50">Belum ada banner yang aktif. Slider akan disembunyikan.</div>';
+                    return;
+                }
+
+                window.mpCarouselData.forEach((item, idx) => {
+                    listContainer.innerHTML += `
+                        <div class="p-3 md:p-4 rounded-xl border border-slate-200 flex items-center gap-3 hover:shadow-md transition-all bg-slate-50 group">
+                            <img src="${item.image}" class="w-16 h-10 md:w-24 md:h-14 object-cover rounded-lg shadow-sm border border-slate-200 bg-white">
+                            <div class="flex-1 overflow-hidden flex flex-col gap-1.5">
+                                <div class="flex items-center bg-white border border-slate-300 rounded px-2 overflow-hidden focus-within:border-indigo-400">
+                                    <i class="fa-solid fa-heading text-[10px] text-slate-400 mr-2"></i>
+                                    <input type="text" value="${item.title}" onchange="window.updateMpBannerField(${idx}, 'title', this.value)" class="w-full text-xs md:text-sm font-bold text-slate-800 outline-none py-1.5" placeholder="Judul Iklan Besar...">
+                                </div>
+                                <div class="flex items-center bg-white border border-slate-300 rounded px-2 overflow-hidden focus-within:border-indigo-400 w-2/3">
+                                    <i class="fa-solid fa-tag text-[10px] text-slate-400 mr-2"></i>
+                                    <input type="text" value="${item.label}" onchange="window.updateMpBannerField(${idx}, 'label', this.value)" class="w-full text-[10px] md:text-xs text-indigo-600 font-bold outline-none py-1" placeholder="Label Tag (Misal: PROMO)">
+                                </div>
+                            </div>
+                            <button onclick="window.removeMpBanner(${idx})" class="bg-white border border-red-200 text-red-500 hover:bg-red-500 hover:text-white p-2.5 rounded-lg transition-colors shadow-sm"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    `;
+                });
+            };
+
+            window.updateMpBannerField = function(index, field, value) {
+                if(window.mpCarouselData[index]) {
+                    window.mpCarouselData[index][field] = value;
+                    window.renderMpCarouselUI();
+                }
+            };
+
+            window.removeMpBanner = function(index) {
+                window.mpCarouselData.splice(index, 1);
+                window.renderAdminMpListUI();
+                window.renderMpCarouselUI();
+            };
+
+            window.handleNewMpBanner = function(event) {
+                if(window.mpCarouselData.length >= 5) {
+                    alert("Maksimal hanya 5 frame banner untuk menjaga kecepatan website!");
+                    return;
+                }
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            const maxWidth = 1200;
+                            let width = img.width;
+                            let height = img.height;
+                            if (width > maxWidth) {
+                                height = Math.round((height * maxWidth) / width);
+                                width = maxWidth;
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            ctx.drawImage(img, 0, 0, width, height);
+                            // Kompres gambar menjadi 70% quality untuk menghemat memori
+                            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7); 
+                            
+                            window.mpCarouselData.push({
+                                image: compressedBase64,
+                                label: 'INFO BARU',
+                                title: 'Judul Iklan Anda'
+                            });
+                            window.renderAdminMpListUI();
+                            window.renderMpCarouselUI();
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+                event.target.value = ''; 
+            };
+
+            window.saveMpBanners = async function(btn) {
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Menyimpan...';
+                btn.disabled = true;
+                
                 try {
-                    const draftRef = doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'drafts', 'formState');
-                    await setDoc(draftRef, getFormState());
-                } catch(e) {}
-            }, 1000);
-        };
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'mp_banners'), {
+                        items: window.mpCarouselData,
+                        updated_at: serverTimestamp()
+                    });
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Berhasil Disimpan';
+                    btn.classList.add('bg-emerald-500');
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                        btn.classList.remove('bg-emerald-500');
+                        btn.disabled = false;
+                    }, 2000);
+                } catch (e) {
+                    alert("Gagal menyimpan ke Firebase: " + e.message);
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                }
+            };
 
-        document.querySelectorAll('#shipping-form input, #shipping-form select, #recap-modal input, #recap-modal select, #recap-modal textarea').forEach(el => {
-            if(el.type !== 'file') {
-                el.addEventListener('input', scheduleSaveDraft);
-                el.addEventListener('change', scheduleSaveDraft);
-            }
-        });
-
-        const loadDraftFromFirestore = async (user) => {
+            // Menarik data slider dari database Firebase saat halaman pertama kali dibuka
             try {
-                const draftRef = doc(db, 'artifacts', appId, 'users', user.uid, 'drafts', 'formState');
-                const snap = await getDoc(draftRef);
-                if (snap.exists()) {
-                    const data = snap.data();
-                    if (data.main) {
-                        if(data.main.originProv) {
-                            document.getElementById('origin-prov').value = data.main.originProv;
-                            handleProvChange(data.main.originProv, document.getElementById('origin-city'), "Pilih Kota/Kabupaten...");
-                            document.getElementById('origin-city').value = data.main.originCity || '';
-                        }
-                        if(data.main.destProv) {
-                            document.getElementById('dest-prov').value = data.main.destProv;
-                            handleProvChange(data.main.destProv, document.getElementById('dest-city'), "Pilih Kota/Kabupaten...");
-                            document.getElementById('dest-city').value = data.main.destCity || '';
-                        }
-                        document.getElementById('weight').value = data.main.weight || 1;
-                        document.getElementById('courier').value = data.main.courier || 'all';
+                onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'mp_banners'), (docSnap) => {
+                    if (docSnap.exists() && docSnap.data().items && docSnap.data().items.length > 0) {
+                        window.mpCarouselData = docSnap.data().items;
+                    } else {
+                        window.mpCarouselData = [...defaultMpData];
                     }
-                    if (data.recap) {
-                        document.getElementById('company-name').value = data.recap.companyName || '';
-                        document.getElementById('company-address').value = data.recap.companyAddress || '';
-                        document.getElementById('recap-title').value = data.recap.title || '';
-                        if(data.recap.companyLogo) {
-                            window.companyLogoKopBase64 = data.recap.companyLogo;
-                            document.getElementById('recap-logo-preview').src = window.companyLogoKopBase64;
-                            document.getElementById('recap-logo-preview').classList.remove('hidden');
-                        }
-                        if(data.recap.originProv) {
-                            document.getElementById('recap-origin-prov').value = data.recap.originProv;
-                            handleProvChange(data.recap.originProv, document.getElementById('recap-origin-city'), "Pilih Kota/Kabupaten...");
+                    window.renderMpCarouselUI();
+                    window.renderAdminMpListUI();
+                }, (e) => {
+                    window.mpCarouselData = [...defaultMpData];
+                    window.renderMpCarouselUI();
+                    window.renderAdminMpListUI();
+                });
+            } catch (e) {
+                window.mpCarouselData = [...defaultMpData];
+                window.renderMpCarouselUI();
+                window.renderAdminMpListUI();
+            }
+
+        </script>
                             document.getElementById('recap-origin-city').value = data.recap.originCity || '';
                         }
                         const scopeVal = data.recap.scope || 'all';
