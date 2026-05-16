@@ -2632,21 +2632,21 @@
             }, 800);
         }
 
-        window.toggleCategoryMenu = function() {
-            const dropdown = document.getElementById('category-dropdown');
-            if (dropdown.classList.contains('hidden')) {
-                dropdown.classList.remove('hidden');
-                setTimeout(() => dropdown.classList.remove('opacity-0', 'scale-95'), 10);
-            } else {
-                dropdown.classList.add('opacity-0', 'scale-95');
-                setTimeout(() => dropdown.classList.add('hidden'), 300); 
+        window.updateStoreLogo = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img1 = document.getElementById('seller-store-logo');
+                    const img2 = document.getElementById('seller-store-logo-large');
+                    if(img1) img1.src = e.target.result;
+                    if(img2) img2.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
             }
-        }
+        };
 
-        // TENDER MODALS
-        window.openTenderPostModal = function() {
-            document.getElementById('modal-tender-post').classList.remove('hidden');
-        }
+        // FUNGSI MODAL BURSA TENDER & FORUM
         window.openTenderBidModal = function(title, budget) {
             document.getElementById('bid-tender-title').textContent = title;
             document.getElementById('bid-tender-budget').textContent = `HPS: ${budget}`;
