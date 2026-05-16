@@ -2535,80 +2535,55 @@
             document.getElementById('modal-tender-bid').classList.remove('hidden');
         }
 
-        // ==========================================
-        // CAROUSEL KALKULATOR EKSPEDISI ASLI
-        // ==========================================
-        let carouselIntervalCalc;
-        let currentSlideCalc = 0;
-        let carouselImagesCalc = [
-            'https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1586528116311-ad8ed745363c?auto=format&fit=crop&w=800&q=80'
-        ]; 
-
-        function renderCarouselCalc() {
-            const container = document.getElementById('carousel-slides-container');
-            const indicators = document.getElementById('carousel-indicators');
-            if(!container || !indicators) return;
-            
-            container.innerHTML = '';
-            indicators.innerHTML = '';
-            
-            carouselImagesCalc.forEach((imgSrc, idx) => {
-                const slide = document.createElement('div');
-                slide.className = `carousel-item absolute inset-0 w-full h-full ${idx === currentSlideCalc ? 'opacity-100 z-10' : 'opacity-0 z-0'}`;
-                slide.innerHTML = `
-                    <img src="${imgSrc}" class="w-full h-full object-cover" alt="Banner ${idx+1}">
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/30 to-transparent"></div>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                        <i data-lucide="package-search" class="w-16 h-16 mx-auto text-white/90 mb-4 drop-shadow-lg"></i>
-                        <h3 class="text-2xl font-bold text-white drop-shadow-lg tracking-wide">Mulai Pencarian Tarif</h3>
-                        <p class="text-sm text-indigo-50 mt-2 drop-shadow-md">Pilih asal, tujuan, dan berat paket di sebelah kiri.</p>
-                    </div>
-                `;
-                container.appendChild(slide);
-
+        // CAROUSEL MARKETPLACE
+        let mpCurrentSlide = 0; let mpSlideInterval; let mpAutoSlideDelay = 5000;
+        function initMpSlider() {
+            const container = document.getElementById('mp-slide-container');
+            if (!container) return;
+            const indicators = document.getElementById('mp-slide-indicators');
+            indicators.innerHTML = ''; 
+            for (let i = 0; i < container.children.length; i++) {
                 const dot = document.createElement('button');
-                dot.className = `h-2.5 rounded-full transition-all duration-300 shadow-sm ${idx === currentSlideCalc ? 'bg-violet-500 w-8' : 'bg-white/60 hover:bg-white w-2.5'}`;
-                dot.onclick = () => showSlideCalc(idx);
+                dot.className = `h-2 rounded-full transition-all duration-500 ${i === 0 ? 'bg-amber-400 w-8 shadow-sm' : 'bg-white/40 hover:bg-white/80 w-2.5'}`;
+                dot.onclick = () => { mpCurrentSlide = i; updateMpSliderPosition(); pauseMpSlider(); resumeMpSlider(); };
                 indicators.appendChild(dot);
-            });
-
-            if (carouselIntervalCalc) clearInterval(carouselIntervalCalc);
-            if (carouselImagesCalc.length > 1) {
-                carouselIntervalCalc = setInterval(() => {
-                    showSlideCalc((currentSlideCalc + 1) % carouselImagesCalc.length);
-                }, 4000); // Geser tiap 4 detik
             }
-            if(window.lucide) window.lucide.createIcons();
+            startMpAutoSlide();
         }
-
-        function showSlideCalc(index) {
-            const container = document.getElementById('carousel-slides-container');
-            const indicators = document.getElementById('carousel-indicators');
-            if(!container || !indicators) return;
-            const slides = container.children;
-            const dots = indicators.children;
-            if (!slides.length) return;
-            
-            slides[currentSlideCalc].classList.replace('opacity-100', 'opacity-0');
-            slides[currentSlideCalc].classList.replace('z-10', 'z-0');
-            dots[currentSlideCalc].classList.replace('bg-violet-500', 'bg-white/60');
-            dots[currentSlideCalc].classList.replace('w-8', 'w-2.5');
-            
-            currentSlideCalc = index;
-            
-            slides[currentSlideCalc].classList.replace('opacity-0', 'opacity-100');
-            slides[currentSlideCalc].classList.replace('z-0', 'z-10');
-            dots[currentSlideCalc].classList.replace('bg-white/60', 'bg-violet-500');
-            dots[currentSlideCalc].classList.replace('w-2.5', 'w-8');
+        function updateMpSliderPosition() {
+            const container = document.getElementById('mp-slide-container');
+            const indicators = document.getElementById('mp-slide-indicators');
+            if(!container) return;
+            container.style.transform = `translateX(-${mpCurrentSlide * 100}%)`;
+            for (let i = 0; i < container.children.length; i++) {
+                indicators.children[i].className = i === mpCurrentSlide ? 'h-2 rounded-full transition-all duration-500 bg-amber-400 w-8 shadow-sm' : 'h-2 rounded-full transition-all duration-500 bg-white/40 hover:bg-white/80 w-2.5';
+            }
+        }
+        window.nextMpSlide = function() {
+            const container = document.getElementById('mp-slide-container');
+            if(!container) return;
+            mpCurrentSlide = (mpCurrentSlide + 1) % container.children.length;
+            updateMpSliderPosition();
+        }
+        window.prevMpSlide = function() {
+            const container = document.getElementById('mp-slide-container');
+            if(!container) return;
+            mpCurrentSlide = (mpCurrentSlide - 1 + container.children.length) % container.children.length;
+            updateMpSliderPosition();
+        }
+        function startMpAutoSlide() { clearInterval(mpSlideInterval); mpSlideInterval = setInterval(window.nextMpSlide, mpAutoSlideDelay); }
+        window.pauseMpSlider = function() { clearInterval(mpSlideInterval); }
+        window.resumeMpSlider = function() { startMpAutoSlide(); }
+        window.saveMpSliderSettings = function() {
+            const selectEl = document.getElementById('admin-slider-delay');
+            if (selectEl) { mpAutoSlideDelay = parseInt(selectEl.value, 10); startMpAutoSlide(); }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            renderCarouselCalc();
+            const savedView = localStorage.getItem('superapp_current_view') || 'marketplace';
+            switchAppView(savedView);
         });
 
-        // ==========================================
-        // UI & NAVIGASI SUPER APP
-        // ==========================================
-        window.switchAppView = function(viewName) {
+    </script>
+</body>
+</html>
