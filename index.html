@@ -65,9 +65,59 @@
         <!-- Main Top Header -->
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <div class="bg-gradient-to-br from-amber-300 to-yellow-500 p-2.5 rounded-xl border border-white/30 shadow-inner flex items-center gap-2">
-                    <i data-lucide="box" class="w-8 h-8 text-indigo-950 drop-shadow-md"></i>
+                <!-- LOGO 3D PREMIUM BARU MENGGUNAKAN INLINE SVG -->
+                <div class="flex items-center justify-center">
+                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 md:w-14 md:h-14 hover:scale-110 transition-transform duration-500 drop-shadow-2xl">
+                        <defs>
+                            <!-- Gradien Emas Kilap -->
+                            <linearGradient id="gold1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#FDE047" />
+                                <stop offset="50%" stop-color="#F59E0B" />
+                                <stop offset="100%" stop-color="#92400E" />
+                            </linearGradient>
+                            <!-- Gradien Emas Terang (Cahaya Atas) -->
+                            <linearGradient id="gold2" x1="100%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#FEF08A" />
+                                <stop offset="50%" stop-color="#D97706" />
+                                <stop offset="100%" stop-color="#78350F" />
+                            </linearGradient>
+                            <!-- Gradien Emas Gelap (Bayangan Kiri) -->
+                            <linearGradient id="gold3" x1="0%" y1="50%" x2="100%" y2="50%">
+                                <stop offset="0%" stop-color="#B45309" />
+                                <stop offset="100%" stop-color="#451A03" />
+                            </linearGradient>
+                            <!-- Gradien Biru Safir (Inti Hub) -->
+                            <linearGradient id="gBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#818CF8" />
+                                <stop offset="50%" stop-color="#1E40AF" />
+                                <stop offset="100%" stop-color="#172554" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Bayangan Jatuh (Drop Shadow Dasar) -->
+                        <path d="M60 118 L15 93 V43 L60 68 L105 43 V93 Z" fill="#000" opacity="0.25" filter="blur(3px)" />
+                        
+                        <!-- Rangka Hexagon Luar 3D -->
+                        <!-- Sisi Kanan -->
+                        <path d="M60 110 L105 85 V35 L60 60 Z" fill="url(#gold1)" />
+                        <!-- Sisi Kiri -->
+                        <path d="M60 110 L15 85 V35 L60 60 Z" fill="url(#gold3)" />
+                        <!-- Sisi Atas -->
+                        <path d="M15 35 L60 10 L105 35 L60 60 Z" fill="url(#gold2)" />
+                        
+                        <!-- Potongan Dalam (Membentuk Ruang Inti Biru/Safir) -->
+                        <path d="M60 90 L30 73 V47 L60 30 L90 47 V73 Z" fill="url(#gBlue)" />
+                        
+                        <!-- Kristal Emas Mengambang di Dalam (Core) -->
+                        <!-- Atas Kristal -->
+                        <path d="M60 40 L75 48 L60 56 L45 48 Z" fill="url(#gold2)" />
+                        <!-- Kanan Kristal -->
+                        <path d="M60 73 L75 65 V48 L60 56 Z" fill="url(#gold1)" />
+                        <!-- Kiri Kristal -->
+                        <path d="M60 73 L45 65 V48 L60 56 Z" fill="url(#gold3)" />
+                    </svg>
                 </div>
+                <!-- AKHIR LOGO 3D -->
+
                 <div>
                     <h1 class="text-2xl font-black tracking-tight drop-shadow-sm flex items-center gap-2 text-amber-400">
                         BisnisHub
