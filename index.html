@@ -1821,183 +1821,183 @@
                     await signInWithEmailAndPassword(auth, email, password);
                     authSuccess.textContent = "Berhasil masuk!";
                 } else {
-                    currentUserRole = 'user'; 
-                    document.getElementById('current-user-email').textContent = "Login / Daftar";
-                    document.querySelector('#auth-display-info span:first-child').textContent = "Klik Untuk Masuk";
-                    authForm.classList.remove('hidden');
-                    document.getElementById('btn-toggle-auth-mode').parentElement.classList.remove('hidden'); 
-                    authLoggedInView.classList.add('hidden');
-                    btnOpenHistory.classList.add('hidden'); 
-                    if (btnEditBanner) btnEditBanner.classList.add('hidden');
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(userCredential.user, { displayName: name });
+                    authSuccess.textContent = "Pendaftaran sukses!";
                 }
-            });
-
-            // ============================================
-            // DYNAMIC MARKETPLACE BANNERS LOGIC
-            // ============================================
-            window.mpCarouselData = [];
-            const defaultMpData = [
-                { image: 'https://images.unsplash.com/photo-1580982327559-c1202864be05?auto=format&fit=crop&q=80&w=1200&h=500', label: 'B2B TERLENGKAP', title: 'Solusi Lengkap Industri & Pertanian' },
-                { image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=1200&h=500', label: 'DISKON AKHIR TAHUN', title: 'Banting Harga Alat Berat' }
-            ];
-
-            window.renderMpCarouselUI = function() {
-                const container = document.getElementById('mp-slide-container');
-                if(!container) return;
-                container.innerHTML = '';
-                window.mpCarouselData.forEach((item, idx) => {
-                    container.innerHTML += `
-                        <div class="min-w-full h-full relative flex-shrink-0">
-                            <img src="${item.image}" class="w-full h-full object-cover absolute inset-0 z-0 opacity-40 mix-blend-overlay" />
-                            <div class="absolute inset-0 bg-gradient-to-r from-indigo-900 via-indigo-900/80 to-transparent z-10"></div>
-                            <div class="relative z-20 flex flex-col justify-center h-full px-6 md:px-16 w-full md:w-3/4 lg:w-2/3">
-                                ${item.label ? `<span class="bg-amber-500 text-indigo-950 text-[10px] md:text-xs font-bold px-3 py-1 rounded-full w-max mb-3 shadow-sm">${item.label}</span>` : ''}
-                                <h1 class="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-2 leading-tight text-white drop-shadow-md">
-                                    ${item.title || 'Promo Menarik'}
-                                </h1>
-                                <button class="bg-amber-500 text-indigo-950 font-bold py-2 px-5 md:py-3 md:px-8 rounded-xl shadow-md hover:bg-amber-400 transition-all w-max text-sm md:text-base mt-4">
-                                    Lihat Detail <i class="fa-solid fa-arrow-right ml-2"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-                if(window.initMpSlider) window.initMpSlider(); // Reset & hidupkan perputaran animasinya
-            };
-
-            window.renderAdminMpListUI = function() {
-                const listContainer = document.getElementById('admin-mp-banners-list');
-                const counter = document.getElementById('mp-banner-counter');
-                if(!listContainer || !counter) return;
-
-                counter.textContent = `SLOT TERPAKAI: ${window.mpCarouselData.length} / 5`;
-                listContainer.innerHTML = '';
-
-                if(window.mpCarouselData.length === 0) {
-                    listContainer.innerHTML = '<div class="text-center p-4 text-slate-500 text-sm border border-dashed border-slate-300 rounded-xl bg-slate-50">Belum ada banner yang aktif. Slider akan disembunyikan.</div>';
-                    return;
-                }
-
-                window.mpCarouselData.forEach((item, idx) => {
-                    listContainer.innerHTML += `
-                        <div class="p-3 md:p-4 rounded-xl border border-slate-200 flex items-center gap-3 hover:shadow-md transition-all bg-slate-50 group">
-                            <img src="${item.image}" class="w-16 h-10 md:w-24 md:h-14 object-cover rounded-lg shadow-sm border border-slate-200 bg-white">
-                            <div class="flex-1 overflow-hidden flex flex-col gap-1.5">
-                                <div class="flex items-center bg-white border border-slate-300 rounded px-2 overflow-hidden focus-within:border-indigo-400">
-                                    <i class="fa-solid fa-heading text-[10px] text-slate-400 mr-2"></i>
-                                    <input type="text" value="${item.title}" onchange="window.updateMpBannerField(${idx}, 'title', this.value)" class="w-full text-xs md:text-sm font-bold text-slate-800 outline-none py-1.5" placeholder="Judul Iklan Besar...">
-                                </div>
-                                <div class="flex items-center bg-white border border-slate-300 rounded px-2 overflow-hidden focus-within:border-indigo-400 w-2/3">
-                                    <i class="fa-solid fa-tag text-[10px] text-slate-400 mr-2"></i>
-                                    <input type="text" value="${item.label}" onchange="window.updateMpBannerField(${idx}, 'label', this.value)" class="w-full text-[10px] md:text-xs text-indigo-600 font-bold outline-none py-1" placeholder="Label Tag (Misal: PROMO)">
-                                </div>
-                            </div>
-                            <button onclick="window.removeMpBanner(${idx})" class="bg-white border border-red-200 text-red-500 hover:bg-red-500 hover:text-white p-2.5 rounded-lg transition-colors shadow-sm"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
-                    `;
-                });
-            };
-
-            window.updateMpBannerField = function(index, field, value) {
-                if(window.mpCarouselData[index]) {
-                    window.mpCarouselData[index][field] = value;
-                    window.renderMpCarouselUI();
-                }
-            };
-
-            window.removeMpBanner = function(index) {
-                window.mpCarouselData.splice(index, 1);
-                window.renderAdminMpListUI();
-                window.renderMpCarouselUI();
-            };
-
-            window.handleNewMpBanner = function(event) {
-                if(window.mpCarouselData.length >= 5) {
-                    alert("Maksimal hanya 5 frame banner untuk menjaga kecepatan website!");
-                    return;
-                }
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            const ctx = canvas.getContext('2d');
-                            const maxWidth = 1200;
-                            let width = img.width;
-                            let height = img.height;
-                            if (width > maxWidth) {
-                                height = Math.round((height * maxWidth) / width);
-                                width = maxWidth;
-                            }
-                            canvas.width = width;
-                            canvas.height = height;
-                            ctx.drawImage(img, 0, 0, width, height);
-                            // Kompres gambar menjadi 70% quality untuk menghemat memori
-                            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7); 
-                            
-                            window.mpCarouselData.push({
-                                image: compressedBase64,
-                                label: 'INFO BARU',
-                                title: 'Judul Iklan Anda'
-                            });
-                            window.renderAdminMpListUI();
-                            window.renderMpCarouselUI();
-                        };
-                        img.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-                event.target.value = ''; 
-            };
-
-            window.saveMpBanners = async function(btn) {
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Menyimpan...';
-                btn.disabled = true;
-                
-                try {
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'mp_banners'), {
-                        items: window.mpCarouselData,
-                        updated_at: serverTimestamp()
-                    });
-                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Berhasil Disimpan';
-                    btn.classList.add('bg-emerald-500');
-                    setTimeout(() => {
-                        btn.innerHTML = originalHTML;
-                        btn.classList.remove('bg-emerald-500');
-                        btn.disabled = false;
-                    }, 2000);
-                } catch (e) {
-                    alert("Gagal menyimpan ke Firebase: " + e.message);
-                    btn.innerHTML = originalHTML;
-                    btn.disabled = false;
-                }
-            };
-
-            // Menarik data slider dari database Firebase saat halaman pertama kali dibuka
-            try {
-                onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'mp_banners'), (docSnap) => {
-                    if (docSnap.exists() && docSnap.data().items && docSnap.data().items.length > 0) {
-                        window.mpCarouselData = docSnap.data().items;
-                    } else {
-                        window.mpCarouselData = [...defaultMpData];
-                    }
-                    window.renderMpCarouselUI();
-                    window.renderAdminMpListUI();
-                }, (e) => {
-                    window.mpCarouselData = [...defaultMpData];
-                    window.renderMpCarouselUI();
-                    window.renderAdminMpListUI();
-                });
-            } catch (e) {
-                window.mpCarouselData = [...defaultMpData];
-                window.renderMpCarouselUI();
-                window.renderAdminMpListUI();
+                authSuccess.classList.remove('hidden'); authError.classList.add('hidden');
+                setTimeout(() => { authModal.classList.add('hidden'); }, 1000);
+            } catch (err) {
+                authError.textContent = "Gagal: Email/Sandi salah atau sudah terdaftar.";
+                authError.classList.remove('hidden');
+            } finally {
+                btn.innerHTML = isLoginMode ? 'Masuk Sekarang' : 'Daftar Akun'; btn.disabled = false;
             }
+        });
 
-        </script>
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            signOut(auth).then(() => { authModal.classList.add('hidden'); window.switchAppView('marketplace'); });
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            const btnOpenHistory = document.getElementById('btn-open-history');
+            
+            if (user && !user.isAnonymous) {
+                await loadDraftFromFirestore(user);
+                
+                const email = user.email || 'User';
+                const displayName = user.displayName || email.split('@')[0];
+
+                document.getElementById('current-user-email').textContent = email.substring(0, 15) + '...';
+                document.querySelector('#auth-display-info span:first-child').textContent = "Masuk Sebagai:";
+                
+                authForm.classList.add('hidden');
+                document.getElementById('auth-logged-in-view').classList.remove('hidden');
+                document.getElementById('logged-in-email-display').textContent = email;
+                document.getElementById('btn-toggle-auth-mode').parentElement.classList.add('hidden');
+                
+                // UPDATE NAMA DI DASHBOARD PEMBELI & PENJUAL
+                const buyerSidebarName = document.getElementById('buyer-sidebar-name');
+                const buyerSettingName = document.getElementById('buyer-setting-name');
+                if(buyerSidebarName) buyerSidebarName.textContent = displayName;
+                if(buyerSettingName) buyerSettingName.value = displayName;
+
+                const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=4f46e5&color=fff`;
+                const img1 = document.getElementById('buyer-profile-img');
+                const img2 = document.getElementById('buyer-profile-img-large');
+                if(img1) img1.src = avatarUrl;
+                if(img2) img2.src = avatarUrl;
+
+                const defaultStoreName = `Toko ${displayName}`;
+                const storeSidebarName = document.getElementById('seller-sidebar-name');
+                const storeSettingName = document.getElementById('store-setting-name');
+                if(storeSidebarName && storeSidebarName.textContent.includes("Memuat")) storeSidebarName.textContent = defaultStoreName;
+                if(storeSettingName && storeSettingName.value.includes("Memuat")) storeSettingName.value = defaultStoreName;
+                
+                const storeAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(defaultStoreName)}&background=e0e7ff&color=4f46e5`;
+                const imgStore1 = document.getElementById('seller-store-logo');
+                const imgStore2 = document.getElementById('seller-store-logo-large');
+                if(imgStore1) imgStore1.src = storeAvatarUrl;
+                if(imgStore2) imgStore2.src = storeAvatarUrl;
+
+                // TAMPILKAN TAB RAHASIA
+                document.getElementById('tab-buyer').classList.remove('hidden');
+                btnOpenHistory.classList.remove('hidden'); 
+                
+                if(email.includes('admin') || email.includes('sridamayanti')) {
+                    currentUserRole = 'admin';
+                    document.getElementById('tab-admin').classList.remove('hidden');
+                } else {
+                    currentUserRole = 'user';
+                    document.getElementById('tab-seller').classList.remove('hidden');
+                }
+            } else {
+                currentUserRole = 'user';
+                document.getElementById('current-user-email').textContent = "Login / Daftar";
+                document.querySelector('#auth-display-info span:first-child').textContent = "Klik Untuk Masuk";
+                
+                authForm.classList.remove('hidden');
+                document.getElementById('auth-logged-in-view').classList.add('hidden');
+                document.getElementById('btn-toggle-auth-mode').parentElement.classList.remove('hidden');
+                
+                document.getElementById('tab-buyer').classList.add('hidden');
+                document.getElementById('tab-seller').classList.add('hidden');
+                document.getElementById('tab-admin').classList.add('hidden');
+                btnOpenHistory.classList.add('hidden');
+            }
+        });
+
+        // ============================================
+        // LOGIKA AUTO-SAVE & DRAFT KALKULATOR
+        // ============================================
+        let draftDebounceTimer;
+        const getFormState = () => {
+            return {
+                main: {
+                    originProv: document.getElementById('origin-prov').value,
+                    originCity: document.getElementById('origin-city').value,
+                    destProv: document.getElementById('dest-prov').value,
+                    destCity: document.getElementById('dest-city').value,
+                    weight: document.getElementById('weight').value,
+                    courier: document.getElementById('courier').value
+                },
+                recap: {
+                    companyName: document.getElementById('company-name').value,
+                    companyAddress: document.getElementById('company-address').value,
+                    companyLogo: window.companyLogoKopBase64 || null,
+                    title: document.getElementById('recap-title').value,
+                    originProv: document.getElementById('recap-origin-prov').value,
+                    originCity: document.getElementById('recap-origin-city').value,
+                    scope: document.querySelector('input[name="recap-scope"]:checked')?.value || 'all',
+                    destProv: document.getElementById('recap-dest-prov').value,
+                    destCity: document.getElementById('recap-dest-city').value,
+                    w1Checked: document.getElementById('weight-fixed').checked,
+                    w2Checked: document.querySelector('.custom-weight-cb[data-target="weight-val-2"]').checked,
+                    w2Val: document.getElementById('weight-val-2').value,
+                    w3Checked: document.querySelector('.custom-weight-cb[data-target="weight-val-3"]').checked,
+                    w3Val: document.getElementById('weight-val-3').value,
+                    w4Checked: document.querySelector('.custom-weight-cb[data-target="weight-val-4"]').checked,
+                    w4Val: document.getElementById('weight-val-4').value,
+                    courier: document.getElementById('recap-courier').value,
+                    showCourier: document.getElementById('recap-show-courier').checked,
+                    addFeePct: document.getElementById('recap-additional-fee-percent').value,
+                    showAddFee: document.getElementById('recap-show-additional-fee').checked,
+                    usePpn: document.getElementById('recap-use-ppn').checked
+                },
+                updatedAt: serverTimestamp()
+            };
+        };
+
+        const scheduleSaveDraft = () => {
+            if (!auth.currentUser || auth.currentUser.isAnonymous) return; 
+            clearTimeout(draftDebounceTimer);
+            draftDebounceTimer = setTimeout(async () => {
+                try {
+                    const draftRef = doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'drafts', 'formState');
+                    await setDoc(draftRef, getFormState());
+                } catch(e) {}
+            }, 1000);
+        };
+
+        document.querySelectorAll('#shipping-form input, #shipping-form select, #recap-modal input, #recap-modal select, #recap-modal textarea').forEach(el => {
+            if(el.type !== 'file') {
+                el.addEventListener('input', scheduleSaveDraft);
+                el.addEventListener('change', scheduleSaveDraft);
+            }
+        });
+
+        const loadDraftFromFirestore = async (user) => {
+            try {
+                const draftRef = doc(db, 'artifacts', appId, 'users', user.uid, 'drafts', 'formState');
+                const snap = await getDoc(draftRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    if (data.main) {
+                        if(data.main.originProv) {
+                            document.getElementById('origin-prov').value = data.main.originProv;
+                            handleProvChange(data.main.originProv, document.getElementById('origin-city'), "Pilih Kota/Kabupaten...");
+                            document.getElementById('origin-city').value = data.main.originCity || '';
+                        }
+                        if(data.main.destProv) {
+                            document.getElementById('dest-prov').value = data.main.destProv;
+                            handleProvChange(data.main.destProv, document.getElementById('dest-city'), "Pilih Kota/Kabupaten...");
+                            document.getElementById('dest-city').value = data.main.destCity || '';
+                        }
+                        document.getElementById('weight').value = data.main.weight || 1;
+                        document.getElementById('courier').value = data.main.courier || 'all';
+                    }
+                    if (data.recap) {
+                        document.getElementById('company-name').value = data.recap.companyName || '';
+                        document.getElementById('company-address').value = data.recap.companyAddress || '';
+                        document.getElementById('recap-title').value = data.recap.title || '';
+                        if(data.recap.companyLogo) {
+                            window.companyLogoKopBase64 = data.recap.companyLogo;
+                            document.getElementById('recap-logo-preview').src = window.companyLogoKopBase64;
+                            document.getElementById('recap-logo-preview').classList.remove('hidden');
+                        }
+                        if(data.recap.originProv) {
+                            document.getElementById('recap-origin-prov').value = data.recap.originProv;
+                            handleProvChange(data.recap.originProv, document.getElementById('recap-origin-city'), "Pilih Kota/Kabupaten...");
                             document.getElementById('recap-origin-city').value = data.recap.originCity || '';
                         }
                         const scopeVal = data.recap.scope || 'all';
@@ -2436,7 +2436,7 @@
                 selectedTab.classList.add('active', 'text-white', 'border-amber-400');
             }
 
-            if(viewName === 'marketplace') window.initMpSlider();
+            if(viewName === 'marketplace') initMpSlider();
             window.scrollTo(0, 0); 
         }
 
@@ -2451,15 +2451,6 @@
             }
         }
 
-        // Tutup dropdown menu jika user klik di luar area
-        document.addEventListener('click', function(event) {
-            const wrapper = document.getElementById('desktop-category-wrapper');
-            const dropdown = document.getElementById('category-dropdown');
-            if (wrapper && !wrapper.contains(event.target) && dropdown && !dropdown.classList.contains('hidden')) {
-                window.toggleCategoryMenu();
-            }
-        });
-
         window.toggleBuyerMenu = function(menu) {
             document.querySelectorAll('.buyer-menu-item').forEach(el => {
                 el.classList.remove('text-indigo-700', 'bg-indigo-50', 'font-bold');
@@ -2467,12 +2458,8 @@
             });
             document.getElementById(`buyer-pesanan-view`).classList.add('hidden');
             document.getElementById(`buyer-setting-view`).classList.add('hidden');
-            
-            const viewEl = document.getElementById(`buyer-${menu}-view`);
-            if(viewEl) viewEl.classList.remove('hidden');
-            
-            const menuEl = document.getElementById(`menu-buyer-${menu}`);
-            if(menuEl) menuEl.classList.add('text-indigo-700', 'bg-indigo-50', 'font-bold');
+            document.getElementById(`buyer-${menu}-view`).classList.remove('hidden');
+            document.getElementById(`menu-buyer-${menu}`).classList.add('text-indigo-700', 'bg-indigo-50', 'font-bold');
         }
 
         window.toggleSellerMenu = function(menu) {
@@ -2485,13 +2472,9 @@
                 if(el) el.classList.add('hidden');
             });
             document.getElementById('seller-add-product').classList.add('hidden');
-            
             const viewId = menu === 'produk' ? 'seller-product-list' : `seller-${menu}-view`;
-            const viewEl = document.getElementById(viewId);
-            if(viewEl) viewEl.classList.remove('hidden');
-            
-            const menuEl = document.getElementById(`menu-seller-${menu}`);
-            if(menuEl) menuEl.classList.add('text-indigo-700', 'bg-indigo-50', 'font-bold');
+            document.getElementById(viewId).classList.remove('hidden');
+            document.getElementById(`menu-seller-${menu}`).classList.add('text-indigo-700', 'bg-indigo-50', 'font-bold');
         }
 
         window.toggleAdminMenu = function(menu) {
@@ -2501,12 +2484,8 @@
             });
             document.getElementById(`admin-desain-view`).classList.add('hidden');
             document.getElementById(`admin-pajak-view`).classList.add('hidden');
-            
-            const viewEl = document.getElementById(`admin-${menu}-view`);
-            if(viewEl) viewEl.classList.remove('hidden');
-            
-            const menuEl = document.getElementById(`menu-admin-${menu}`);
-            if(menuEl) menuEl.classList.add('text-white', 'bg-indigo-600', 'shadow-md', 'font-bold');
+            document.getElementById(`admin-${menu}-view`).classList.remove('hidden');
+            document.getElementById(`menu-admin-${menu}`).classList.add('text-white', 'bg-indigo-600', 'shadow-md', 'font-bold');
         }
 
         window.toggleAddProduct = function(showForm) {
@@ -2549,30 +2528,6 @@
             window.simulateSave(btn);
         };
 
-        window.updateBuyerProfile = function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('buyer-profile-img').src = e.target.result;
-                    document.getElementById('buyer-profile-img-large').src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
-        };
-
-        window.updateStoreLogo = function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('seller-store-logo').src = e.target.result;
-                    document.getElementById('seller-store-logo-large').src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
-        };
-
         window.openTenderPostModal = function() { document.getElementById('modal-tender-post').classList.remove('hidden'); }
         window.openTenderBidModal = function(title, budget) {
             document.getElementById('bid-tender-title').textContent = title;
@@ -2581,85 +2536,79 @@
         }
 
         // ==========================================
-        // MARKETPLACE CAROUSEL B2B (Kalimaja)
+        // CAROUSEL KALKULATOR EKSPEDISI ASLI
         // ==========================================
-        let mpCurrentSlide = 0;
-        let mpSlideInterval;
-        let mpAutoSlideDelay = 5000;
+        let carouselIntervalCalc;
+        let currentSlideCalc = 0;
+        let carouselImagesCalc = [
+            'https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1586528116311-ad8ed745363c?auto=format&fit=crop&w=800&q=80'
+        ]; 
 
-        window.initMpSlider = function() {
-            const slideContainer = document.getElementById('mp-slide-container');
-            if (!slideContainer) return;
-            const totalSlides = slideContainer.children.length;
-            const indicatorContainer = document.getElementById('mp-slide-indicators');
-            if(indicatorContainer) indicatorContainer.innerHTML = ''; 
+        function renderCarouselCalc() {
+            const container = document.getElementById('carousel-slides-container');
+            const indicators = document.getElementById('carousel-indicators');
+            if(!container || !indicators) return;
+            
+            container.innerHTML = '';
+            indicators.innerHTML = '';
+            
+            carouselImagesCalc.forEach((imgSrc, idx) => {
+                const slide = document.createElement('div');
+                slide.className = `carousel-item absolute inset-0 w-full h-full ${idx === currentSlideCalc ? 'opacity-100 z-10' : 'opacity-0 z-0'}`;
+                slide.innerHTML = `
+                    <img src="${imgSrc}" class="w-full h-full object-cover" alt="Banner ${idx+1}">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/30 to-transparent"></div>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                        <i data-lucide="package-search" class="w-16 h-16 mx-auto text-white/90 mb-4 drop-shadow-lg"></i>
+                        <h3 class="text-2xl font-bold text-white drop-shadow-lg tracking-wide">Mulai Pencarian Tarif</h3>
+                        <p class="text-sm text-indigo-50 mt-2 drop-shadow-md">Pilih asal, tujuan, dan berat paket di sebelah kiri.</p>
+                    </div>
+                `;
+                container.appendChild(slide);
 
-            for (let i = 0; i < totalSlides; i++) {
                 const dot = document.createElement('button');
-                dot.className = `h-2 rounded-full transition-all duration-500 ${i === 0 ? 'bg-amber-400 w-8 shadow-sm' : 'bg-white/40 hover:bg-white/80 w-2.5'}`;
-                dot.onclick = () => window.goToMpSlide(i);
-                if(indicatorContainer) indicatorContainer.appendChild(dot);
+                dot.className = `h-2.5 rounded-full transition-all duration-300 shadow-sm ${idx === currentSlideCalc ? 'bg-violet-500 w-8' : 'bg-white/60 hover:bg-white w-2.5'}`;
+                dot.onclick = () => showSlideCalc(idx);
+                indicators.appendChild(dot);
+            });
+
+            if (carouselIntervalCalc) clearInterval(carouselIntervalCalc);
+            if (carouselImagesCalc.length > 1) {
+                carouselIntervalCalc = setInterval(() => {
+                    showSlideCalc((currentSlideCalc + 1) % carouselImagesCalc.length);
+                }, 4000); // Geser tiap 4 detik
             }
-            window.startMpAutoSlide();
+            if(window.lucide) window.lucide.createIcons();
         }
 
-        window.updateMpSliderPosition = function() {
-            const slideContainer = document.getElementById('mp-slide-container');
-            const indicatorContainer = document.getElementById('mp-slide-indicators');
-            if(!slideContainer) return;
-            const totalSlides = slideContainer.children.length;
-            slideContainer.style.transform = `translateX(-${mpCurrentSlide * 100}%)`;
-
-            for (let i = 0; i < totalSlides; i++) {
-                const dot = indicatorContainer.children[i];
-                if(dot) {
-                    if (i === mpCurrentSlide) dot.className = 'h-2 rounded-full transition-all duration-500 bg-amber-400 w-8 shadow-sm';
-                    else dot.className = 'h-2 rounded-full transition-all duration-500 bg-white/40 hover:bg-white/80 w-2.5';
-                }
-            }
-        }
-
-        window.nextMpSlide = function() {
-            const slideContainer = document.getElementById('mp-slide-container');
-            if(!slideContainer) return;
-            mpCurrentSlide = (mpCurrentSlide + 1) % slideContainer.children.length;
-            window.updateMpSliderPosition();
-        }
-
-        window.prevMpSlide = function() {
-            const slideContainer = document.getElementById('mp-slide-container');
-            if(!slideContainer) return;
-            const totalSlides = slideContainer.children.length;
-            mpCurrentSlide = (mpCurrentSlide - 1 + totalSlides) % totalSlides;
-            window.updateMpSliderPosition();
-        }
-
-        window.goToMpSlide = function(index) {
-            mpCurrentSlide = index;
-            window.updateMpSliderPosition();
-            window.pauseMpSlider(); window.resumeMpSlider();
-        }
-
-        window.startMpAutoSlide = function() {
-            clearInterval(mpSlideInterval);
-            mpSlideInterval = setInterval(window.nextMpSlide, mpAutoSlideDelay);
-        }
-        window.pauseMpSlider = function() { clearInterval(mpSlideInterval); }
-        window.resumeMpSlider = function() { window.startMpAutoSlide(); }
-        window.saveMpSliderSettings = function() {
-            const selectEl = document.getElementById('admin-slider-delay');
-            if (selectEl) {
-                mpAutoSlideDelay = parseInt(selectEl.value, 10);
-                window.startMpAutoSlide(); 
-            }
+        function showSlideCalc(index) {
+            const container = document.getElementById('carousel-slides-container');
+            const indicators = document.getElementById('carousel-indicators');
+            if(!container || !indicators) return;
+            const slides = container.children;
+            const dots = indicators.children;
+            if (!slides.length) return;
+            
+            slides[currentSlideCalc].classList.replace('opacity-100', 'opacity-0');
+            slides[currentSlideCalc].classList.replace('z-10', 'z-0');
+            dots[currentSlideCalc].classList.replace('bg-violet-500', 'bg-white/60');
+            dots[currentSlideCalc].classList.replace('w-8', 'w-2.5');
+            
+            currentSlideCalc = index;
+            
+            slides[currentSlideCalc].classList.replace('opacity-0', 'opacity-100');
+            slides[currentSlideCalc].classList.replace('z-0', 'z-10');
+            dots[currentSlideCalc].classList.replace('bg-white/60', 'bg-violet-500');
+            dots[currentSlideCalc].classList.replace('w-2.5', 'w-8');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const savedView = localStorage.getItem('superapp_current_view') || 'marketplace';
-            window.switchAppView(savedView);
-            window.initMpSlider();
+            renderCarouselCalc();
         });
 
-    </script>
-</body>
-</html>
+        // ==========================================
+        // UI & NAVIGASI SUPER APP
+        // ==========================================
+        window.switchAppView = function(viewName) {
