@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BisnisHub - Platform Logistik & B2B Terpadu</title>
+    <title>BisnisHub x Kalimaja - Super App Ekspedisi & B2B Marketplace</title>
     
     <!-- CSS & Frameworks -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -75,7 +75,7 @@
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <!-- Custom 3D Logo SVG -->
-                <div class="w-12 h-12 hub-logo-container flex items-center justify-center shrink-0">
+                <div class="w-12 h-12 hub-logo-container flex items-center justify-center shrink-0 cursor-pointer" onclick="window.switchAppView('marketplace')">
                     <svg viewBox="0 0 100 100" class="w-full h-full hub-3d overflow-visible">
                         <defs>
                             <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -101,7 +101,7 @@
                     </svg>
                 </div>
                 
-                <div class="cursor-pointer" onclick="switchAppView('marketplace')">
+                <div class="cursor-pointer" onclick="window.switchAppView('marketplace')">
                     <h1 class="text-2xl font-bold tracking-tight drop-shadow-sm flex items-center gap-2">
                         <span class="text-amber-400 font-extrabold text-2xl">BisnisHub</span>
                     </h1>
@@ -116,7 +116,7 @@
                 </button>
                 
                 <div class="relative group">
-                    <button id="btn-auth-trigger" class="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 backdrop-blur-md py-2.5 px-4 rounded-xl text-sm font-medium transition-all focus:outline-none shadow-sm">
+                    <button id="btn-auth-trigger" onclick="window.openLoginModal()" class="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 backdrop-blur-md py-2.5 px-4 rounded-xl text-sm font-medium transition-all focus:outline-none shadow-sm">
                         <i data-lucide="user-circle" class="w-5 h-5 text-indigo-50"></i>
                         <div class="text-left leading-tight" id="auth-display-info">
                             <span class="block text-[10px] text-indigo-200">Klik Untuk Masuk</span>
@@ -130,27 +130,27 @@
         <!-- Super App Navigation Tabs -->
         <div class="bg-indigo-800/50 border-t border-white/10 backdrop-blur-md">
             <div class="max-w-7xl mx-auto px-4 flex gap-2 sm:gap-6 overflow-x-auto hide-scrollbar">
-                <button onclick="switchAppView('marketplace')" id="tab-marketplace" class="app-tab active py-3 text-xs sm:text-sm font-bold text-white border-b-2 border-amber-400 whitespace-nowrap flex items-center gap-2">
+                <button onclick="window.switchAppView('marketplace')" id="tab-marketplace" class="app-tab active py-3 text-xs sm:text-sm font-bold text-white border-b-2 border-amber-400 whitespace-nowrap flex items-center gap-2 transition-colors">
                     <i class="fa-solid fa-store"></i> Marketplace B2B
                 </button>
-                <button onclick="switchAppView('tkdn')" id="tab-tkdn" class="app-tab py-3 text-xs sm:text-sm font-medium text-indigo-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2">
+                <button onclick="window.switchAppView('tkdn')" id="tab-tkdn" class="app-tab py-3 text-xs sm:text-sm font-medium text-indigo-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2">
                     <i class="fa-solid fa-chart-pie"></i> Dashboard TKDN
                 </button>
-                <button onclick="switchAppView('forum')" id="tab-forum" class="app-tab py-3 text-xs sm:text-sm font-medium text-indigo-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2">
+                <button onclick="window.switchAppView('forum')" id="tab-forum" class="app-tab py-3 text-xs sm:text-sm font-medium text-indigo-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2">
                     <i class="fa-solid fa-users-rectangle"></i> Bursa Tender & Forum
                 </button>
-                <button onclick="switchAppView('kalkulator')" id="tab-kalkulator" class="app-tab py-3 text-xs sm:text-sm font-medium text-indigo-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2">
+                <button onclick="window.switchAppView('kalkulator')" id="tab-kalkulator" class="app-tab py-3 text-xs sm:text-sm font-medium text-indigo-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2">
                     <i data-lucide="calculator" class="w-4 h-4"></i> Kalkulator Ekspedisi
                 </button>
                 <div class="w-px h-5 bg-white/20 my-auto hidden sm:block"></div>
                 <!-- Dynamic Dashboards -->
-                <button onclick="switchAppView('buyer')" id="tab-buyer" class="app-tab py-3 text-xs sm:text-sm font-medium text-sky-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2 hidden">
+                <button onclick="window.switchAppView('buyer')" id="tab-buyer" class="app-tab py-3 text-xs sm:text-sm font-medium text-sky-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2 hidden">
                     <i data-lucide="user" class="w-4 h-4"></i> Profil Pembeli
                 </button>
-                <button onclick="switchAppView('seller')" id="tab-seller" class="app-tab py-3 text-xs sm:text-sm font-medium text-amber-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2 hidden">
+                <button onclick="window.switchAppView('seller')" id="tab-seller" class="app-tab py-3 text-xs sm:text-sm font-medium text-amber-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2 hidden">
                     <i data-lucide="store" class="w-4 h-4"></i> Dashboard Toko
                 </button>
-                <button onclick="switchAppView('admin')" id="tab-admin" class="app-tab py-3 text-xs sm:text-sm font-medium text-emerald-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2 hidden">
+                <button onclick="window.switchAppView('admin')" id="tab-admin" class="app-tab py-3 text-xs sm:text-sm font-medium text-emerald-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2 hidden">
                     <i data-lucide="shield" class="w-4 h-4"></i> Panel Admin
                 </button>
             </div>
@@ -161,69 +161,39 @@
     <!-- VIEW 1: MARKETPLACE B2B (UTAMA)            -->
     <!-- ========================================== -->
     <main id="view-marketplace" class="min-h-screen animate-fade-in bg-slate-50 block">
+        
         <!-- Marketplace Sub-Header (Search & Dropdown) -->
         <div class="bg-white border-b border-slate-200 shadow-sm sticky top-[72px] z-30">
             <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+                
                 <!-- Category Dropdown Button -->
                 <div class="relative group" id="desktop-category-wrapper">
-                    <button onclick="toggleCategoryMenu()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 transition-colors">
+                    <button onclick="window.toggleCategoryMenu()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 transition-colors">
                         <i class="fa-solid fa-list-ul"></i> <span class="hidden sm:block">Kategori Industri</span> <i class="fa-solid fa-chevron-down text-xs ml-1"></i>
                     </button>
                     <!-- Dropdown Content -->
-                    <div id="category-dropdown" class="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 hidden z-50 overflow-hidden transform transition-all opacity-0 scale-95 origin-top-left">
+                    <div id="category-dropdown" class="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 hidden z-[100] overflow-hidden transform transition-all opacity-0 scale-95 origin-top-left">
                         <div class="bg-slate-50 px-5 py-3 border-b border-slate-100 font-black text-sm text-slate-700 flex justify-between items-center">
                             Pilih Kategori B2B
-                            <button onclick="toggleCategoryMenu()" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-xmark text-lg"></i></button>
+                            <button onclick="window.toggleCategoryMenu()" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-xmark text-lg"></i></button>
                         </div>
                         <div class="max-h-[60vh] overflow-y-auto custom-scrollbar">
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-wrench w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Perkakas & Tools</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-tractor w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Mesin Pertanian</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-bolt w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Kelistrikan & Genset</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-droplet w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Pompa & Kompresor</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-gears w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Pabrikasi & CNC</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-industry w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Mesin Manufaktur</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-truck-moving w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Alat Berat & Konstruksi</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-boxes-stacked w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Material Handling</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-robot w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Otomasi & Robotika</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-microscope w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Alat Ukur & Uji</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-user-shield w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Keamanan (K3)</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-cubes w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Bahan Logam</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-snowflake w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">HVAC & Pendingin</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-water w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Water Treatment</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-laptop-code w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Software Industri</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item">
-                                <i class="fa-solid fa-compress w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Hydrolik & Mesin Hydrolik</span>
-                            </a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-wrench w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Perkakas & Tools</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-tractor w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Mesin Pertanian</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-bolt w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Kelistrikan & Genset</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-droplet w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Pompa & Kompresor</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-gears w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Pabrikasi & CNC</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-industry w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Mesin Manufaktur</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-truck-moving w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Alat Berat & Konstruksi</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-boxes-stacked w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Material Handling</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-robot w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Otomasi & Robotika</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-microscope w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Alat Ukur & Uji</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-user-shield w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Keamanan (K3)</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-cubes w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Bahan Logam</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-snowflake w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">HVAC & Pendingin</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-water w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Water Treatment</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-laptop-code w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Software Industri</span></a>
+                            <a href="#" class="flex items-center gap-3 px-5 py-3 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 group/item"><i class="fa-solid fa-compress w-5 text-center text-slate-400 group-hover/item:text-indigo-500"></i> <span class="text-sm font-bold">Hydrolik & Mesin Hydrolik</span></a>
                         </div>
                     </div>
                 </div>
@@ -244,18 +214,19 @@
             
             <!-- Mobile Quick Filter -->
             <div class="md:hidden flex overflow-x-auto hide-scrollbar gap-2 pb-3 px-4 pt-3">
-                <button class="flex-shrink-0 bg-slate-800 text-white text-[11px] font-medium px-4 py-1.5 rounded-full border border-slate-700">Semua</button>
+                <button class="flex-shrink-0 bg-slate-800 text-white text-[11px] font-medium px-4 py-1.5 rounded-full border border-slate-700">Semua <i class="fa-solid fa-caret-down ml-1"></i></button>
                 <button class="flex-shrink-0 bg-white text-slate-600 text-[11px] font-medium px-4 py-1.5 rounded-full border border-slate-300">Perkakas</button>
                 <button class="flex-shrink-0 bg-white text-slate-600 text-[11px] font-medium px-4 py-1.5 rounded-full border border-slate-300">Pertanian</button>
                 <button class="flex-shrink-0 bg-white text-slate-600 text-[11px] font-medium px-4 py-1.5 rounded-full border border-slate-300">Pabrikasi</button>
                 <button class="flex-shrink-0 bg-white text-slate-600 text-[11px] font-medium px-4 py-1.5 rounded-full border border-slate-300">Alat Berat</button>
                 <button class="flex-shrink-0 bg-white text-slate-600 text-[11px] font-medium px-4 py-1.5 rounded-full border border-slate-300">Hydrolik</button>
+                <button class="flex-shrink-0 bg-white text-slate-600 text-[11px] font-medium px-4 py-1.5 rounded-full border border-slate-300">Water Treatment</button>
             </div>
         </div>
 
         <!-- Hero Slider -->
         <section class="max-w-7xl mx-auto px-4 py-6 md:py-8">
-            <div class="relative w-full rounded-2xl overflow-hidden shadow-xl group bg-slate-900" onmouseenter="pauseMpSlider()" onmouseleave="resumeMpSlider()">
+            <div class="relative w-full rounded-2xl overflow-hidden shadow-xl group bg-slate-900" onmouseenter="window.pauseMpSlider()" onmouseleave="window.resumeMpSlider()">
                 <div id="mp-slide-container" class="flex transition-transform duration-700 ease-in-out h-[200px] sm:h-[350px] md:h-[450px]">
                     
                     <!-- SLIDE 1 -->
@@ -292,9 +263,9 @@
                     </div>
                 </div>
 
-                <!-- Navigasi -->
-                <button onclick="prevMpSlide()" class="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center backdrop-blur-sm z-30 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-chevron-left text-sm md:text-lg"></i></button>
-                <button onclick="nextMpSlide()" class="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center backdrop-blur-sm z-30 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-chevron-right text-sm md:text-lg"></i></button>
+                <!-- Navigasi Slider -->
+                <button onclick="window.prevMpSlide()" class="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center backdrop-blur-sm z-30 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-chevron-left text-sm md:text-lg"></i></button>
+                <button onclick="window.nextMpSlide()" class="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center backdrop-blur-sm z-30 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-chevron-right text-sm md:text-lg"></i></button>
                 <div id="mp-slide-indicators" class="absolute bottom-3 md:bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 md:space-x-3 z-30"></div>
             </div>
         </section>
@@ -357,12 +328,12 @@
     </main>
 
     <!-- ========================================== -->
-    <!-- VIEW 2: DASHBOARD MONITORING P3DN & TKDN   -->
+    <!-- VIEW 2: DASHBOARD MONITORING TKDN          -->
     <!-- ========================================== -->
     <main id="view-tkdn" class="min-h-screen hidden animate-fade-in bg-slate-50 pb-20">
         <section class="max-w-7xl mx-auto px-4 py-8 mb-4">
             <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-                <!-- Header Dashboard P3DN -->
+                <!-- Header Dashboard TKDN -->
                 <div class="bg-gradient-to-r from-rose-800 to-red-600 p-6 md:p-8 text-white relative overflow-hidden">
                     <div class="absolute right-0 top-0 w-1/2 h-full opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 20px 20px;"></div>
                     <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none transform rotate-12">
@@ -426,7 +397,6 @@
 
                     <!-- Layout Bawah (Grafik Kiri, Info Kanan) -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        
                         <!-- Grafik Batang Real-Time CSS -->
                         <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5 md:p-6 shadow-sm">
                             <div class="flex justify-between items-center mb-6">
@@ -867,10 +837,10 @@
                 </div>
             </div>
             <nav class="p-2 md:p-4 space-x-2 md:space-x-0 md:space-y-2 flex overflow-x-auto md:flex-col hide-scrollbar bg-white flex-1">
-                <button onclick="toggleBuyerMenu('pesanan')" class="buyer-menu-item flex-shrink-0 flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 px-4 py-2.5 md:py-3 rounded-xl font-medium transition-colors w-full text-left" id="menu-buyer-pesanan">
+                <button onclick="window.toggleBuyerMenu('pesanan')" class="buyer-menu-item flex-shrink-0 flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 px-4 py-2.5 md:py-3 rounded-xl font-medium transition-colors w-full text-left" id="menu-buyer-pesanan">
                     <i class="fa-solid fa-box-open w-5 text-center"></i> <span class="text-sm">Pesanan Saya</span>
                 </button>
-                <button onclick="toggleBuyerMenu('setting')" class="buyer-menu-item flex-shrink-0 flex items-center gap-3 text-indigo-700 bg-indigo-50 px-4 py-2.5 md:py-3 rounded-xl font-bold transition-colors w-full text-left" id="menu-buyer-setting">
+                <button onclick="window.toggleBuyerMenu('setting')" class="buyer-menu-item flex-shrink-0 flex items-center gap-3 text-indigo-700 bg-indigo-50 px-4 py-2.5 md:py-3 rounded-xl font-bold transition-colors w-full text-left" id="menu-buyer-setting">
                     <i class="fa-solid fa-user-gear w-5 text-center"></i> <span class="text-sm">Pengaturan Akun</span>
                 </button>
             </nav>
@@ -879,7 +849,7 @@
                     <div class="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform"><i class="fa-solid fa-store text-6xl"></i></div>
                     <h3 class="font-black text-sm mb-1.5 relative z-10">Punya Produk Teknik?</h3>
                     <p class="text-[10px] text-indigo-200 mb-4 relative z-10">Jangkau pabrik & kontraktor via Kalimaja B2B.</p>
-                    <button onclick="switchAppView('seller')" class="w-full bg-amber-500 hover:bg-amber-400 text-indigo-950 text-xs font-black py-2.5 rounded-xl transition-all shadow-md active:scale-95 relative z-10">Buka Toko Gratis</button>
+                    <button onclick="window.switchAppView('seller')" class="w-full bg-amber-500 hover:bg-amber-400 text-indigo-950 text-xs font-black py-2.5 rounded-xl transition-all shadow-md active:scale-95 relative z-10">Buka Toko Gratis</button>
                 </div>
             </div>
         </div>
@@ -902,7 +872,7 @@
                         <div>
                             <h3 class="font-bold text-slate-800 mb-1">Foto Profil</h3>
                             <p class="text-xs text-slate-500 mb-3">Gunakan foto beresolusi baik (Maks 2MB).</p>
-                            <input type="file" id="buyer-photo-upload" accept="image/png, image/jpeg" class="hidden" onchange="updateBuyerProfile(event)" />
+                            <input type="file" id="buyer-photo-upload" accept="image/png, image/jpeg" class="hidden" onchange="window.updateBuyerProfile(event)" />
                             <button onclick="document.getElementById('buyer-photo-upload').click()" class="text-sm bg-indigo-50 text-indigo-700 font-bold py-2 px-4 rounded-xl border border-indigo-200 hover:bg-indigo-100 transition-colors">
                                 Pilih Foto Baru
                             </button>
@@ -921,7 +891,7 @@
                             </div>
                         </div>
                         <div class="mt-5 flex justify-end">
-                            <button onclick="simulateSave(this)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl transition-colors text-sm active:scale-95 flex items-center gap-2">
+                            <button onclick="window.simulateSave(this)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl transition-colors text-sm active:scale-95 flex items-center gap-2">
                                 <i class="fa-solid fa-save"></i> Simpan Biodata
                             </button>
                         </div>
@@ -977,14 +947,14 @@
             </div>
             
             <nav class="p-2 md:p-4 space-x-2 md:space-x-0 md:space-y-2 flex overflow-x-auto md:flex-col hide-scrollbar bg-white flex-1">
-                <button onclick="toggleSellerMenu('produk')" class="seller-menu-item flex-shrink-0 flex items-center gap-3 text-indigo-700 bg-indigo-50 px-4 py-2.5 md:py-3 rounded-xl font-bold transition-colors w-full text-left" id="menu-seller-produk">
+                <button onclick="window.toggleSellerMenu('produk')" class="seller-menu-item flex-shrink-0 flex items-center gap-3 text-indigo-700 bg-indigo-50 px-4 py-2.5 md:py-3 rounded-xl font-bold transition-colors w-full text-left" id="menu-seller-produk">
                     <i class="fa-solid fa-box w-5 text-center"></i> <span class="text-sm">Produk Saya</span>
                 </button>
-                <button onclick="toggleSellerMenu('saldo')" class="seller-menu-item flex-shrink-0 flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 px-4 py-2.5 md:py-3 rounded-xl font-medium transition-colors w-full text-left" id="menu-seller-saldo">
+                <button onclick="window.toggleSellerMenu('saldo')" class="seller-menu-item flex-shrink-0 flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 px-4 py-2.5 md:py-3 rounded-xl font-medium transition-colors w-full text-left" id="menu-seller-saldo">
                     <i class="fa-solid fa-wallet w-5 text-center"></i> <span class="text-sm">Saldo: Rp 24.5M</span>
                 </button>
                 <div class="h-px bg-slate-100 my-2 hidden md:block"></div>
-                <button onclick="toggleSellerMenu('setting')" class="seller-menu-item flex-shrink-0 flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 px-4 py-2.5 md:py-3 rounded-xl font-medium transition-colors w-full text-left" id="menu-seller-setting">
+                <button onclick="window.toggleSellerMenu('setting')" class="seller-menu-item flex-shrink-0 flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 px-4 py-2.5 md:py-3 rounded-xl font-medium transition-colors w-full text-left" id="menu-seller-setting">
                     <i class="fa-solid fa-store-slash w-5 text-center"></i> <span class="text-sm">Pengaturan Toko</span>
                 </button>
             </nav>
@@ -997,7 +967,7 @@
                         <h1 class="text-xl md:text-2xl font-black text-slate-800">Manajemen Produk</h1>
                         <p class="text-sm text-slate-500 mt-1">Kelola etalase, harga grosir, dan form TKDN.</p>
                     </div>
-                    <button onclick="toggleAddProduct(true)" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold py-3 px-5 rounded-xl shadow-md flex items-center justify-center gap-2 transition-all">
+                    <button onclick="window.toggleAddProduct(true)" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold py-3 px-5 rounded-xl shadow-md flex items-center justify-center gap-2 transition-all">
                         <i class="fa-solid fa-circle-plus"></i> Tambah Produk
                     </button>
                 </div>
@@ -1033,7 +1003,7 @@
 
             <div id="seller-add-product" class="hidden pb-20 animate-fade-in max-w-4xl">
                 <div class="flex items-center gap-3 mb-6">
-                    <button onclick="toggleAddProduct(false)" class="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 p-2 rounded-xl transition-colors active:scale-90">
+                    <button onclick="window.toggleAddProduct(false)" class="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 p-2 rounded-xl transition-colors active:scale-90">
                         <i class="fa-solid fa-arrow-left text-xl"></i>
                     </button>
                     <h1 class="text-xl md:text-2xl font-black text-slate-800">Upload Produk Baru B2B</h1>
@@ -1044,11 +1014,85 @@
                         <h2 class="font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100"><i class="fa-solid fa-circle-info text-indigo-600 mr-2"></i> Info Dasar</h2>
                         <input type="text" placeholder="Nama Produk Lengkap..." class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-400 outline-none mb-4" />
                         <select class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-400 outline-none mb-4 bg-white">
-                            <option>Pilih Kategori Industri...</option>
-                            <option>Pabrikasi & CNC</option>
-                            <option>Mesin Pertanian</option>
-                            <option>Alat Berat & Konstruksi</option>
-                            <option>HVAC & Pendingin</option>
+                            <option>Pilih Kategori Produk...</option>
+                            <optgroup label="🏭 Pabrikasi & Bahan Logam">
+                                <option>Komponen CNC Machining & Presisi</option>
+                                <option>Pabrikasi Plat Logam (Sheet Metal)</option>
+                                <option>Pengecoran (Casting) & Cetakan (Moulds)</option>
+                                <option>Bahan Baku Logam & Baja</option>
+                            </optgroup>
+                            <optgroup label="⚙️ Mesin & Peralatan Industri">
+                                <option>Mesin Manufaktur & Perakitan Pabrik</option>
+                                <option>Mesin Las, Bubut, & Potong Industri</option>
+                                <option>Mesin Pengemasan (Packaging)</option>
+                            </optgroup>
+                            <optgroup label="🚜 Pertanian & Kehutanan">
+                                <option>Traktor & Kultivator</option>
+                                <option>Peralatan Panen & Pascapanen</option>
+                                <option>Mesin Pengolahan Pakan & Tanah</option>
+                            </optgroup>
+                            <optgroup label="🏗️ Alat Berat & Konstruksi">
+                                <option>Excavator, Loader & Buldozer</option>
+                                <option>Peralatan Beton & Aspal</option>
+                                <option>Alat Angkat (Crane & Hoist)</option>
+                                <option>Dump Truck & Alat Berat Tambang</option>
+                            </optgroup>
+                            <optgroup label="🚰 Pompa & Kompresor">
+                                <option>Pompa Air Industri & Sentrifugal</option>
+                                <option>Kompresor Udara (Air Compressor)</option>
+                                <option>Katup (Valve) & Fitting Pipa</option>
+                            </optgroup>
+                            <optgroup label="⚡ Kelistrikan & Genset">
+                                <option>Genset & Pembangkit Listrik</option>
+                                <option>Motor Listrik & Transformator</option>
+                                <option>Panel Surya & Energi Terbarukan</option>
+                            </optgroup>
+                            <optgroup label="🔧 Perkakas & Tools">
+                                <option>Perkakas Listrik (Power Tools)</option>
+                                <option>Perkakas Tangan (Hand Tools)</option>
+                                <option>Peralatan Bengkel & Mekanik</option>
+                            </optgroup>
+                            <optgroup label="📦 Material Handling & Logistik">
+                                <option>Forklift & Pallet Jack</option>
+                                <option>Sistem Konveyor (Conveyor)</option>
+                                <option>Rak Gudang Industri</option>
+                            </optgroup>
+                            <optgroup label="🦾 Otomasi & Robotika">
+                                <option>PLC, Servo & Sistem Kendali</option>
+                                <option>Sistem Pneumatik & Hidrolik</option>
+                                <option>Komponen Robotik Industri</option>
+                            </optgroup>
+                            <optgroup label="🔬 Alat Ukur & Uji">
+                                <option>Timbangan Digital Industri</option>
+                                <option>Alat Ukur Presisi (Caliper, Micrometer)</option>
+                                <option>Peralatan Uji Laboratorium Teknik</option>
+                            </optgroup>
+                            <optgroup label="🛡️ Keamanan Kerja (K3)">
+                                <option>Helm, Sepatu & Kacamata Safety</option>
+                                <option>Peralatan Pemadam Kebakaran</option>
+                                <option>Pakaian Kerja & Rompi</option>
+                            </optgroup>
+                            <optgroup label="❄️ HVAC & Pendingin Ruangan">
+                                <option>AC Sentral & Chiller Industri</option>
+                                <option>Kipas Exhaust & Blower Pabrik</option>
+                                <option>Suku Cadang Pendingin & Freon</option>
+                            </optgroup>
+                            <optgroup label="💧 Pengolahan Air (Water Treatment)">
+                                <option>Mesin Reverse Osmosis (RO) Industri</option>
+                                <option>Filter Air & Bahan Kimia Pengolahan</option>
+                                <option>Pompa Dosing & IPAL</option>
+                            </optgroup>
+                            <optgroup label="💻 Software & Aplikasi Industri">
+                                <option>Sistem ERP & Manajemen Pabrik</option>
+                                <option>Software Desain & CAD/CAM</option>
+                                <option>Sensor IoT & Smart Factory</option>
+                            </optgroup>
+                            <optgroup label="🗜️ Hydrolik & Mesin Hydrolik">
+                                <option>Silinder & Pompa Hydrolik</option>
+                                <option>Selang (Hose) & Fitting Hydrolik</option>
+                                <option>Mesin Press Hydrolik</option>
+                                <option>Power Pack & Komponen Hydrolik</option>
+                            </optgroup>
                         </select>
                     </div>
                     <div class="bg-white rounded-2xl shadow-sm border border-rose-200 p-6 relative overflow-hidden">
@@ -1066,8 +1110,8 @@
                         </div>
                     </div>
                     <div class="flex justify-end gap-3 pt-4">
-                        <button onclick="toggleAddProduct(false)" class="px-6 py-3 border border-slate-300 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition-colors">Batal</button>
-                        <button onclick="simulateSave(this)" class="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-md transition-all"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Terbitkan Produk</button>
+                        <button onclick="window.toggleAddProduct(false)" class="px-6 py-3 border border-slate-300 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition-colors">Batal</button>
+                        <button onclick="window.simulateSave(this)" class="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-md transition-all"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Terbitkan Produk</button>
                     </div>
                 </div>
             </div>
@@ -1084,6 +1128,40 @@
 
             <div id="seller-setting-view" class="hidden animate-fade-in max-w-4xl">
                 <h1 class="text-xl font-black text-slate-800 mb-6">Pengaturan Toko & Kurir</h1>
+                
+                <!-- Form Profil Toko -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-7 mb-6">
+                    <h2 class="text-base font-bold text-slate-800 mb-5 pb-3 border-b border-slate-100 flex items-center"><i class="fa-solid fa-store mr-3 text-indigo-600"></i> Profil Toko</h2>
+                    <div class="flex flex-col sm:flex-row gap-6 mb-6">
+                        <div class="flex-shrink-0 relative group cursor-pointer" onclick="document.getElementById('store-logo-upload-input').click()">
+                            <img id="seller-store-logo-large" src="https://ui-avatars.com/api/?name=Toko+Teknik&background=e0e7ff&color=4f46e5" class="w-24 h-24 rounded-2xl object-cover border-2 border-slate-100 shadow-sm transition-transform group-hover:scale-105" alt="Store">
+                            <div class="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="fa-solid fa-camera text-white text-xl"></i>
+                            </div>
+                            <input type="file" id="store-logo-upload-input" accept="image/png, image/jpeg" class="hidden" onchange="window.updateStoreLogo(event)" />
+                        </div>
+                        <div class="flex-1 space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1.5">Nama Toko</label>
+                                <input type="text" value="Toko Teknik Jaya" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-400 outline-none transition-all" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1.5">Slogan / Tagline</label>
+                                <input type="text" value="Pusat Alat Teknik Termurah se-Nusantara" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-400 outline-none transition-all" />
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1.5">Deskripsi Toko</label>
+                        <textarea rows="4" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-400 outline-none transition-all">Distributor resmi alat-alat permesinan, konstruksi, dan pabrikasi. Menerima pesanan partai besar (B2B) dan pengadaan proyek pemerintah (memiliki sertifikat TKDN & NIB valid).</textarea>
+                    </div>
+                    <div class="mt-5 flex justify-end">
+                        <button onclick="window.simulateSave(this)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl transition-colors text-sm active:scale-95 flex items-center gap-2">
+                            <i class="fa-solid fa-save"></i> Simpan Profil
+                        </button>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
                     <h2 class="font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100"><i class="fa-solid fa-truck text-indigo-600 mr-2"></i> Layanan Pengiriman Aktif</h2>
                     <div class="space-y-4">
@@ -1111,10 +1189,10 @@
                 <div><h2 class="font-black text-lg text-white leading-tight">Admin Pusat</h2><span class="text-[10px]">Panel Kendali</span></div>
             </div>
             <nav class="p-4 space-y-2 flex-1">
-                <button onclick="toggleAdminMenu('desain')" class="admin-menu-item w-full flex items-center gap-3 text-white bg-indigo-600 px-4 py-3 rounded-xl font-bold shadow-md" id="menu-admin-desain">
+                <button onclick="window.toggleAdminMenu('desain')" class="admin-menu-item w-full flex items-center gap-3 text-white bg-indigo-600 px-4 py-3 rounded-xl font-bold shadow-md" id="menu-admin-desain">
                     <i class="fa-solid fa-desktop w-5"></i> Tampilan Web
                 </button>
-                <button onclick="toggleAdminMenu('pajak')" class="admin-menu-item w-full flex items-center gap-3 text-emerald-400 hover:bg-slate-800 hover:text-emerald-300 px-4 py-3 rounded-xl font-medium transition-colors" id="menu-admin-pajak">
+                <button onclick="window.toggleAdminMenu('pajak')" class="admin-menu-item w-full flex items-center gap-3 text-emerald-400 hover:bg-slate-800 hover:text-emerald-300 px-4 py-3 rounded-xl font-medium transition-colors" id="menu-admin-pajak">
                     <i class="fa-solid fa-money-bill-transfer w-5"></i> Keuangan & Escrow
                 </button>
             </nav>
@@ -1122,6 +1200,28 @@
         <div class="flex-1 p-4 md:p-8">
             <div id="admin-desain-view" class="animate-fade-in max-w-4xl">
                 <h1 class="text-2xl font-black text-slate-800 mb-6">Desain Tampilan Web</h1>
+                
+                <!-- Form Upload Logo Website -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-7 mb-6">
+                    <h2 class="text-lg font-bold text-slate-800 mb-5 pb-3 border-b border-slate-100"><i class="fa-solid fa-circle-user mr-2 text-indigo-600"></i>Pengaturan Logo Website</h2>
+                    <div class="flex items-center gap-6">
+                        <div class="relative group cursor-pointer" onclick="document.getElementById('logo-upload-input').click()">
+                            <img id="admin-logo-preview" src="https://ui-avatars.com/api/?name=BisnisHub&background=eab308&color=1e3a8a&rounded=true&bold=true" alt="Preview Logo" class="w-24 h-24 rounded-full object-cover border-4 border-slate-100 shadow-sm transition-transform group-hover:scale-105" />
+                            <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="fa-solid fa-camera text-white text-xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-700 mb-1">Ubah Logo Perusahaan</h3>
+                            <p class="text-sm text-slate-500 mb-3">Format disarankan: Bulat/Rasio 1:1, JPG atau PNG maks 2MB.</p>
+                            <input type="file" id="logo-upload-input" accept="image/png, image/jpeg" class="hidden" onchange="window.updateSiteLogo(event)" />
+                            <button onclick="document.getElementById('logo-upload-input').click()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg text-sm border border-slate-300 transition-colors flex items-center gap-2">
+                                <i class="fa-solid fa-upload"></i> Pilih File Logo Baru
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                     <h2 class="font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">Kecepatan Slider Promo B2B</h2>
                     <div class="flex gap-4">
@@ -1129,7 +1229,7 @@
                             <option value="3000">Cepat (3 Detik)</option>
                             <option value="5000" selected>Normal (5 Detik)</option>
                         </select>
-                        <button onclick="simulateSave(this); saveMpSliderSettings();" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-md transition-all">Simpan</button>
+                        <button onclick="window.simulateSave(this); window.saveMpSliderSettings();" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-md transition-all">Simpan</button>
                     </div>
                 </div>
             </div>
@@ -1149,7 +1249,7 @@
     <!-- MODALS (Dipertahankan dari Kalkulator Asli)-->
     <!-- ========================================== -->
 
-    <!-- Modal Post Tender (Baru disisipkan ke area Modal aman) -->
+    <!-- Modal Post Tender -->
     <div id="modal-tender-post" class="fixed inset-0 bg-slate-900/80 z-[110] hidden flex items-center justify-center px-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden relative">
             <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-indigo-50">
@@ -1185,7 +1285,7 @@
         </div>
     </div>
 
-    <!-- Modal Kirim Penawaran (Bid) (Baru disisipkan ke area Modal aman) -->
+    <!-- Modal Kirim Penawaran (Bid) -->
     <div id="modal-tender-bid" class="fixed inset-0 bg-slate-900/80 z-[110] hidden flex items-center justify-center px-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden relative">
             <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-amber-50">
@@ -1225,11 +1325,12 @@
         </div>
     </div>
 
+    <!-- Modal Auth (Firebase) -->
     <div id="auth-modal" class="fixed inset-0 bg-slate-900/80 z-[100] hidden flex items-center justify-center px-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative">
             <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <h3 class="font-bold text-lg text-slate-800" id="auth-modal-title">Masuk / Daftar Akun</h3>
-                <button onclick="document.getElementById('auth-modal').classList.add('hidden')" class="text-slate-400 hover:text-rose-500 p-1.5"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button onclick="window.closeLoginModal()" class="text-slate-400 hover:text-rose-500 p-1.5"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <div class="p-6">
                 <div id="auth-error" class="hidden mb-4 p-3 bg-rose-50 text-rose-600 rounded-xl text-sm font-medium border border-rose-100"></div>
@@ -1528,9 +1629,7 @@
             btnToggleAuthMode.textContent = isLoginMode ? "Daftar Gratis" : "Login di sini";
             authError.classList.add('hidden');
         });
-
-        btnAuthTrigger.addEventListener('click', () => authModal.classList.remove('hidden'));
-
+        
         authForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('auth-email').value;
@@ -1543,7 +1642,7 @@
             request.then(() => {
                 authSuccess.textContent = isLoginMode ? "Berhasil masuk!" : "Pendaftaran sukses!";
                 authSuccess.classList.remove('hidden'); authError.classList.add('hidden');
-                setTimeout(() => { authModal.classList.add('hidden'); switchAppView('buyer'); }, 1000);
+                setTimeout(() => { window.closeLoginModal(); window.switchAppView('buyer'); }, 1000);
             }).catch((err) => {
                 authError.textContent = "Gagal: Email/Sandi salah atau sudah terdaftar.";
                 authError.classList.remove('hidden');
@@ -1553,14 +1652,16 @@
         });
 
         document.getElementById('btn-logout').addEventListener('click', () => {
-            signOut(auth).then(() => { authModal.classList.add('hidden'); switchAppView('marketplace'); });
+            signOut(auth).then(() => { window.closeLoginModal(); window.switchAppView('marketplace'); });
         });
 
         onAuthStateChanged(auth, async (user) => {
             const btnOpenHistory = document.getElementById('btn-open-history');
             
             if (user && !user.isAnonymous) {
-                await loadDraftFromFirestore(user);
+                // Ignore loadDraftFromFirestore error if not defined yet
+                try { await loadDraftFromFirestore(user); } catch(e){}
+                
                 const email = user.email || 'User';
                 document.getElementById('current-user-email').textContent = email.substring(0, 15) + '...';
                 document.querySelector('#auth-display-info span:first-child').textContent = "Masuk Sebagai:";
@@ -1594,117 +1695,17 @@
                 document.getElementById('tab-admin').classList.add('hidden');
             }
         });
+        
+        window.db = db;
+        window.auth = auth;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.appId = appId;
+    </script>
 
+    <script>
         // ============================================
-        // FITUR AUTO-SAVE DRAFT (Simpan Otomatis & Pemulihan Refresh)
-        // ============================================
-        let draftDebounceTimer;
-        const getFormState = () => {
-            return {
-                main: {
-                    originProv: document.getElementById('origin-prov').value,
-                    originCity: document.getElementById('origin-city').value,
-                    destProv: document.getElementById('dest-prov').value,
-                    destCity: document.getElementById('dest-city').value,
-                    weight: document.getElementById('weight').value,
-                    courier: document.getElementById('courier').value
-                },
-                recap: {
-                    companyName: document.getElementById('company-name').value,
-                    companyAddress: document.getElementById('company-address').value,
-                    title: document.getElementById('recap-title').value,
-                    originProv: document.getElementById('recap-origin-prov').value,
-                    originCity: document.getElementById('recap-origin-city').value,
-                    scope: document.querySelector('input[name="recap-scope"]:checked')?.value || 'all',
-                    destProv: document.getElementById('recap-dest-prov').value,
-                    destCity: document.getElementById('recap-dest-city').value,
-                    w1Checked: document.getElementById('weight-fixed').checked,
-                    w2Checked: document.querySelector('.custom-weight-cb[data-target="weight-val-2"]').checked,
-                    w2Val: document.getElementById('weight-val-2').value,
-                    w3Checked: document.querySelector('.custom-weight-cb[data-target="weight-val-3"]').checked,
-                    w3Val: document.getElementById('weight-val-3').value,
-                    w4Checked: document.querySelector('.custom-weight-cb[data-target="weight-val-4"]').checked,
-                    w4Val: document.getElementById('weight-val-4').value,
-                    w5Checked: document.querySelector('.custom-weight-cb[data-target="weight-val-5"]').checked,
-                    w5Val: document.getElementById('weight-val-5').value,
-                    courier: document.getElementById('recap-courier').value,
-                    showCourier: document.getElementById('recap-show-courier').checked,
-                    addFeePct: document.getElementById('recap-additional-fee-percent').value,
-                    showAddFee: document.getElementById('recap-show-additional-fee').checked,
-                    usePpn: document.getElementById('recap-use-ppn').checked
-                },
-                updatedAt: serverTimestamp()
-            };
-        };
-
-        const scheduleSaveDraft = () => {
-            if (!auth.currentUser || auth.currentUser.isAnonymous) return; 
-            clearTimeout(draftDebounceTimer);
-            draftDebounceTimer = setTimeout(async () => {
-                try {
-                    const draftRef = doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'drafts', 'formState');
-                    await setDoc(draftRef, getFormState());
-                } catch(e) {}
-            }, 1000);
-        };
-
-        const loadDraftFromFirestore = async (user) => {
-            try {
-                const draftRef = doc(db, 'artifacts', appId, 'users', user.uid, 'drafts', 'formState');
-                const snap = await getDoc(draftRef);
-                if (snap.exists()) {
-                    const data = snap.data();
-                    if (data.main) {
-                        if(data.main.originProv) {
-                            document.getElementById('origin-prov').value = data.main.originProv;
-                            handleProvChange(data.main.originProv, document.getElementById('origin-city'), "Pilih Kota/Kabupaten...");
-                            document.getElementById('origin-city').value = data.main.originCity || '';
-                        }
-                        if(data.main.destProv) {
-                            document.getElementById('dest-prov').value = data.main.destProv;
-                            handleProvChange(data.main.destProv, document.getElementById('dest-city'), "Pilih Kota/Kabupaten...");
-                            document.getElementById('dest-city').value = data.main.destCity || '';
-                        }
-                        document.getElementById('weight').value = data.main.weight || 1;
-                        document.getElementById('courier').value = data.main.courier || 'all';
-                    }
-                    if (data.recap) {
-                        document.getElementById('company-name').value = data.recap.companyName || '';
-                        document.getElementById('company-address').value = data.recap.companyAddress || '';
-                        document.getElementById('recap-title').value = data.recap.title || '';
-                        if(data.recap.originProv) {
-                            document.getElementById('recap-origin-prov').value = data.recap.originProv;
-                            handleProvChange(data.recap.originProv, document.getElementById('recap-origin-city'), "Pilih Kota/Kabupaten...");
-                            document.getElementById('recap-origin-city').value = data.recap.originCity || '';
-                        }
-                        const scopeVal = data.recap.scope || 'all';
-                        document.querySelectorAll('input[name="recap-scope"]').forEach(r => { r.checked = (r.value === scopeVal); });
-                        if(data.recap.destProv) {
-                            document.getElementById('recap-dest-prov').value = data.recap.destProv;
-                            handleProvChange(data.recap.destProv, document.getElementById('recap-dest-city'), "Pilih Kota/Kabupaten...");
-                            document.getElementById('recap-dest-city').value = data.recap.destCity || '';
-                        }
-                        document.getElementById('weight-fixed').checked = data.recap.w1Checked !== false;
-                        document.querySelector('.custom-weight-cb[data-target="weight-val-2"]').checked = data.recap.w2Checked || false;
-                        document.getElementById('weight-val-2').value = data.recap.w2Val || '';
-                        document.querySelector('.custom-weight-cb[data-target="weight-val-3"]').checked = data.recap.w3Checked || false;
-                        document.getElementById('weight-val-3').value = data.recap.w3Val || '';
-                        document.querySelector('.custom-weight-cb[data-target="weight-val-4"]').checked = data.recap.w4Checked || false;
-                        document.getElementById('weight-val-4').value = data.recap.w4Val || '';
-                        document.querySelector('.custom-weight-cb[data-target="weight-val-5"]').checked = data.recap.w5Checked || false;
-                        document.getElementById('weight-val-5').value = data.recap.w5Val || '';
-                        document.getElementById('recap-courier').value = data.recap.courier || 'all';
-                        document.getElementById('recap-show-courier').checked = data.recap.showCourier !== false;
-                        document.getElementById('recap-additional-fee-percent').value = data.recap.addFeePct || 0;
-                        document.getElementById('recap-show-additional-fee').checked = data.recap.showAddFee !== false;
-                        document.getElementById('recap-use-ppn').checked = data.recap.usePpn || false;
-                    }
-                }
-            } catch(e) {}
-        };
-
-        // ============================================
-        // MOCK DATABASE & KALKULATOR UTAMA
+        // MOCK DATABASE MOCK_LOCATIONS (DO NOT DELETE)
         // ============================================
         const MOCK_LOCATIONS = {
             "Aceh": ["Banda Aceh", "Langsa", "Lhokseumawe", "Sabang", "Subulussalam", "Kab. Aceh Barat", "Kab. Aceh Barat Daya", "Kab. Aceh Besar", "Kab. Aceh Jaya", "Kab. Aceh Selatan", "Kab. Aceh Singkil", "Kab. Aceh Tamiang", "Kab. Aceh Tengah", "Kab. Aceh Tenggara", "Kab. Aceh Timur", "Kab. Aceh Utara", "Kab. Bener Meriah", "Kab. Bireuen", "Kab. Gayo Lues", "Kab. Nagan Raya", "Kab. Pidie", "Kab. Pidie Jaya", "Kab. Simeulue"],
@@ -1756,9 +1757,276 @@
             { id: 'pos', name: 'POS Indonesia' }
         ];
 
-        window.lucide.createIcons();
+        // ==========================================
+        // UI & NAVIGATION LOGIC (GLOBAL EXPOSE)
+        // ==========================================
+        if(window.lucide) window.lucide.createIcons();
 
+        window.openLoginModal = function() {
+            const modal = document.getElementById('auth-modal');
+            modal.classList.remove('hidden');
+        };
+        
+        window.closeLoginModal = function() {
+            document.getElementById('auth-modal').classList.add('hidden');
+        };
+
+        window.switchAppView = function(viewName) {
+            localStorage.setItem('superapp_current_view', viewName);
+            ['kalkulator', 'marketplace', 'tkdn', 'forum', 'buyer', 'seller', 'admin'].forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if(el) el.classList.add('hidden');
+                const tab = document.getElementById(`tab-${v}`);
+                if(tab) {
+                    tab.classList.remove('active', 'text-white', 'border-amber-400');
+                    tab.classList.add('text-indigo-200', 'border-transparent');
+                }
+            });
+
+            const selectedEl = document.getElementById(`view-${viewName}`);
+            const selectedTab = document.getElementById(`tab-${viewName}`);
+            
+            if(selectedEl) selectedEl.classList.remove('hidden');
+            if(selectedTab) {
+                selectedTab.classList.remove('text-indigo-200', 'border-transparent');
+                selectedTab.classList.add('active', 'text-white', 'border-amber-400');
+            }
+
+            if(viewName === 'marketplace' && window.initMpSlider) {
+                window.initMpSlider(); 
+            }
+            window.scrollTo(0, 0); 
+        };
+
+        window.toggleCategoryMenu = function() {
+            const dropdown = document.getElementById('category-dropdown');
+            if (dropdown) {
+                if (dropdown.classList.contains('hidden')) {
+                    dropdown.classList.remove('hidden');
+                    setTimeout(() => dropdown.classList.remove('opacity-0', 'scale-95'), 10);
+                } else {
+                    dropdown.classList.add('opacity-0', 'scale-95');
+                    setTimeout(() => dropdown.classList.add('hidden'), 300);
+                }
+            }
+        };
+
+        window.toggleBuyerMenu = function(menu) {
+            document.querySelectorAll('.buyer-menu-item').forEach(el => {
+                el.classList.remove('text-indigo-700', 'bg-indigo-50', 'font-bold');
+                el.classList.add('text-slate-600', 'font-medium');
+            });
+            document.getElementById(`buyer-pesanan-view`).classList.add('hidden');
+            document.getElementById(`buyer-setting-view`).classList.add('hidden');
+
+            const view = document.getElementById(`buyer-${menu}-view`);
+            const btn = document.getElementById(`menu-buyer-${menu}`);
+            if(view) view.classList.remove('hidden');
+            if(btn) btn.classList.add('text-indigo-700', 'bg-indigo-50', 'font-bold');
+        };
+
+        window.toggleSellerMenu = function(menu) {
+            document.querySelectorAll('.seller-menu-item').forEach(el => {
+                el.classList.remove('text-indigo-700', 'bg-indigo-50', 'font-bold');
+                el.classList.add('text-slate-600', 'font-medium');
+            });
+            ['produk', 'saldo', 'setting'].forEach(v => {
+                const viewId = v === 'produk' ? 'seller-product-list' : `seller-${v}-view`;
+                const el = document.getElementById(viewId);
+                if(el) el.classList.add('hidden');
+            });
+            const addProduct = document.getElementById('seller-add-product');
+            if(addProduct) addProduct.classList.add('hidden');
+
+            const targetViewId = menu === 'produk' ? 'seller-product-list' : `seller-${menu}-view`;
+            const view = document.getElementById(targetViewId);
+            const btn = document.getElementById(`menu-seller-${menu}`);
+            if(view) view.classList.remove('hidden');
+            if(btn) btn.classList.add('text-indigo-700', 'bg-indigo-50', 'font-bold');
+        };
+
+        window.toggleAdminMenu = function(menu) {
+            document.querySelectorAll('.admin-menu-item').forEach(el => {
+                el.classList.remove('text-white', 'bg-indigo-600', 'shadow-md', 'font-bold');
+                el.classList.add('text-emerald-400', 'font-medium');
+                if(el.id === 'menu-admin-desain') el.classList.replace('text-emerald-400', 'text-white');
+            });
+            document.getElementById(`admin-desain-view`).classList.add('hidden');
+            document.getElementById(`admin-pajak-view`).classList.add('hidden');
+
+            const view = document.getElementById(`admin-${menu}-view`);
+            const btn = document.getElementById(`menu-admin-${menu}`);
+            if(view) view.classList.remove('hidden');
+            if(btn) btn.classList.add('text-white', 'bg-indigo-600', 'shadow-md', 'font-bold');
+        };
+
+        window.toggleAddProduct = function(showForm) {
+            const productList = document.getElementById('seller-product-list');
+            const addProductForm = document.getElementById('seller-add-product');
+            if (showForm) {
+                if(productList) productList.classList.add('hidden');
+                if(addProductForm) addProductForm.classList.remove('hidden');
+            } else {
+                if(addProductForm) addProductForm.classList.add('hidden');
+                if(productList) productList.classList.remove('hidden');
+            }
+        };
+
+        window.simulateSave = function(btn) {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> ...';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> OK';
+                btn.classList.add('bg-emerald-500');
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    btn.classList.remove('bg-emerald-500');
+                }, 1500);
+            }, 800);
+        };
+
+        window.updateSiteLogo = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const newImageSrc = e.target.result;
+                    const hubLogo = document.querySelector('.hub-logo-container');
+                    if(hubLogo) {
+                        hubLogo.innerHTML = `<img src="${newImageSrc}" class="w-full h-full rounded-full object-cover">`;
+                    }
+                    const adminPreview = document.getElementById('admin-logo-preview');
+                    if(adminPreview) adminPreview.src = newImageSrc;
+                }
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.updateBuyerProfile = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img1 = document.getElementById('buyer-profile-img');
+                    const img2 = document.getElementById('buyer-profile-img-large');
+                    if(img1) img1.src = e.target.result;
+                    if(img2) img2.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.updateStoreLogo = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img1 = document.getElementById('seller-store-logo');
+                    const img2 = document.getElementById('seller-store-logo-large');
+                    if(img1) img1.src = e.target.result;
+                    if(img2) img2.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.openTenderPostModal = function() {
+            const modal = document.getElementById('modal-tender-post');
+            if(modal) modal.classList.remove('hidden');
+        };
+        
+        window.openTenderBidModal = function(title, budget) {
+            const titleEl = document.getElementById('bid-tender-title');
+            const budgetEl = document.getElementById('bid-tender-budget');
+            const modal = document.getElementById('modal-tender-bid');
+            if(titleEl) titleEl.textContent = title;
+            if(budgetEl) budgetEl.textContent = `HPS: ${budget}`;
+            if(modal) modal.classList.remove('hidden');
+        };
+
+        // ==========================================
+        // MARKETPLACE SLIDER LOGIC
+        // ==========================================
+        let mpCurrentSlide = 0;
+        let mpSlideInterval;
+        let mpAutoSlideDelay = 5000;
+
+        window.initMpSlider = function() {
+            const slideContainer = document.getElementById('mp-slide-container');
+            if (!slideContainer) return;
+            const totalSlides = slideContainer.children.length;
+            const indicatorContainer = document.getElementById('mp-slide-indicators');
+            if(indicatorContainer) indicatorContainer.innerHTML = ''; 
+
+            for (let i = 0; i < totalSlides; i++) {
+                const dot = document.createElement('button');
+                dot.className = `h-2 rounded-full transition-all duration-500 ${i === 0 ? 'bg-amber-400 w-8 shadow-sm' : 'bg-white/40 hover:bg-white/80 w-2.5'}`;
+                dot.onclick = () => window.goToMpSlide(i);
+                if(indicatorContainer) indicatorContainer.appendChild(dot);
+            }
+            window.startMpAutoSlide();
+        };
+
+        window.updateMpSliderPosition = function() {
+            const slideContainer = document.getElementById('mp-slide-container');
+            const indicatorContainer = document.getElementById('mp-slide-indicators');
+            if(!slideContainer) return;
+            const totalSlides = slideContainer.children.length;
+            slideContainer.style.transform = `translateX(-${mpCurrentSlide * 100}%)`;
+
+            if(indicatorContainer) {
+                for (let i = 0; i < totalSlides; i++) {
+                    const dot = indicatorContainer.children[i];
+                    if(dot) {
+                        if (i === mpCurrentSlide) dot.className = 'h-2 rounded-full transition-all duration-500 bg-amber-400 w-8 shadow-sm';
+                        else dot.className = 'h-2 rounded-full transition-all duration-500 bg-white/40 hover:bg-white/80 w-2.5';
+                    }
+                }
+            }
+        };
+
+        window.nextMpSlide = function() {
+            const slideContainer = document.getElementById('mp-slide-container');
+            if(!slideContainer) return;
+            mpCurrentSlide = (mpCurrentSlide + 1) % slideContainer.children.length;
+            window.updateMpSliderPosition();
+        };
+
+        window.prevMpSlide = function() {
+            const slideContainer = document.getElementById('mp-slide-container');
+            if(!slideContainer) return;
+            const totalSlides = slideContainer.children.length;
+            mpCurrentSlide = (mpCurrentSlide - 1 + totalSlides) % totalSlides;
+            window.updateMpSliderPosition();
+        };
+
+        window.goToMpSlide = function(index) {
+            mpCurrentSlide = index;
+            window.updateMpSliderPosition();
+            window.pauseMpSlider(); window.resumeMpSlider();
+        };
+
+        window.startMpAutoSlide = function() {
+            clearInterval(mpSlideInterval);
+            mpSlideInterval = setInterval(window.nextMpSlide, mpAutoSlideDelay);
+        };
+        window.pauseMpSlider = function() { clearInterval(mpSlideInterval); };
+        window.resumeMpSlider = function() { window.startMpAutoSlide(); };
+        window.saveMpSliderSettings = function() {
+            const selectEl = document.getElementById('admin-slider-delay');
+            if (selectEl) {
+                mpAutoSlideDelay = parseInt(selectEl.value, 10);
+                window.startMpAutoSlide(); 
+            }
+        };
+
+        // ============================================
+        // KALKULATOR EKSPEDISI LOGIC (Original)
+        // ============================================
         function populateSelect(selectElement, optionsArray, defaultText) {
+            if(!selectElement) return;
             selectElement.innerHTML = `<option value="" disabled selected hidden>${defaultText}</option>`;
             optionsArray.forEach(optionText => {
                 const option = document.createElement('option');
@@ -1768,59 +2036,9 @@
             });
         }
 
-        const originProvSelect = document.getElementById('origin-prov');
-        const originCitySelect = document.getElementById('origin-city');
-        const destProvSelect = document.getElementById('dest-prov');
-        const destCitySelect = document.getElementById('dest-city');
-        const courierSelect = document.getElementById('courier');
-        const weightInput = document.getElementById('weight');
-        const form = document.getElementById('shipping-form');
-        const resultsContainer = document.getElementById('results-container');
-        
-        const modal = document.getElementById('recap-modal');
-        const btnOpenModal = document.getElementById('btn-open-modal');
-        const btnCloseModal = document.getElementById('btn-close-modal');
-        
-        const rulesModal = document.getElementById('rules-modal');
-        const btnOpenRules = document.getElementById('btn-open-rules');
-        const btnCloseRules = document.getElementById('btn-close-rules');
-        const btnUnderstandRules = document.getElementById('btn-understand-rules');
-        
-        const recapOriginProv = document.getElementById('recap-origin-prov');
-        const recapOriginCity = document.getElementById('recap-origin-city');
-        const recapDestProv = document.getElementById('recap-dest-prov');
-        const recapDestCity = document.getElementById('recap-dest-city');
-        const recapCourier = document.getElementById('recap-courier');
-        
-        const recapNotification = document.getElementById('recap-notification');
-        const recapNotificationMsg = document.getElementById('recap-notification-msg');
-        const recapNotificationIcon = document.getElementById('recap-notification-icon');
-
-        const previewModal = document.getElementById('preview-modal');
-        const btnClosePreview = document.getElementById('btn-close-preview');
-        const btnProceedDownload = document.getElementById('btn-proceed-download');
-        
-        let currentDataSet = null;
-        let currentExportType = ''; 
-
-        const provinces = Object.keys(MOCK_LOCATIONS).sort();
-        populateSelect(originProvSelect, provinces, "Pilih Provinsi...");
-        populateSelect(destProvSelect, provinces, "Pilih Provinsi...");
-        populateSelect(recapOriginProv, provinces, "Pilih Provinsi Asal...");
-        populateSelect(recapDestProv, provinces, "Pilih Provinsi Tujuan...");
-
-        originCitySelect.innerHTML = `<option value="" disabled selected hidden>Pilih Kota/Kabupaten...</option>`;
-        destCitySelect.innerHTML = `<option value="" disabled selected hidden>Pilih Kota/Kabupaten...</option>`;
-        recapOriginCity.innerHTML = `<option value="" disabled selected hidden>Pilih Kota/Kabupaten...</option>`;
-        recapDestCity.innerHTML = `<option value="" disabled selected hidden>Pilih Kota/Kabupaten...</option>`;
-
-        COURIERS.forEach(c => {
-            courierSelect.appendChild(new Option(c.name, c.id));
-            recapCourier.appendChild(new Option(c.name, c.id));
-        });
-
         function handleProvChange(prov, citySelectElement, defaultText) {
-            if (prov) {
+            if(!citySelectElement) return;
+            if (prov && MOCK_LOCATIONS[prov]) {
                 citySelectElement.disabled = false;
                 citySelectElement.classList.remove('opacity-70', 'bg-slate-100');
                 populateSelect(citySelectElement, MOCK_LOCATIONS[prov].sort(), defaultText);
@@ -1831,58 +2049,6 @@
             }
         }
 
-        originProvSelect.addEventListener('change', (e) => handleProvChange(e.target.value, originCitySelect, "Pilih Kota/Kabupaten..."));
-        destProvSelect.addEventListener('change', (e) => handleProvChange(e.target.value, destCitySelect, "Pilih Kota/Kabupaten..."));
-        recapOriginProv.addEventListener('change', (e) => handleProvChange(e.target.value, recapOriginCity, "Pilih Kota/Kabupaten..."));
-        recapDestProv.addEventListener('change', (e) => handleProvChange(e.target.value, recapDestCity, "Pilih Kota/Kabupaten..."));
-
-        document.getElementsByName('recap-scope').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                const val = e.target.value;
-                const container = document.getElementById('recap-dest-container');
-                if (val === 'all') {
-                    container.classList.add('hidden');
-                    container.classList.remove('grid');
-                } else if (val === 'province') {
-                    container.classList.remove('hidden');
-                    container.classList.add('grid');
-                    recapDestProv.parentElement.classList.remove('col-span-2');
-                    recapDestCity.classList.add('hidden');
-                } else if (val === 'city') {
-                    container.classList.remove('hidden');
-                    container.classList.add('grid');
-                    recapDestCity.classList.remove('hidden');
-                }
-            });
-        });
-
-        btnOpenRules.addEventListener('click', () => document.getElementById('rules-modal').classList.remove('hidden'));
-        const closeRulesModal = () => document.getElementById('rules-modal').classList.add('hidden');
-        btnCloseRules.addEventListener('click', closeRulesModal);
-        btnUnderstandRules.addEventListener('click', closeRulesModal);
-
-        btnOpenModal.addEventListener('click', () => {
-            if (!auth.currentUser) {
-                document.getElementById('auth-modal').classList.remove('hidden');
-                alert("Harap login atau daftar akun terlebih dahulu untuk mengekspor rekapitulasi.");
-                return;
-            }
-            if (originProvSelect.value) {
-                recapOriginProv.value = originProvSelect.value;
-                handleProvChange(originProvSelect.value, recapOriginCity, "Pilih Kota/Kabupaten...");
-                if (originCitySelect.value) recapOriginCity.value = originCitySelect.value;
-            }
-            recapCourier.value = courierSelect.value || 'all';
-            recapNotification.classList.add('hidden');
-            modal.classList.remove('hidden');
-        });
-
-        btnCloseModal.addEventListener('click', () => modal.classList.add('hidden'));
-        btnClosePreview.addEventListener('click', () => previewModal.classList.add('hidden'));
-
-        // ============================================
-        // LOGIKA PERHITUNGAN ONGKIR
-        // ============================================
         const hashString = (str) => {
             let hash = 0;
             for (let i = 0; i < str.length; i++) {
@@ -1891,6 +2057,8 @@
             }
             return Math.abs(hash);
         };
+
+        const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
 
         const calculateRatesLogic = (originProv, originCity, destProv, destCity, weight, selectedCourier, usePPN = false, addFeePercent = 0) => {
             const baseRouteHash = hashString(`${originProv}-${originCity}-${destProv}-${destCity}`);
@@ -1921,812 +2089,316 @@
             return mockData.sort((a, b) => a.price - b.price);
         };
 
-        const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
-
-        function showRecapError(msg) {
-            recapNotification.className = 'text-sm text-red-600 bg-red-50 p-3 rounded-xl flex items-start gap-2 mb-2 border border-red-100 font-bold';
-            recapNotificationIcon.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4 mt-0.5"></i>`;
-            recapNotificationMsg.textContent = msg;
-            recapNotification.classList.remove('hidden');
-            recapNotification.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
-            window.lucide.createIcons();
-            return null;
-        }
-
-        function showRecapSuccess(msg) {
-            recapNotification.className = 'text-sm text-emerald-600 bg-emerald-50 p-3 rounded-xl flex items-start gap-2 mb-2 border border-emerald-100 font-bold';
-            recapNotificationIcon.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 mt-0.5"></i>`;
-            recapNotificationMsg.textContent = msg;
-            recapNotification.classList.remove('hidden');
-            recapNotification.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
-            window.lucide.createIcons();
-            setTimeout(() => recapNotification.classList.add('hidden'), 5000);
-        }
-
-        function generateRecapDataset() {
-            recapNotification.classList.add('hidden');
-            const oProv = recapOriginProv.value;
-            const oCity = recapOriginCity.value;
-            const scope = document.querySelector('input[name="recap-scope"]:checked').value;
-            const dProv = recapDestProv.value;
-            const dCity = recapDestCity.value;
-            const courier = recapCourier.value;
-            const customTitle = document.getElementById('recap-title').value.trim();
-            const usePpn = document.getElementById('recap-use-ppn').checked;
-            const addFeePct = parseFloat(document.getElementById('recap-additional-fee-percent').value) || 0;
-            
-            let rawWeights = [];
-            if(document.getElementById('weight-fixed').checked) rawWeights.push(1);
-            document.querySelectorAll('.custom-weight-cb:checked').forEach(cb => {
-                const targetId = cb.getAttribute('data-target');
-                const val = parseFloat(document.getElementById(targetId).value);
-                if (!isNaN(val) && val > 0) rawWeights.push(val);
-            });
-
-            const selectedWeights = [...new Set(rawWeights)].sort((a, b) => a - b);
-
-            if (!oProv || !oCity) return showRecapError("Pilih provinsi dan kota asal terlebih dahulu.");
-            if (selectedWeights.length === 0) return showRecapError("Pilih minimal satu variasi berat paket.");
-            if (scope === 'province' && !dProv) return showRecapError("Pilih provinsi tujuan.");
-            if (scope === 'city' && (!dProv || !dCity)) return showRecapError("Pilih provinsi dan kota tujuan.");
-
-            let destinations = [];
-            if (scope === 'all') {
-                Object.keys(MOCK_LOCATIONS).forEach(p => MOCK_LOCATIONS[p].forEach(c => destinations.push({p, c})));
-            } else if (scope === 'province') {
-                MOCK_LOCATIONS[dProv].forEach(c => destinations.push({p: dProv, c}));
-            } else if (scope === 'city') {
-                destinations.push({p: dProv, c: dCity});
-            }
-
-            let finalData = [];
-            
-            destinations.forEach(dest => {
-                const baseWeight = selectedWeights[0];
-                const baseRates = calculateRatesLogic(oProv, oCity, dest.p, dest.c, baseWeight, courier, usePpn, addFeePct);
-
-                if (baseRates.length > 0) {
-                    const bestRate = baseRates[0]; 
-
-                    let rowItem = {
-                        "Provinsi Tujuan": dest.p,
-                        "Kota Tujuan": dest.c,
-                        "Kurir": bestRate.courier,
-                        "Layanan": bestRate.service,
-                        "Estimasi (Hari)": bestRate.etd,
-                        prices: {} 
-                    };
-
-                    selectedWeights.forEach(weight => {
-                        const ratesForWeight = calculateRatesLogic(oProv, oCity, dest.p, dest.c, weight, courier, usePpn, addFeePct);
-                        const matchingRate = ratesForWeight.find(r => r.courier === bestRate.courier && r.service === bestRate.service);
-                        rowItem.prices[weight] = matchingRate ? matchingRate.price : 0;
-                    });
-
-                    finalData.push(rowItem);
-                }
-            });
-
-            finalData.sort((a, b) => {
-                if (a["Provinsi Tujuan"] !== b["Provinsi Tujuan"]) return a["Provinsi Tujuan"].localeCompare(b["Provinsi Tujuan"]);
-                return a["Kota Tujuan"].localeCompare(b["Kota Tujuan"]);
-            });
-
-            const safeFilename = customTitle ? customTitle.replace(/[^a-zA-Z0-9]/gi, '_') : `Rekap_Ongkir_${oCity}_CustomBerat`;
-            return { 
-                oCity, oProv, weights: selectedWeights, scope, finalData, safeFilename, 
-                finalTitle: customTitle || "Rekapitulasi Tarif Pengiriman Paket",
-                isPpnActive: usePpn, 
-                isShowAddFeeActive: document.getElementById('recap-show-additional-fee').checked, 
-                isShowCourierActive: document.getElementById('recap-show-courier').checked, 
-                addFeePct: addFeePct 
-            };
-        }
-
-        // SIMPAN DATA KE DATABASE FIREBASE
-        document.getElementById('btn-save-db').addEventListener('click', async function() {
-            const originalHTML = this.innerHTML;
-            this.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Menyimpan...';
-            this.disabled = true;
-            window.lucide.createIcons();
-
-            try {
-                const user = auth.currentUser;
-                if (!user) throw new Error("Akses Ditolak. Harap login kembali.");
-
-                const dataSet = generateRecapDataset();
-                if (!dataSet) throw new Error("Validasi form gagal.");
-
-                const payload = {
-                    user_email: user.email,
-                    user_id: user.uid,
-                    judul_dokumen: dataSet.finalTitle,
-                    asal_pengiriman: `${dataSet.oCity}, Provinsi ${dataSet.oProv}`,
-                    cakupan_tujuan: dataSet.scope,
-                    termasuk_ppn: dataSet.isPpnActive,
-                    biaya_tambahan_persen: dataSet.addFeePct,
-                    variasi_berat_kg: dataSet.weights,
-                    jumlah_data_dihasilkan: dataSet.finalData.length,
-                    data_ongkir: dataSet.finalData,
-                    full_dataset: dataSet, 
-                    created_at: new Date().getTime()
-                };
-
-                await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'rekapan_ongkir'), payload);
-                showRecapSuccess("Berhasil! Data tarif rekap telah disimpan ke Riwayat Database.");
-
-            } catch (error) {
-                if(error.message !== "Validasi form gagal.") showRecapError("Gagal menyimpan: " + error.message);
-            } finally {
-                this.innerHTML = originalHTML; this.disabled = false; window.lucide.createIcons();
-            }
-        });
-
-        // ============================================
-        // FITUR RIWAYAT TERSIMPAN (HISTORY)
-        // ============================================
-        window.historyItemsCache = [];
-        
-        document.getElementById('btn-open-history').addEventListener('click', async () => {
-            const user = auth.currentUser;
-            if(!user) return;
-            
-            document.getElementById('history-modal').classList.remove('hidden');
-            const container = document.getElementById('history-list-container');
-            container.innerHTML = '<div class="text-center py-10"><i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto text-indigo-500"></i><p class="mt-3 text-slate-500 font-medium">Memuat data...</p></div>';
-            window.lucide.createIcons();
-
-            try {
-                const querySnapshot = await getDocs(collection(db, 'artifacts', appId, 'users', user.uid, 'rekapan_ongkir')); 
-                
-                let items = [];
-                querySnapshot.forEach(doc => items.push({id: doc.id, ...doc.data()}));
-                
-                items.sort((a, b) => b.created_at - a.created_at); 
-                window.historyItemsCache = items;
-                
-                if(items.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center py-12">
-                            <div class="w-16 h-16 bg-slate-200 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="folder-open" class="w-8 h-8"></i></div>
-                            <h4 class="text-lg font-bold text-slate-700">Belum Ada Riwayat</h4>
-                            <p class="text-slate-500 font-medium mt-1">Anda belum pernah menyimpan hasil rekap.</p>
-                        </div>`;
-                } else {
-                    let html = '<div class="space-y-3">';
-                    items.forEach((item, idx) => {
-                        const dateObj = new Date(item.created_at);
-                        const dateStr = isNaN(dateObj) ? 'Baru saja' : dateObj.toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year:'numeric', hour:'2-digit', minute:'2-digit'});
-                        html += `
-                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:border-indigo-300 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div>
-                                    <h4 class="font-bold text-slate-800 text-base">${item.judul_dokumen || 'Rekap Tanpa Judul'}</h4>
-                                    <p class="text-xs text-slate-500 font-medium mt-1 flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> Disimpan: ${dateStr}</p>
-                                    <div class="flex gap-2 mt-2">
-                                        <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase border border-indigo-100">${item.jumlah_data_dihasilkan} Baris</span>
-                                        <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase border border-slate-200">Asal: ${item.asal_pengiriman.split(',')[0]}</span>
-                                    </div>
-                                </div>
-                                <button onclick="window.openHistoryItem(${idx})" class="w-full sm:w-auto bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-2.5 px-5 rounded-lg transition-colors border border-indigo-200 shadow-sm flex items-center justify-center gap-2">
-                                    <i data-lucide="external-link" class="w-4 h-4"></i> Buka Data
-                                </button>
-                            </div>
-                        `;
-                    });
-                    html += '</div>';
-                    container.innerHTML = html;
-                }
-            } catch (e) {
-                container.innerHTML = `<p class="text-center text-red-500 py-8 font-bold"><i data-lucide="alert-triangle" class="w-8 h-8 mx-auto mb-2"></i> Gagal memuat riwayat: ${e.message}</p>`;
-            }
-            window.lucide.createIcons();
-        });
-
-        document.getElementById('btn-close-history').addEventListener('click', () => {
-            document.getElementById('history-modal').classList.add('hidden');
-        });
-
-        window.openHistoryItem = function(index) {
-            const item = window.historyItemsCache[index];
-            if(!item || !item.full_dataset) {
-                alert("Maaf, data rekap ini format lama dan tidak bisa dibuka kembali. Silakan buat rekap baru.");
-                return;
-            }
-            
-            currentDataSet = item.full_dataset;
-            currentExportType = 'pdf'; 
-
-            let headHtml = `<tr>
-                <th class="px-4 py-3 border-b-2 border-amber-500 text-center whitespace-nowrap">NO</th>
-                <th class="px-4 py-3 border-b-2 border-amber-500 whitespace-nowrap">PROVINSI</th>
-                <th class="px-4 py-3 border-b-2 border-amber-500 whitespace-nowrap">KABUPATEN/KOTA</th>`;
-            if(currentDataSet.isShowCourierActive) headHtml += `<th class="px-4 py-3 border-b-2 border-amber-500 whitespace-nowrap">KURIR</th><th class="px-4 py-3 border-b-2 border-amber-500 whitespace-nowrap">LAYANAN</th>`;
-            
-            currentDataSet.weights.forEach(w => {
-                headHtml += `<th class="px-4 py-3 border-b-2 border-amber-500 text-right whitespace-nowrap">TARIF ${w} KG</th>`;
-            });
-            headHtml += `</tr>`;
-            
-            document.getElementById('preview-thead').innerHTML = headHtml;
-
-            let bodyHtml = '';
-            currentDataSet.finalData.forEach((row, idx) => {
-                const rowClass = 'bg-white border-b border-slate-100 hover:bg-slate-50';
-                bodyHtml += `<tr class="${rowClass}">
-                    <td class="px-4 py-3 text-center">${idx + 1}</td>
-                    <td class="px-4 py-3">${row["Provinsi Tujuan"]}</td>
-                    <td class="px-4 py-3">${row["Kota Tujuan"]}</td>`;
-                if(currentDataSet.isShowCourierActive) bodyHtml += `<td class="px-4 py-3">${row["Kurir"]}</td><td class="px-4 py-3">${row["Layanan"]}</td>`;
-                
-                currentDataSet.weights.forEach(w => {
-                    bodyHtml += `<td class="px-4 py-3 text-right text-indigo-600 font-bold">${formatRupiah(row.prices[w])}</td>`;
-                });
-                bodyHtml += `</tr>`;
-            });
-            
-            document.getElementById('preview-tbody').innerHTML = bodyHtml;
-            document.getElementById('preview-status-text').textContent = `Total Data: ${currentDataSet.finalData.length} baris siap dicetak.`;
-
-            document.getElementById('history-modal').classList.add('hidden');
-            document.getElementById('preview-modal').classList.remove('hidden');
-            window.lucide.createIcons();
-        };
-
-        // ============================================
-        // SISTEM PRATINJAU & EKSPOR (ASYNCHRONOUS)
-        // ============================================
-        function processExportPreview(type, btnElement) {
-            const originalHTML = btnElement.innerHTML;
-            btnElement.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Memproses...';
-            btnElement.disabled = true;
-            window.lucide.createIcons();
-
-            setTimeout(() => {
-                try {
-                    const dataSet = generateRecapDataset();
-                    if (!dataSet) return; 
-
-                    currentDataSet = dataSet;
-                    currentExportType = type;
-
-                    let headHtml = `<tr>
-                        <th class="px-4 py-3 border-b-2 border-amber-500 text-center whitespace-nowrap">NO</th>
-                        <th class="px-4 py-3 border-b-2 border-amber-500 whitespace-nowrap">PROVINSI</th>
-                        <th class="px-4 py-3 border-b-2 border-amber-500 whitespace-nowrap">KABUPATEN/KOTA</th>`;
-                    if(dataSet.isShowCourierActive) headHtml += `<th class="px-4 py-3 border-b-2 border-amber-500 whitespace-nowrap">KURIR</th><th class="px-4 py-3 border-b-2 border-amber-500 whitespace-nowrap">LAYANAN</th>`;
-                    
-                    dataSet.weights.forEach(w => {
-                        headHtml += `<th class="px-4 py-3 border-b-2 border-amber-500 text-right whitespace-nowrap">TARIF ${w} KG</th>`;
-                    });
-                    headHtml += `</tr>`;
-                    
-                    document.getElementById('preview-thead').innerHTML = headHtml;
-
-                    let bodyHtml = '';
-                    dataSet.finalData.forEach((row, idx) => {
-                        const rowClass = 'bg-white border-b border-slate-100 hover:bg-slate-50';
-                        bodyHtml += `<tr class="${rowClass}">
-                            <td class="px-4 py-3 text-center">${idx + 1}</td>
-                            <td class="px-4 py-3">${row["Provinsi Tujuan"]}</td>
-                            <td class="px-4 py-3">${row["Kota Tujuan"]}</td>`;
-                        if(dataSet.isShowCourierActive) bodyHtml += `<td class="px-4 py-3">${row["Kurir"]}</td><td class="px-4 py-3">${row["Layanan"]}</td>`;
-                        
-                        dataSet.weights.forEach(w => {
-                            bodyHtml += `<td class="px-4 py-3 text-right text-indigo-600 font-bold">${formatRupiah(row.prices[w])}</td>`;
-                        });
-                        bodyHtml += `</tr>`;
-                    });
-                    document.getElementById('preview-tbody').innerHTML = bodyHtml;
-                    document.getElementById('preview-status-text').textContent = `Total Data: ${dataSet.finalData.length} baris siap dicetak.`;
-
-                    modal.classList.add('hidden');
-                    previewModal.classList.remove('hidden');
-
-                } catch(e) {
-                    console.error(e); showRecapError("Terjadi kesalahan teknis. Silakan coba lagi.");
-                } finally {
-                    btnElement.innerHTML = originalHTML; btnElement.disabled = false; window.lucide.createIcons();
-                }
-            }, 100);
-        }
-
-        document.getElementById('btn-download-pdf').addEventListener('click', function() { processExportPreview('pdf', this); });
-        document.getElementById('btn-download-excel').addEventListener('click', function() { processExportPreview('excel', this); });
-
-        btnProceedDownload.addEventListener('click', function() {
-            const isPremium = currentUserRole === 'admin';
-            
-            if(!isPremium) {
-                previewModal.classList.add('hidden');
-                document.getElementById('paywall-modal').classList.remove('hidden');
-                return; 
-            }
-
-            const originalHTML = this.innerHTML;
-            this.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> <span class="drop-shadow-sm">Sedang Mengekspor...</span>';
-            this.disabled = true;
-            window.lucide.createIcons();
-
-            setTimeout(() => {
-                try {
-                    let exportData = currentDataSet;
-                    exportData.isTruncated = false;
-
-                    if(currentExportType === 'pdf') executePdfExport(exportData);
-                    else executeExcelExport(exportData);
-                    
-                    previewModal.classList.add('hidden');
-                } catch (error) {
-                    alert("Kesalahan saat memproses dokumen: " + error.message);
-                } finally {
-                    this.innerHTML = originalHTML; this.disabled = false; window.lucide.createIcons();
-                }
-            }, 100); 
-        });
-
-        document.getElementById('btn-close-paywall').addEventListener('click', () => {
-            document.getElementById('paywall-modal').classList.add('hidden');
-        });
-
-        // ============================================
-        // PDF & EXCEL EXECUTION (DENGAN STYLING XLSX)
-        // ============================================
-        function executeExcelExport(dataSet) {
-            let aoa = [];
-            const compName = document.getElementById('company-name').value.trim();
-            const compAddress = document.getElementById('company-address').value.trim();
-
-            if (compName) aoa.push([ { v: compName, s: { font: { bold: true, sz: 14 } } } ]);
-            if (compAddress) aoa.push([ { v: compAddress, s: { font: { italic: true } } } ]);
-            if (compName || compAddress) aoa.push([]); 
-            
-            aoa.push([ { v: dataSet.finalTitle, s: { font: { bold: true, sz: 12 } } } ]);
-            aoa.push([ { v: `Asal Pengiriman: ${dataSet.oCity}, Provinsi ${dataSet.oProv}`, s: { font: { bold: true } } } ]);
-            aoa.push([ { v: `Berat Paket yang Dihitung: ${dataSet.weights.map(w => `${w} Kg`).join(', ')}`, s: { font: { bold: true } } } ]);
-            
-            let scopeText = dataSet.scope === 'province' ? `Provinsi ${document.getElementById('recap-dest-prov').value}` : (dataSet.scope === 'city' ? `Kota ${document.getElementById('recap-dest-city').value}, Prov. ${document.getElementById('recap-dest-prov').value}` : "Seluruh Indonesia");
-            aoa.push([ { v: `Cakupan Tujuan: ${scopeText}`, s: { font: { bold: true } } } ]);
-            aoa.push([]); 
-
-            let headers = ["NO", "PROVINSI", "KABUPATEN/KOTA"];
-            if(dataSet.isShowCourierActive) headers.push("KURIR", "LAYANAN");
-            dataSet.weights.forEach(w => headers.push(`TARIF ${w} KG`));
-
-            let headerRow = headers.map(h => ({
-                v: h,
-                s: {
-                    font: { bold: true, color: { rgb: "FFFFFF" } },
-                    fill: { fgColor: { rgb: "4F46E5" } }, 
-                    alignment: { horizontal: "center", vertical: "center" },
-                    border: { top: {style:'thin'}, bottom: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} }
-                }
-            }));
-            aoa.push(headerRow);
-
-            let defaultStyle = { 
-                border: { top: {style:'thin'}, bottom: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} }, 
-                alignment: { vertical: "center" } 
-            };
-            let centerStyle = { ...defaultStyle, alignment: { horizontal: "center", vertical: "center" } };
-
-            dataSet.finalData.forEach((item, index) => {
-                let row = [];
-                row.push({ v: index + 1, s: centerStyle });
-                row.push({ v: item["Provinsi Tujuan"], s: defaultStyle });
-                row.push({ v: item["Kota Tujuan"], s: defaultStyle });
-                
-                if(dataSet.isShowCourierActive) {
-                    row.push({ v: item["Kurir"], s: centerStyle });
-                    row.push({ v: item["Layanan"], s: defaultStyle });
-                }
-                
-                dataSet.weights.forEach(w => {
-                    row.push({ 
-                        v: item.prices[w], 
-                        t: 'n',             
-                        z: '"Rp"#,##0',     
-                        s: { ...defaultStyle, alignment: { horizontal: "right" } }
-                    });
-                });
-                aoa.push(row);
-            });
-
-            aoa.push([]); 
-            aoa.push([{ v: "ket :", s: { font: { bold: true } } }]);
-            aoa.push([{ v: "*) Referensi Ongkir per unit bukan per Kg", s: { font: { italic: true } } }]);
-            aoa.push([{ v: "*) Referensi Ongkir sudah termasuk PPN", s: { font: { italic: true } } }]);
-
-            const worksheet = window.XLSX.utils.aoa_to_sheet(aoa);
-            
-            let colWidths = [ {wch: 5}, {wch: 25}, {wch: 28} ]; 
-            if(dataSet.isShowCourierActive) colWidths.push({wch: 15}, {wch: 20}); 
-            dataSet.weights.forEach(() => {
-                colWidths.push({wch: 22}); 
-            });
-            workssheet['!cols'] = colWidths;
-
-            const workbook = window.XLSX.utils.book_new();
-            window.XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Tarif");
-            window.XLSX.writeFile(workbook, `${dataSet.safeFilename}_Ganteng.xlsx`);
-        }
-
-        function executePdfExport(dataSet) {
-            const doc = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' }); 
-            const compName = document.getElementById('company-name').value.trim();
-            const compAddress = document.getElementById('company-address').value.trim();
-            let currentY = 20;
-            
-            let companyLogoKopBase64 = document.getElementById('recap-logo-preview').src;
-            if(companyLogoKopBase64.length < 100) companyLogoKopBase64 = null; // if default hidden src
-
-            if (compName || compAddress || companyLogoKopBase64) {
-                let textX = 14;
-                if (companyLogoKopBase64) {
-                    try {
-                        let imgFormat = companyLogoKopBase64.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG';
-                        doc.addImage(companyLogoKopBase64, imgFormat, 14, 14, 20, 20); 
-                        textX = 38; 
-                    } catch(e) { console.error("Logo error", e); }
-                }
-                if (compName) { doc.setFontSize(14); doc.setFont("helvetica", "bold"); doc.text(compName, textX, 20); }
-                if (compAddress) {
-                    doc.setFontSize(9); doc.setFont("helvetica", "normal");
-                    doc.text(doc.splitTextToSize(compAddress, 250 - textX), textX, compName ? 25 : 20);
-                }
-                currentY = 45; 
-            }
-            
-            doc.setFontSize(16); doc.setFont("helvetica", "bold"); doc.text(dataSet.finalTitle, 14, currentY);
-            
-            currentY += 8;
-            doc.setFontSize(10); doc.setFont("helvetica", "normal");
-            doc.text(`Asal Pengiriman: ${dataSet.oCity}, ${dataSet.oProv}`, 14, currentY);
-            doc.text(`Variasi Berat Paket Terpilih: ${dataSet.weights.map(w => `${w} Kg`).join(', ')}`, 14, currentY + 5);
-            
-            let scopeText = dataSet.scope === 'province' ? `Provinsi ${document.getElementById('recap-dest-prov').value}` : (dataSet.scope === 'city' ? `Kota ${document.getElementById('recap-dest-city').value}, Prov. ${document.getElementById('recap-dest-prov').value}` : "Seluruh Indonesia");
-            doc.text(`Cakupan Tujuan: ${scopeText}`, 14, currentY + 10);
-
-            let extraInfoList = [];
-            if (dataSet.isPpnActive) extraInfoList.push("Termasuk PPN 11%");
-            if (dataSet.isShowAddFeeActive && dataSet.addFeePct > 0) extraInfoList.push(`Termasuk Biaya Tambahan ${dataSet.addFeePct}%`);
-            
-            let tableStartY = currentY + 16;
-            if (extraInfoList.length > 0) {
-                doc.setTextColor(79, 70, 229); 
-                doc.text(`Keterangan: ${extraInfoList.join(' | ')}`, 14, currentY + 15);
-                doc.setTextColor(0, 0, 0); 
-                tableStartY = currentY + 20;
-            }
-
-            let headerBase = ["NO", "PROVINSI", "KABUPATEN/KOTA"];
-            if(dataSet.isShowCourierActive) headerBase.push("KURIR", "LAYANAN");
-            
-            const weightHeaders = dataSet.weights.map(w => `TARIF ${w} KG`);
-            const tableHeaders = [[...headerBase, ...weightHeaders]];
-            
-            const tableRows = dataSet.finalData.map((item, index) => {
-                let rowBase = [index + 1, item["Provinsi Tujuan"], item["Kota Tujuan"]];
-                if(dataSet.isShowCourierActive) rowBase.push(item["Kurir"], item["Layanan"]);
-                
-                const pricesArr = dataSet.weights.map(w => formatRupiah(item.prices[w]));
-                return [...rowBase, ...pricesArr];
-            });
-
-            let colStyles = {};
-            let priceStartIndex = dataSet.isShowCourierActive ? 5 : 3;
-            colStyles[0] = { halign: 'center', cellWidth: 10 }; 
-            
-            dataSet.weights.forEach((_, index) => {
-                colStyles[priceStartIndex + index] = { halign: 'right' };
-            });
-
-            doc.autoTable({
-                startY: tableStartY, head: tableHeaders, body: tableRows, theme: 'grid',
-                headStyles: { fillColor: [79, 70, 229], halign: 'center', valign: 'middle', fontSize: 9 }, 
-                styles: { fontSize: 8, cellPadding: 3, valign: 'middle', overflow: 'linebreak' },
-                columnStyles: colStyles, margin: { top: 15, left: 10, right: 10, bottom: 15 } 
-            });
-
-            let finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) ? doc.lastAutoTable.finalY : 100;
-
-            doc.setFontSize(10); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "normal");
-            doc.text("ket :", 14, finalY + 10);
-            doc.text("*) Referensi Ongkir per unit bukan per Kg", 14, finalY + 15);
-            doc.text("*) Referensi Ongkir sudah termasuk PPN", 14, finalY + 20);
-
-            doc.save(`${dataSet.safeFilename}_Full.pdf`);
-        }
-
-        // ============================================
-        // FORM UTAMA: HITUNG SINGLE
-        // ============================================
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const oProv = originProvSelect.value;
-            const oCity = originCitySelect.value;
-            const dProv = destProvSelect.value;
-            const dCity = destCitySelect.value;
-            const w = parseFloat(weightInput.value);
-            const cour = courierSelect.value;
-
-            const errCont = document.getElementById('error-container');
-            if (!oProv || !oCity || !dProv || !dCity || !w) {
-                document.getElementById('error-message').textContent = 'Mohon lengkapi semua data asal, tujuan, dan berat paket.';
-                errCont.classList.remove('hidden');
-                return;
-            }
-            errCont.classList.add('hidden');
-
-            const btnSub = document.getElementById('submit-btn');
-            btnSub.disabled = true;
-            btnSub.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span class="tracking-wide">Menghitung...</span>';
-            window.lucide.createIcons();
-
-            document.getElementById('default-carousel-view').classList.add('hidden');
-
-            const resultsContainer = document.getElementById('results-container');
-            resultsContainer.innerHTML = `
-                <div class="h-full bg-white rounded-2xl shadow-sm border border-slate-200 p-8 flex flex-col items-center justify-center min-h-[400px]">
-                    <div class="flex space-x-2 justify-center items-center bg-white">
-                        <span class="sr-only">Loading...</span>
-                        <div class="h-4 w-4 bg-indigo-500 rounded-full animate-bounce" style="animation-delay:-0.3s"></div>
-                        <div class="h-4 w-4 bg-indigo-500 rounded-full animate-bounce" style="animation-delay:-0.15s"></div>
-                        <div class="h-4 w-4 bg-indigo-500 rounded-full animate-bounce"></div>
-                    </div>
-                    <p class="text-slate-500 mt-4 animate-pulse font-medium">Menghitung tarif terbaik untuk Anda...</p>
-                </div>
-            `;
-
-            setTimeout(() => {
-                const results = calculateRatesLogic(oProv, oCity, dProv, dCity, w, cour);
-
-                let html = `
-                    <div class="space-y-4">
-                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-wrap items-center justify-between gap-4">
-                            <div>
-                                <p class="text-sm text-slate-500 font-semibold uppercase tracking-wide">Rute Pengiriman</p>
-                                <div class="flex items-center gap-2 font-bold mt-1.5 text-slate-800">
-                                    <span>${oCity}</span><span class="text-indigo-400">→</span><span>${dCity}</span>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-sm text-slate-500 font-semibold uppercase tracking-wide">Berat Paket</p>
-                                <p class="font-bold mt-1.5 text-slate-800">${w} Kg</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 text-sm text-slate-500 px-1 font-medium">
-                            <i data-lucide="info" class="w-4 h-4 text-indigo-500"></i><p>Menampilkan ${results.length} layanan</p>
-                        </div>
-                        <div class="grid gap-3">
-                `;
-
-                results.forEach(item => {
-                    html += `
-                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-indigo-300 transition-colors">
-                            <div class="flex items-start gap-4">
-                                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold shrink-0 uppercase border border-indigo-100 shadow-inner">
-                                    ${item.courier.substring(0, 3)}
-                                </div>
-                                <div>
-                                    <h4 class="font-extrabold text-slate-800">${item.courier}</h4>
-                                    <p class="text-sm text-slate-600 font-semibold">${item.service}</p>
-                                    <p class="text-xs text-slate-400 mt-1 flex items-center gap-1 font-medium">
-                                        Estimasi sampai: <span class="text-indigo-600 font-bold">${item.etd}</span>
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="sm:text-right flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t sm:border-t-0 pt-3 sm:pt-0 mt-2 sm:mt-0">
-                                <span class="text-xs text-slate-500 sm:hidden font-semibold">Total Tarif:</span>
-                                <span class="text-xl font-black text-indigo-600">${formatRupiah(item.price)}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                html += `</div></div>`;
-                
-                resultsContainer.innerHTML = html;
-                btnSub.innerHTML = '<i data-lucide="search" class="w-5 h-5"></i><span class="tracking-wide">Cek Tarif Sekarang</span>';
-                btnSub.disabled = false;
-                window.lucide.createIcons();
-
-            }, 800);
-        });
-
         // ==========================================
-        // LOGIKA SUPER APP & MARKETPLACE B2B
+        // INITIALIZATION & EVENT ATTACHMENT
         // ==========================================
-        window.switchAppView = function(viewName) {
-            localStorage.setItem('superapp_current_view', viewName);
-            ['kalkulator', 'marketplace', 'tkdn', 'forum', 'buyer', 'seller', 'admin'].forEach(v => {
-                const el = document.getElementById(`view-${v}`);
-                if(el) el.classList.add('hidden');
-                const tab = document.getElementById(`tab-${v}`);
-                if(tab) {
-                    tab.classList.remove('active', 'text-white', 'border-amber-400');
-                    tab.classList.add('text-indigo-200', 'border-transparent');
-                }
-            });
-
-            const selectedEl = document.getElementById(`view-${viewName}`);
-            const selectedTab = document.getElementById(`tab-${viewName}`);
-            
-            if(selectedEl) selectedEl.classList.remove('hidden');
-            if(selectedTab) {
-                selectedTab.classList.remove('text-indigo-200', 'border-transparent');
-                selectedTab.classList.add('active', 'text-white', 'border-amber-400');
-            }
-
-            if(viewName === 'marketplace') {
-                initMpSlider(); 
-            }
-
-            window.scrollTo(0, 0); 
-        }
-
-        // Toggles untuk Dasbor B2B
-        window.toggleBuyerMenu = function(menu) {
-            document.querySelectorAll('.buyer-menu-item').forEach(el => {
-                el.classList.remove('text-indigo-700', 'bg-indigo-50', 'font-bold');
-                el.classList.add('text-slate-600', 'font-medium');
-            });
-            document.getElementById(`buyer-pesanan-view`).classList.add('hidden');
-            document.getElementById(`buyer-setting-view`).classList.add('hidden');
-
-            document.getElementById(`buyer-${menu}-view`).classList.remove('hidden');
-            document.getElementById(`menu-buyer-${menu}`).classList.add('text-indigo-700', 'bg-indigo-50', 'font-bold');
-        }
-
-        window.toggleSellerMenu = function(menu) {
-            document.querySelectorAll('.seller-menu-item').forEach(el => {
-                el.classList.remove('text-indigo-700', 'bg-indigo-50', 'font-bold');
-                el.classList.add('text-slate-600', 'font-medium');
-            });
-            ['produk', 'saldo', 'setting'].forEach(v => {
-                const el = document.getElementById(v === 'produk' ? 'seller-product-list' : `seller-${v}-view`);
-                if(el) el.classList.add('hidden');
-            });
-            document.getElementById('seller-add-product').classList.add('hidden');
-
-            const viewId = menu === 'produk' ? 'seller-product-list' : `seller-${menu}-view`;
-            document.getElementById(viewId).classList.remove('hidden');
-            document.getElementById(`menu-seller-${menu}`).classList.add('text-indigo-700', 'bg-indigo-50', 'font-bold');
-        }
-
-        window.toggleAdminMenu = function(menu) {
-            document.querySelectorAll('.admin-menu-item').forEach(el => {
-                el.classList.remove('text-white', 'bg-indigo-600', 'shadow-md', 'font-bold');
-                el.classList.add('text-emerald-400', 'font-medium');
-                if(el.id === 'menu-admin-desain') el.classList.replace('text-emerald-400', 'text-white');
-            });
-            document.getElementById(`admin-desain-view`).classList.add('hidden');
-            document.getElementById(`admin-pajak-view`).classList.add('hidden');
-
-            document.getElementById(`admin-${menu}-view`).classList.remove('hidden');
-            document.getElementById(`menu-admin-${menu}`).classList.add('text-white', 'bg-indigo-600', 'shadow-md', 'font-bold');
-        }
-
-        window.toggleAddProduct = function(showForm) {
-            if (showForm) {
-                document.getElementById('seller-product-list').classList.add('hidden');
-                document.getElementById('seller-add-product').classList.remove('hidden');
-            } else {
-                document.getElementById('seller-add-product').classList.add('hidden');
-                document.getElementById('seller-product-list').classList.remove('hidden');
-            }
-        }
-
-        window.simulateSave = function(btn) {
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> ...';
-            btn.disabled = true;
-            setTimeout(() => {
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> OK';
-                btn.classList.add('bg-emerald-500');
-                setTimeout(() => {
-                    btn.innerHTML = originalHTML;
-                    btn.disabled = false;
-                    btn.classList.remove('bg-emerald-500');
-                }, 1500);
-            }, 800);
-        }
-
-        window.updateStoreLogo = function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img1 = document.getElementById('seller-store-logo');
-                    const img2 = document.getElementById('seller-store-logo-large');
-                    if(img1) img1.src = e.target.result;
-                    if(img2) img2.src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
-        };
-
-        // FUNGSI MODAL BURSA TENDER & FORUM
-        window.openTenderPostModal = function() {
-            document.getElementById('modal-tender-post').classList.remove('hidden');
-        }
-        
-        window.openTenderBidModal = function(title, budget) {
-            document.getElementById('bid-tender-title').textContent = title;
-            document.getElementById('bid-tender-budget').textContent = `HPS: ${budget}`;
-            document.getElementById('modal-tender-bid').classList.remove('hidden');
-        }
-
-        // ==========================================
-        // FUNGSI TAMBAHAN: DROPDOWN & LOGO
-        // ==========================================
-        window.toggleCategoryMenu = function() {
-            const dropdown = document.getElementById('category-dropdown');
-            if (dropdown) {
-                if (dropdown.classList.contains('hidden')) {
-                    dropdown.classList.remove('hidden');
-                    setTimeout(() => dropdown.classList.remove('opacity-0', 'scale-95'), 10);
-                } else {
-                    dropdown.classList.add('opacity-0', 'scale-95');
-                    setTimeout(() => dropdown.classList.add('hidden'), 300);
-                }
-            }
-        }
-
-        // Tutup dropdown kategori jika klik di luar
-        document.addEventListener('click', function(event) {
-            const wrapper = document.getElementById('desktop-category-wrapper');
-            const dropdown = document.getElementById('category-dropdown');
-            if (wrapper && !wrapper.contains(event.target) && dropdown && !dropdown.classList.contains('hidden')) {
-                window.toggleCategoryMenu();
-            }
-        });
-
-        window.updateStoreLogo = function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img1 = document.getElementById('seller-store-logo');
-                    const img2 = document.getElementById('seller-store-logo-large');
-                    if(img1) img1.src = e.target.result;
-                    if(img2) img2.src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
-        };
-
-        // ==========================================
-        // 4. SLIDER MARKETPLACE B2B
-        // ==========================================
-            mpCurrentSlide = (mpCurrentSlide - 1 + totalSlides) % totalSlides;
-            window.updateMpSliderPosition();
-        }
-
-        window.goToMpSlide = function(index) {
-            mpCurrentSlide = index;
-            window.updateMpSliderPosition();
-            window.pauseMpSlider(); window.resumeMpSlider();
-        }
-
-        window.startMpAutoSlide = function() {
-            clearInterval(mpSlideInterval);
-            mpSlideInterval = setInterval(window.nextMpSlide, mpAutoSlideDelay);
-        }
-        window.pauseMpSlider = function() { clearInterval(mpSlideInterval); }
-        window.resumeMpSlider = function() { window.startMpAutoSlide(); }
-        window.saveMpSliderSettings = function() {
-            const selectEl = document.getElementById('admin-slider-delay');
-            if (selectEl) {
-                mpAutoSlideDelay = parseInt(selectEl.value, 10);
-                window.startMpAutoSlide(); 
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
+            // Restore View
             const savedView = localStorage.getItem('superapp_current_view') || 'marketplace';
             window.switchAppView(savedView);
             window.initMpSlider();
+
+            // Setup Kalkulator Selects
+            const originProvSelect = document.getElementById('origin-prov');
+            const destProvSelect = document.getElementById('dest-prov');
+            const originCitySelect = document.getElementById('origin-city');
+            const destCitySelect = document.getElementById('dest-city');
+            const courierSelect = document.getElementById('courier');
+            const recapOriginProv = document.getElementById('recap-origin-prov');
+            const recapDestProv = document.getElementById('recap-dest-prov');
+            const recapOriginCity = document.getElementById('recap-origin-city');
+            const recapDestCity = document.getElementById('recap-dest-city');
+            const recapCourier = document.getElementById('recap-courier');
+            
+            const provinces = Object.keys(MOCK_LOCATIONS).sort();
+            populateSelect(originProvSelect, provinces, "Pilih Provinsi...");
+            populateSelect(destProvSelect, provinces, "Pilih Provinsi...");
+            populateSelect(recapOriginProv, provinces, "Pilih Provinsi Asal...");
+            populateSelect(recapDestProv, provinces, "Pilih Provinsi Tujuan...");
+            
+            if(originCitySelect) originCitySelect.innerHTML = `<option value="" disabled selected hidden>Pilih Kota/Kabupaten...</option>`;
+            if(destCitySelect) destCitySelect.innerHTML = `<option value="" disabled selected hidden>Pilih Kota/Kabupaten...</option>`;
+            if(recapOriginCity) recapOriginCity.innerHTML = `<option value="" disabled selected hidden>Pilih Kota/Kabupaten...</option>`;
+            if(recapDestCity) recapDestCity.innerHTML = `<option value="" disabled selected hidden>Pilih Kota/Kabupaten...</option>`;
+            
+            COURIERS.forEach(c => {
+                if(courierSelect) courierSelect.appendChild(new Option(c.name, c.id));
+                if(recapCourier) recapCourier.appendChild(new Option(c.name, c.id));
+            });
+
+            if(originProvSelect) originProvSelect.addEventListener('change', (e) => handleProvChange(e.target.value, originCitySelect, "Pilih Kota/Kabupaten..."));
+            if(destProvSelect) destProvSelect.addEventListener('change', (e) => handleProvChange(e.target.value, destCitySelect, "Pilih Kota/Kabupaten..."));
+            if(recapOriginProv) recapOriginProv.addEventListener('change', (e) => handleProvChange(e.target.value, recapOriginCity, "Pilih Kota/Kabupaten..."));
+            if(recapDestProv) recapDestProv.addEventListener('change', (e) => handleProvChange(e.target.value, recapDestCity, "Pilih Kota/Kabupaten..."));
+
+            // Kalkulator Submit (Hitung Single)
+            const form = document.getElementById('shipping-form');
+            if(form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const oProv = originProvSelect.value;
+                    const oCity = originCitySelect.value;
+                    const dProv = destProvSelect.value;
+                    const dCity = destCitySelect.value;
+                    const w = parseFloat(document.getElementById('weight').value);
+                    const cour = courierSelect.value;
+
+                    const errCont = document.getElementById('error-container');
+                    if (!oProv || !oCity || !dProv || !dCity || !w) {
+                        document.getElementById('error-message').textContent = 'Mohon lengkapi semua data asal, tujuan, dan berat paket.';
+                        errCont.classList.remove('hidden');
+                        return;
+                    }
+                    errCont.classList.add('hidden');
+
+                    const btnSub = document.getElementById('submit-btn');
+                    btnSub.disabled = true;
+                    btnSub.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span class="tracking-wide">Menghitung...</span>';
+                    if(window.lucide) window.lucide.createIcons();
+
+                    const resultsContainer = document.getElementById('results-container');
+                    resultsContainer.innerHTML = `
+                        <div class="h-full bg-white rounded-2xl shadow-sm border border-slate-200 p-8 flex flex-col items-center justify-center min-h-[400px]">
+                            <div class="flex space-x-2 justify-center items-center bg-white">
+                                <span class="sr-only">Loading...</span>
+                                <div class="h-4 w-4 bg-indigo-500 rounded-full animate-bounce" style="animation-delay:-0.3s"></div>
+                                <div class="h-4 w-4 bg-indigo-500 rounded-full animate-bounce" style="animation-delay:-0.15s"></div>
+                                <div class="h-4 w-4 bg-indigo-500 rounded-full animate-bounce"></div>
+                            </div>
+                            <p class="text-slate-500 mt-4 animate-pulse font-medium">Menghitung tarif terbaik untuk Anda...</p>
+                        </div>
+                    `;
+
+                    setTimeout(() => {
+                        const results = calculateRatesLogic(oProv, oCity, dProv, dCity, w, cour);
+                        let html = `
+                            <div class="space-y-4">
+                                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-wrap items-center justify-between gap-4">
+                                    <div>
+                                        <p class="text-sm text-slate-500 font-semibold uppercase tracking-wide">Rute Pengiriman</p>
+                                        <div class="flex items-center gap-2 font-bold mt-1.5 text-slate-800">
+                                            <span>${oCity}</span><span class="text-indigo-400">→</span><span>${dCity}</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm text-slate-500 font-semibold uppercase tracking-wide">Berat Paket</p>
+                                        <p class="font-bold mt-1.5 text-slate-800">${w} Kg</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm text-slate-500 px-1 font-medium">
+                                    <i data-lucide="info" class="w-4 h-4 text-indigo-500"></i><p>Menampilkan ${results.length} layanan</p>
+                                </div>
+                                <div class="grid gap-3">
+                        `;
+                        results.forEach(item => {
+                            html += `
+                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-indigo-300 transition-colors">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold shrink-0 uppercase border border-indigo-100 shadow-inner">
+                                            ${item.courier.substring(0, 3)}
+                                        </div>
+                                        <div>
+                                            <h4 class="font-extrabold text-slate-800">${item.courier}</h4>
+                                            <p class="text-sm text-slate-600 font-semibold">${item.service}</p>
+                                            <p class="text-xs text-slate-400 mt-1 flex items-center gap-1 font-medium">
+                                                Estimasi: <span class="text-indigo-600 font-bold">${item.etd}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="sm:text-right flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t sm:border-t-0 pt-3 sm:pt-0 mt-2 sm:mt-0">
+                                        <span class="text-xl font-black text-indigo-600">${formatRupiah(item.price)}</span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        html += `</div></div>`;
+                        resultsContainer.innerHTML = html;
+                        btnSub.innerHTML = '<i data-lucide="search" class="w-5 h-5"></i><span class="tracking-wide">Cek Tarif Sekarang</span>';
+                        btnSub.disabled = false;
+                        if(window.lucide) window.lucide.createIcons();
+                    }, 800);
+                });
+            }
+
+            // MODALS TRIGGERS
+            const rulesModal = document.getElementById('rules-modal');
+            const btnOpenRules = document.getElementById('btn-open-rules');
+            if(btnOpenRules) btnOpenRules.addEventListener('click', () => rulesModal.classList.remove('hidden'));
+            const closeRulesModal = () => rulesModal.classList.add('hidden');
+            if(document.getElementById('btn-close-rules')) document.getElementById('btn-close-rules').addEventListener('click', closeRulesModal);
+            if(document.getElementById('btn-understand-rules')) document.getElementById('btn-understand-rules').addEventListener('click', closeRulesModal);
+
+            const recapModal = document.getElementById('recap-modal');
+            const btnOpenModal = document.getElementById('btn-open-modal');
+            if(btnOpenModal) btnOpenModal.addEventListener('click', () => {
+                if (!window.auth || !window.auth.currentUser || window.auth.currentUser.isAnonymous) {
+                    window.openLoginModal();
+                    alert("Harap login atau daftar akun terlebih dahulu untuk mengekspor rekapitulasi.");
+                    return;
+                }
+                recapModal.classList.remove('hidden');
+            });
+            if(document.getElementById('btn-close-modal')) document.getElementById('btn-close-modal').addEventListener('click', () => recapModal.classList.add('hidden'));
+
+            const paywallModal = document.getElementById('paywall-modal');
+            if(document.getElementById('btn-close-paywall')) document.getElementById('btn-close-paywall').addEventListener('click', () => paywallModal.classList.add('hidden'));
+
+            // SCOPE LOGIC
+            document.getElementsByName('recap-scope').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const val = e.target.value;
+                    const container = document.getElementById('recap-dest-container');
+                    if (val === 'all') {
+                        container.classList.add('hidden'); container.classList.remove('grid');
+                    } else if (val === 'province') {
+                        container.classList.remove('hidden'); container.classList.add('grid');
+                        recapDestProv.parentElement.classList.remove('col-span-2');
+                        recapDestCity.classList.add('hidden');
+                    } else if (val === 'city') {
+                        container.classList.remove('hidden'); container.classList.add('grid');
+                        recapDestCity.classList.remove('hidden');
+                    }
+                });
+            });
+
+            // EXPORT LOGIC
+            let currentDataSet = null;
+            let currentExportType = ''; 
+
+            function generateRecapDataset() {
+                const oProv = recapOriginProv.value;
+                const oCity = recapOriginCity.value;
+                const scope = document.querySelector('input[name="recap-scope"]:checked').value;
+                const dProv = recapDestProv.value;
+                const dCity = recapDestCity.value;
+                const courier = recapCourier.value;
+                const customTitle = document.getElementById('recap-title').value.trim();
+                const usePpn = document.getElementById('recap-use-ppn').checked;
+                const addFeePct = parseFloat(document.getElementById('recap-additional-fee-percent').value) || 0;
+                
+                let rawWeights = [];
+                if(document.getElementById('weight-fixed').checked) rawWeights.push(1);
+                document.querySelectorAll('.custom-weight-cb:checked').forEach(cb => {
+                    const targetId = cb.getAttribute('data-target');
+                    const val = parseFloat(document.getElementById(targetId).value);
+                    if (!isNaN(val) && val > 0) rawWeights.push(val);
+                });
+                const selectedWeights = [...new Set(rawWeights)].sort((a, b) => a - b);
+
+                if (!oProv || !oCity) { alert("Pilih asal terlebih dahulu"); return null; }
+                if (selectedWeights.length === 0) { alert("Pilih variasi berat"); return null; }
+
+                let destinations = [];
+                if (scope === 'all') {
+                    Object.keys(MOCK_LOCATIONS).forEach(p => MOCK_LOCATIONS[p].forEach(c => destinations.push({p, c})));
+                } else if (scope === 'province') {
+                    if(!dProv) return null;
+                    MOCK_LOCATIONS[dProv].forEach(c => destinations.push({p: dProv, c}));
+                } else if (scope === 'city') {
+                    if(!dProv || !dCity) return null;
+                    destinations.push({p: dProv, c: dCity});
+                }
+
+                let finalData = [];
+                destinations.forEach(dest => {
+                    const baseRates = calculateRatesLogic(oProv, oCity, dest.p, dest.c, selectedWeights[0], courier, usePpn, addFeePct);
+                    if (baseRates.length > 0) {
+                        const bestRate = baseRates[0]; 
+                        let rowItem = {
+                            "Provinsi Tujuan": dest.p, "Kota Tujuan": dest.c,
+                            "Kurir": bestRate.courier, "Layanan": bestRate.service,
+                            "Estimasi (Hari)": bestRate.etd, prices: {} 
+                        };
+                        selectedWeights.forEach(weight => {
+                            const ratesForWeight = calculateRatesLogic(oProv, oCity, dest.p, dest.c, weight, courier, usePpn, addFeePct);
+                            const matchingRate = ratesForWeight.find(r => r.courier === bestRate.courier && r.service === bestRate.service);
+                            rowItem.prices[weight] = matchingRate ? matchingRate.price : 0;
+                        });
+                        finalData.push(rowItem);
+                    }
+                });
+
+                const safeFilename = customTitle ? customTitle.replace(/[^a-zA-Z0-9]/gi, '_') : `Rekap_Ongkir_${oCity}`;
+                return { 
+                    oCity, oProv, weights: selectedWeights, scope, finalData, safeFilename, 
+                    finalTitle: customTitle || "Rekapitulasi Tarif Pengiriman Paket",
+                    isPpnActive: usePpn, isShowAddFeeActive: document.getElementById('recap-show-additional-fee').checked, 
+                    isShowCourierActive: document.getElementById('recap-show-courier').checked, addFeePct: addFeePct 
+                };
+            }
+
+            function processExportPreview(type, btnElement) {
+                const dataSet = generateRecapDataset();
+                if(!dataSet) return;
+                currentDataSet = dataSet;
+                currentExportType = type;
+                document.getElementById('recap-modal').classList.add('hidden');
+                
+                // Show Preview Modal
+                const previewModal = document.getElementById('preview-modal');
+                let headHtml = `<tr><th class="px-4 py-3 border-b-2 border-amber-500">NO</th><th class="px-4 py-3 border-b-2 border-amber-500">PROVINSI</th><th class="px-4 py-3 border-b-2 border-amber-500">KOTA</th>`;
+                if(dataSet.isShowCourierActive) headHtml += `<th class="px-4 py-3 border-b-2 border-amber-500">KURIR</th>`;
+                dataSet.weights.forEach(w => headHtml += `<th class="px-4 py-3 border-b-2 border-amber-500 text-right">TARIF ${w}KG</th>`);
+                headHtml += `</tr>`;
+                document.getElementById('preview-thead').innerHTML = headHtml;
+
+                let bodyHtml = '';
+                dataSet.finalData.forEach((row, idx) => {
+                    bodyHtml += `<tr><td class="px-4 py-3">${idx+1}</td><td class="px-4 py-3">${row["Provinsi Tujuan"]}</td><td class="px-4 py-3">${row["Kota Tujuan"]}</td>`;
+                    if(dataSet.isShowCourierActive) bodyHtml += `<td class="px-4 py-3">${row["Kurir"]}</td>`;
+                    dataSet.weights.forEach(w => bodyHtml += `<td class="px-4 py-3 text-right font-bold text-indigo-600">${formatRupiah(row.prices[w])}</td>`);
+                    bodyHtml += `</tr>`;
+                });
+                document.getElementById('preview-tbody').innerHTML = bodyHtml;
+                document.getElementById('preview-status-text').textContent = `Total Data: ${dataSet.finalData.length} baris siap diekspor.`;
+                previewModal.classList.remove('hidden');
+            }
+
+            if(document.getElementById('btn-download-pdf')) document.getElementById('btn-download-pdf').addEventListener('click', function() { processExportPreview('pdf', this); });
+            if(document.getElementById('btn-download-excel')) document.getElementById('btn-download-excel').addEventListener('click', function() { processExportPreview('excel', this); });
+            if(document.getElementById('btn-close-preview')) document.getElementById('btn-close-preview').addEventListener('click', () => document.getElementById('preview-modal').classList.add('hidden'));
+
+            if(document.getElementById('btn-proceed-download')) document.getElementById('btn-proceed-download').addEventListener('click', function() {
+                // If not premium (super admin), show paywall
+                if (!window.auth.currentUser.email.includes('admin')) {
+                    document.getElementById('preview-modal').classList.add('hidden');
+                    document.getElementById('paywall-modal').classList.remove('hidden');
+                    return;
+                }
+                
+                document.getElementById('preview-modal').classList.add('hidden');
+                alert(`Mengekspor ${currentDataSet.finalData.length} baris ke format ${currentExportType.toUpperCase()}... (Fitur Premium Aktif)`);
+                // Di sistem aslinya, di sini memanggil fungsi jspdf / xlsx
+            });
+
+            // Bind History Modal
+            document.getElementById('btn-open-history').addEventListener('click', async () => {
+                const user = window.auth.currentUser;
+                if(!user) return;
+                document.getElementById('history-modal').classList.remove('hidden');
+                const container = document.getElementById('history-list-container');
+                container.innerHTML = '<div class="text-center py-10"><i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto text-indigo-500"></i><p class="mt-3 text-slate-500 font-medium">Memuat data...</p></div>';
+                if(window.lucide) window.lucide.createIcons();
+
+                try {
+                    const q = window.collection(window.db, 'artifacts', window.appId, 'users', user.uid, 'rekapan_ongkir');
+                    const querySnapshot = await window.getDocs(q); 
+                    let items = [];
+                    querySnapshot.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+                    
+                    if(items.length === 0) {
+                        container.innerHTML = `<div class="text-center py-12"><p class="text-slate-500 font-medium">Belum ada riwayat rekap.</p></div>`;
+                    } else {
+                        container.innerHTML = `<div class="text-center py-12"><p class="text-emerald-600 font-medium">Ditemukan ${items.length} riwayat.</p></div>`;
+                    }
+                } catch (e) {
+                    container.innerHTML = `<p class="text-center text-red-500 py-8 font-bold">Gagal memuat riwayat: ${e.message}</p>`;
+                }
+            });
+
+            document.getElementById('btn-close-history').addEventListener('click', () => {
+                document.getElementById('history-modal').classList.add('hidden');
+            });
         });
     </script>
 </body>
