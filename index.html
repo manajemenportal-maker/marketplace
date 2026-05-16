@@ -3038,5 +3038,230 @@
 })();
 </script>
 
+
+
+<!-- ========================================================= -->
+<!-- ADDON V3: LAYOUT DASHBOARD KIRI-KANAN                    -->
+<!-- Tujuan: menu admin/user/seller tetap di kiri, isi tampil  -->
+<!-- di screen kanan. Tidak mengubah kalkulator/logika utama.  -->
+<!-- ========================================================= -->
+<style id="bhx-layout-right-style">
+  /* Paksa dashboard menjadi layout 2 kolom, bukan bertumpuk ke bawah */
+  #view-buyer:not(.hidden),
+  #view-seller:not(.hidden),
+  #view-admin:not(.hidden) {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 1280px !important;
+    gap: 0 !important;
+  }
+
+  #view-buyer > div:first-child,
+  #view-seller > div:first-child,
+  #view-admin > div:first-child {
+    width: 280px !important;
+    min-width: 280px !important;
+    max-width: 280px !important;
+    flex: 0 0 280px !important;
+  }
+
+  #view-buyer > .flex-1,
+  #view-seller > .flex-1,
+  #view-admin > .flex-1 {
+    flex: 1 1 auto !important;
+    width: calc(100% - 280px) !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  #view-buyer nav,
+  #view-seller nav,
+  #view-admin nav {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-x: visible !important;
+    gap: .5rem !important;
+  }
+
+  #view-buyer nav button,
+  #view-seller nav button,
+  #view-admin nav button {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    white-space: normal !important;
+  }
+
+  #bhx-buyer-content,
+  #bhx-seller-content,
+  #bhx-admin-content {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 70vh !important;
+    display: block !important;
+  }
+
+  .bhx-right-screen-wrap {
+    width: 100%;
+    min-height: 70vh;
+  }
+
+  .bhx-page-header {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    border: 1px solid #e2e8f0;
+    border-radius: 1.5rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 2px rgba(15,23,42,.05);
+  }
+
+  .bhx-page-header h2 {
+    font-size: 1.35rem;
+    line-height: 1.2;
+    font-weight: 900;
+    color: #0f172a;
+  }
+
+  .bhx-page-header p {
+    margin-top: .35rem;
+    font-size: .875rem;
+    color: #64748b;
+  }
+
+  @media (max-width: 820px) {
+    #view-buyer:not(.hidden),
+    #view-seller:not(.hidden),
+    #view-admin:not(.hidden) {
+      max-width: 100% !important;
+      overflow-x: auto !important;
+    }
+    #view-buyer > div:first-child,
+    #view-seller > div:first-child,
+    #view-admin > div:first-child {
+      width: 240px !important;
+      min-width: 240px !important;
+      max-width: 240px !important;
+      flex-basis: 240px !important;
+    }
+    #view-buyer > .flex-1,
+    #view-seller > .flex-1,
+    #view-admin > .flex-1 {
+      width: calc(100% - 240px) !important;
+      min-width: 620px !important;
+    }
+  }
+</style>
+
+<script id="bhx-layout-right-script">
+(function(){
+  function dashboardTitle(kind, key){
+    const map = {
+      buyer: {
+        overview:['Ringkasan User','Semua informasi pembeli tampil di panel kanan.'],
+        orders:['Pesanan Saya','Kelola pelacakan, komplain, invoice, dan repeat order.'],
+        wishlist:['Wishlist Produk','Produk tersimpan user tampil rapi di kanan.'],
+        addresses:['Alamat Proyek','Tambah, edit, hapus, dan jadikan alamat utama.'],
+        tickets:['Bantuan / Tiket','Semua tiket user tampil dalam panel kerja kanan.'],
+        notifications:['Notifikasi','Pusat pesan dan update akun.'],
+        security:['Keamanan Akun','Password, OTP, dan aktivitas login.'],
+        profile:['Profil User','Biodata dan pengaturan akun.']
+      },
+      seller: {
+        overview:['Ringkasan Seller','Kontrol toko tampil di panel kanan.'],
+        products:['Produk Saya','Tambah, edit, publish, dan arsip produk.'],
+        orders:['Order Masuk','Proses order, input resi, dan chat buyer.'],
+        bids:['Tender Bid','Ajukan penawaran tender dari seller center.'],
+        documents:['Dokumen TKDN','Legalitas dan dokumen wajib vendor.'],
+        promo:['Promo Toko','Buat dan aktifkan promo seller.'],
+        reviews:['Ulasan','Pantau review pembeli.'],
+        analytics:['Analitik','Omzet, trafik, conversion, dan performa toko.'],
+        escrow:['Saldo / Escrow','Dana tertahan, siap cair, dan penarikan.'],
+        settings:['Setting Toko','Kurir, rekening, pajak, dan operasional.']
+      },
+      admin: {
+        overview:['Overview Admin','Ringkasan seluruh platform.'],
+        users:['User & Role','Tambah user, edit role, suspend, dan aktifkan akun.'],
+        sellers:['Seller / Vendor','Verifikasi vendor, audit legalitas, dan performa.'],
+        products:['Moderasi Produk','Approve, tolak, edit, dan arsip produk.'],
+        orders:['Order & Refund','Audit transaksi, refund, dan penyelesaian order.'],
+        tenders:['Moderasi Tender','Posting, buka, tutup, dan pantau bidding.'],
+        support:['Support Center','Kelola tiket user dan seller.'],
+        cms:['CMS Konten','Atur banner, preview, promo, dan tampilan.'],
+        finance:['Escrow / Keuangan','Dana tertahan, siap cair, komisi, dan audit escrow.'],
+        settings:['Setting Sistem','Maintenance, online/offline, approval, dan komisi.']
+      }
+    };
+    return (map[kind] && map[kind][key]) || ['Dashboard','Konten tampil di panel kanan.'];
+  }
+
+  function normalizeView(kind){
+    const id = kind === 'user' ? 'buyer' : kind;
+    const view = document.getElementById('view-' + id);
+    if(!view) return;
+
+    const sidebar = view.children[0];
+    const right = view.querySelector(':scope > .flex-1');
+    if(sidebar){
+      sidebar.classList.remove('w-full');
+      sidebar.classList.add('bhx-left-menu');
+    }
+    if(right){
+      right.classList.add('bhx-right-pane');
+      right.style.minWidth = '0';
+    }
+  }
+
+  function decorateRight(kind, key){
+    const id = kind === 'user' ? 'buyer' : kind;
+    const area = document.getElementById('bhx-' + id + '-content');
+    if(!area) return;
+
+    const old = area.querySelector(':scope > .bhx-page-header');
+    if(old) old.remove();
+
+    const [title, sub] = dashboardTitle(id, key);
+    const header = document.createElement('div');
+    header.className = 'bhx-page-header';
+    header.innerHTML = `<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3"><div><h2>${title}</h2><p>${sub}</p></div><div class="hidden lg:flex items-center gap-2 text-xs font-black text-slate-500"><span class="px-3 py-2 rounded-xl bg-slate-100 border border-slate-200">MENU KIRI</span><i class="fa-solid fa-arrow-right text-indigo-500"></i><span class="px-3 py-2 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100">KONTEN KANAN</span></div></div>`;
+    area.prepend(header);
+    area.classList.add('bhx-right-screen-wrap');
+  }
+
+  function wrapBHX(){
+    if(!window.BHX || window.BHX.__rightLayoutWrapped) return false;
+    const oldSetMenu = window.BHX.setMenu;
+    window.BHX.setMenu = function(kind, key){
+      oldSetMenu(kind, key);
+      normalizeView(kind);
+      decorateRight(kind, key);
+    };
+    window.BHX.__rightLayoutWrapped = true;
+    return true;
+  }
+
+  function run(){
+    ['user','seller','admin'].forEach(normalizeView);
+    wrapBHX();
+    try {
+      const S = JSON.parse(localStorage.getItem('bhx_exec_state_v2') || '{}');
+      const active = (S && S.active) || {};
+      decorateRight('user', active.user || 'overview');
+      decorateRight('seller', active.seller || 'overview');
+      decorateRight('admin', active.admin || 'overview');
+    } catch(e){
+      decorateRight('user','overview');
+      decorateRight('seller','overview');
+      decorateRight('admin','overview');
+    }
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+  else run();
+
+  setTimeout(run, 300);
+  setTimeout(run, 1000);
+})();
+</script>
 </body>
 </html>
