@@ -150,6 +150,9 @@
                 <button onclick="switchAppView('marketplace')" id="tab-marketplace" class="app-tab active py-3 text-xs sm:text-sm font-bold text-white border-b-2 border-amber-400 whitespace-nowrap flex items-center gap-2">
                     <i class="fa-solid fa-store"></i> Marketplace B2B
                 </button>
+                <button onclick="switchAppView('tkdn')" id="tab-tkdn" class="app-tab py-3 text-xs sm:text-sm font-medium text-indigo-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard P3DN
+                </button>
                 <button onclick="switchAppView('kalkulator')" id="tab-kalkulator" class="app-tab py-3 text-xs sm:text-sm font-medium text-indigo-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2">
                     <i data-lucide="calculator" class="w-4 h-4"></i> Kalkulator Ekspedisi
                 </button>
@@ -428,10 +431,69 @@
             </div>
         </section>
 
-        <!-- ========================================== -->
-        <!-- DASHBOARD MONITORING P3DN & TKDN (BARU)    -->
-        <!-- ========================================== -->
-        <section class="max-w-7xl mx-auto px-4 py-4 mb-4">
+        <!-- REKOMENDASI PRODUK (Biasa) -->
+        <section class="max-w-7xl mx-auto px-4 py-8 mb-12">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Rekomendasi Grosir (B2B)</h2>
+                <button class="text-indigo-600 font-bold hover:underline text-sm hidden sm:block">Lihat Semua</button>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                <!-- Produk Regular 1 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col">
+                    <div class="h-40 md:h-52 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&q=80&w=400&h=300" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <div class="absolute top-3 left-3 bg-indigo-900 text-amber-400 text-[10px] font-black px-2.5 py-1 rounded shadow">B2B & B2C</div>
+                    </div>
+                    <div class="p-4 md:p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800 line-clamp-2 mb-2 group-hover:text-indigo-600 transition-colors">Traktor Tangan Quick G1000 Mesin Diesel</h3>
+                            <div class="text-base md:text-xl font-black text-amber-600 mb-3">Rp 15.500.000</div>
+                        </div>
+                        <div>
+                            <div class="flex items-center text-xs text-slate-500 mb-3">
+                                <i class="fa-solid fa-building mr-1.5 text-slate-400"></i> CV. Agro Mandiri
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 pt-3">
+                                <span class="flex items-center text-amber-500 font-bold"><i class="fa-solid fa-star mr-1"></i> 4.8</span>
+                                <span>Terjual 120+</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Produk Regular 2 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col">
+                    <div class="h-40 md:h-52 overflow-hidden relative flex items-center justify-center bg-slate-100">
+                        <i class="fa-solid fa-gears text-5xl text-slate-300 group-hover:scale-110 transition-transform"></i>
+                        <div class="absolute top-3 left-3 bg-white text-indigo-800 text-[10px] font-black px-2.5 py-1 rounded shadow border border-slate-200">Grosir Partai</div>
+                    </div>
+                    <div class="p-4 md:p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800 line-clamp-2 mb-2 group-hover:text-indigo-600 transition-colors">Mesin Las Inverter 900W Travo Portable</h3>
+                            <div class="text-base md:text-xl font-black text-amber-600 mb-3">Rp 850.000</div>
+                        </div>
+                        <div>
+                            <div class="flex items-center text-xs text-slate-500 mb-3">
+                                <i class="fa-solid fa-building mr-1.5 text-slate-400"></i> Teknik Jaya Sentosa
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 pt-3">
+                                <span class="flex items-center text-amber-500 font-bold"><i class="fa-solid fa-star mr-1"></i> 4.5</span>
+                                <span>Terjual 450</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2.5: DASHBOARD MONITORING P3DN & TKDN -->
+    <!-- ========================================== -->
+    <main id="view-tkdn" class="min-h-screen hidden animate-fade-in bg-slate-50 pb-20">
+        <!-- Konten Dashboard Monitoring -->
+        <section class="max-w-7xl mx-auto px-4 py-8 mb-4">
             <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
                 
                 <!-- Header Dashboard P3DN -->
@@ -470,7 +532,7 @@
                 <!-- Konten Statistik & Grafik -->
                 <div class="bg-slate-50 p-6 md:p-8">
                     
-                    <!-- 4 Kartu KPI (Key Performance Indicators) -->
+                    <!-- 4 Kartu KPI -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center relative overflow-hidden group hover:border-red-300 transition-colors">
                             <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-wallet text-xl"></i></div>
@@ -600,7 +662,6 @@
                                 </div>
                                 <button class="w-full mt-4 text-xs font-bold text-slate-500 hover:text-slate-800 border border-slate-200 rounded-lg py-2 hover:bg-slate-50">Baca Semua Berita</button>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -694,62 +755,6 @@
                             <div class="text-base md:text-lg font-black text-slate-900 mb-2">Rp 2.100.000</div>
                             <div class="flex items-center text-[10px] md:text-xs text-slate-500 border-t border-slate-100 pt-2">
                                 <i class="fa-solid fa-industry mr-1.5 text-slate-400"></i> PT. Surya Energi
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- REKOMENDASI PRODUK (Biasa) -->
-        <section class="max-w-7xl mx-auto px-4 py-8 mb-12">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Rekomendasi Grosir (B2B)</h2>
-                <button class="text-indigo-600 font-bold hover:underline text-sm hidden sm:block">Lihat Semua</button>
-            </div>
-            
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                <!-- Produk Regular 1 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col">
-                    <div class="h-40 md:h-52 overflow-hidden relative">
-                        <img src="https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&q=80&w=400&h=300" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                        <div class="absolute top-3 left-3 bg-indigo-900 text-amber-400 text-[10px] font-black px-2.5 py-1 rounded shadow">B2B & B2C</div>
-                    </div>
-                    <div class="p-4 md:p-5 flex-1 flex flex-col justify-between">
-                        <div>
-                            <h3 class="text-sm font-bold text-slate-800 line-clamp-2 mb-2 group-hover:text-indigo-600 transition-colors">Traktor Tangan Quick G1000 Mesin Diesel</h3>
-                            <div class="text-base md:text-xl font-black text-amber-600 mb-3">Rp 15.500.000</div>
-                        </div>
-                        <div>
-                            <div class="flex items-center text-xs text-slate-500 mb-3">
-                                <i class="fa-solid fa-building mr-1.5 text-slate-400"></i> CV. Agro Mandiri
-                            </div>
-                            <div class="flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 pt-3">
-                                <span class="flex items-center text-amber-500 font-bold"><i class="fa-solid fa-star mr-1"></i> 4.8</span>
-                                <span>Terjual 120+</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Produk Regular 2 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col">
-                    <div class="h-40 md:h-52 overflow-hidden relative flex items-center justify-center bg-slate-100">
-                        <i class="fa-solid fa-gears text-5xl text-slate-300 group-hover:scale-110 transition-transform"></i>
-                        <div class="absolute top-3 left-3 bg-white text-indigo-800 text-[10px] font-black px-2.5 py-1 rounded shadow border border-slate-200">Grosir Partai</div>
-                    </div>
-                    <div class="p-4 md:p-5 flex-1 flex flex-col justify-between">
-                        <div>
-                            <h3 class="text-sm font-bold text-slate-800 line-clamp-2 mb-2 group-hover:text-indigo-600 transition-colors">Mesin Las Inverter 900W Travo Portable</h3>
-                            <div class="text-base md:text-xl font-black text-amber-600 mb-3">Rp 850.000</div>
-                        </div>
-                        <div>
-                            <div class="flex items-center text-xs text-slate-500 mb-3">
-                                <i class="fa-solid fa-building mr-1.5 text-slate-400"></i> Teknik Jaya Sentosa
-                            </div>
-                            <div class="flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 pt-3">
-                                <span class="flex items-center text-amber-500 font-bold"><i class="fa-solid fa-star mr-1"></i> 4.5</span>
-                                <span>Terjual 450</span>
                             </div>
                         </div>
                     </div>
@@ -2072,7 +2077,7 @@
         // ==========================================
         window.switchAppView = function(viewName) {
             localStorage.setItem('superapp_current_view', viewName);
-            ['kalkulator', 'marketplace', 'buyer', 'seller', 'admin'].forEach(v => {
+            ['kalkulator', 'marketplace', 'tkdn', 'buyer', 'seller', 'admin'].forEach(v => {
                 const el = document.getElementById(`view-${v}`);
                 if(el) el.classList.add('hidden');
                 const tab = document.getElementById(`tab-${v}`);
