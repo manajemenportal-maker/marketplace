@@ -2647,58 +2647,58 @@
         };
 
         // FUNGSI MODAL BURSA TENDER & FORUM
+        window.openTenderPostModal = function() {
+            document.getElementById('modal-tender-post').classList.remove('hidden');
+        }
+        
         window.openTenderBidModal = function(title, budget) {
             document.getElementById('bid-tender-title').textContent = title;
             document.getElementById('bid-tender-budget').textContent = `HPS: ${budget}`;
             document.getElementById('modal-tender-bid').classList.remove('hidden');
         }
 
-        // Marketplace Slider Logic
-        let mpCurrentSlide = 0;
-        let mpSlideInterval;
-        let mpAutoSlideDelay = 5000;
-
-        window.initMpSlider = function() {
-            const slideContainer = document.getElementById('mp-slide-container');
-            if (!slideContainer) return;
-            const totalSlides = slideContainer.children.length;
-            const indicatorContainer = document.getElementById('mp-slide-indicators');
-            indicatorContainer.innerHTML = ''; 
-
-            for (let i = 0; i < totalSlides; i++) {
-                const dot = document.createElement('button');
-                dot.className = `h-2 rounded-full transition-all duration-500 ${i === 0 ? 'bg-amber-400 w-8 shadow-sm' : 'bg-white/40 hover:bg-white/80 w-2.5'}`;
-                dot.onclick = () => window.goToMpSlide(i);
-                indicatorContainer.appendChild(dot);
-            }
-            window.startMpAutoSlide();
-        }
-
-        window.updateMpSliderPosition = function() {
-            const slideContainer = document.getElementById('mp-slide-container');
-            const indicatorContainer = document.getElementById('mp-slide-indicators');
-            if(!slideContainer) return;
-            const totalSlides = slideContainer.children.length;
-            slideContainer.style.transform = `translateX(-${mpCurrentSlide * 100}%)`;
-
-            for (let i = 0; i < totalSlides; i++) {
-                const dot = indicatorContainer.children[i];
-                if (i === mpCurrentSlide) dot.className = 'h-2 rounded-full transition-all duration-500 bg-amber-400 w-8 shadow-sm';
-                else dot.className = 'h-2 rounded-full transition-all duration-500 bg-white/40 hover:bg-white/80 w-2.5';
+        // ==========================================
+        // FUNGSI TAMBAHAN: DROPDOWN & LOGO
+        // ==========================================
+        window.toggleCategoryMenu = function() {
+            const dropdown = document.getElementById('category-dropdown');
+            if (dropdown) {
+                if (dropdown.classList.contains('hidden')) {
+                    dropdown.classList.remove('hidden');
+                    setTimeout(() => dropdown.classList.remove('opacity-0', 'scale-95'), 10);
+                } else {
+                    dropdown.classList.add('opacity-0', 'scale-95');
+                    setTimeout(() => dropdown.classList.add('hidden'), 300);
+                }
             }
         }
 
-        window.nextMpSlide = function() {
-            const slideContainer = document.getElementById('mp-slide-container');
-            if(!slideContainer) return;
-            mpCurrentSlide = (mpCurrentSlide + 1) % slideContainer.children.length;
-            window.updateMpSliderPosition();
-        }
+        // Tutup dropdown kategori jika klik di luar
+        document.addEventListener('click', function(event) {
+            const wrapper = document.getElementById('desktop-category-wrapper');
+            const dropdown = document.getElementById('category-dropdown');
+            if (wrapper && !wrapper.contains(event.target) && dropdown && !dropdown.classList.contains('hidden')) {
+                window.toggleCategoryMenu();
+            }
+        });
 
-        window.prevMpSlide = function() {
-            const slideContainer = document.getElementById('mp-slide-container');
-            if(!slideContainer) return;
-            const totalSlides = slideContainer.children.length;
+        window.updateStoreLogo = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img1 = document.getElementById('seller-store-logo');
+                    const img2 = document.getElementById('seller-store-logo-large');
+                    if(img1) img1.src = e.target.result;
+                    if(img2) img2.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        };
+
+        // ==========================================
+        // 4. SLIDER MARKETPLACE B2B
+        // ==========================================
             mpCurrentSlide = (mpCurrentSlide - 1 + totalSlides) % totalSlides;
             window.updateMpSliderPosition();
         }
