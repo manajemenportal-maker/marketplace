@@ -2595,5 +2595,220 @@
         });
 
     </script>
+
+<!-- ========================================================= -->
+<!-- ADDON DASHBOARD LENGKAP: ADMIN / USER / SELLER            -->
+<!-- Catatan: Kalkulator Ekspedisi di atas TIDAK DIUBAH.       -->
+<!-- Addon ini hanya menambah menu dan konten dashboard.        -->
+<!-- ========================================================= -->
+<script>
+(function(){
+  const money = (n) => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n || 0);
+  const sample = {
+    users:[
+      ['USR-001','Andi Surya','andi@bisnis.id','Pembeli','Aktif','12 Order'],
+      ['USR-002','Budi Perkasa','budi@vendor.id','Seller','Verifikasi','4 Order'],
+      ['USR-003','Siti Aminah','siti@pabrik.id','Pembeli','Aktif','7 Order'],
+      ['USR-004','Rama Teknik','rama@teknik.id','Seller','Suspend','1 Order']
+    ],
+    sellers:[
+      ['PT. Bintang Pompa Nusantara','Pompa & Irigasi','Terverifikasi','42 Produk','55%'],
+      ['CV. Baja Mandiri','Hydrolik & Pabrikasi','Review','28 Produk','40%'],
+      ['PT. Surya Energi','Panel Surya','Terverifikasi','15 Produk','62%'],
+      ['Teknik Jaya Sentosa','Perkakas & Mesin Las','Aktif','120 Produk','30%']
+    ],
+    products:[
+      ['Pompa Sentrifugal Industri 30kW','PT. Bintang Pompa','Rp 24.500.000','TKDN 45.5%','Aktif'],
+      ['Traktor Tangan Diesel G1000','CV. Agro Mandiri','Rp 15.500.000','TKDN 38.2%','Review'],
+      ['Mesin Press Hidrolik 50 Ton','CV. Baja Mandiri','Rp 45.000.000','TKDN 35.8%','Aktif'],
+      ['Helm Safety SNI Proyek','PT. Plastik Indo','Rp 45.000','TKDN 80%','Aktif']
+    ],
+    orders:[
+      ['INV/2026/001','Andi Surya','PT. Bintang Pompa','Rp 24.500.000','Dikirim','Tertahan'],
+      ['INV/2026/002','Siti Aminah','CV. Agro Mandiri','Rp 15.500.000','Diproses','Aman'],
+      ['INV/2026/003','PT. Pabrik Baja','CV. Baja Mandiri','Rp 90.000.000','Selesai','Cair']
+    ],
+    tenders:[
+      ['TDR-001','Pengadaan 50 Unit Pompa Irigasi','Dinas Pertanian Jateng','Rp 1.250.000.000','14 Bid','Open'],
+      ['TDR-002','Kebutuhan 10 Excavator PC200','PT Tambang Makmur','Rp 15.000.000.000','8 Bid','Review'],
+      ['TDR-003','Pengadaan Helm Safety 5000 pcs','Kontraktor Nasional','Rp 350.000.000','23 Bid','Close']
+    ],
+    tickets:[
+      ['TKT-001','Andi Surya','Pengiriman terlambat','Tinggi','Open'],
+      ['TKT-002','Budi Perkasa','Upload sertifikat TKDN gagal','Sedang','Proses'],
+      ['TKT-003','Siti Aminah','Minta invoice pajak','Rendah','Close']
+    ]
+  };
+
+  function notify(msg){
+    let box = document.getElementById('bh-addon-toast');
+    if(!box){
+      box = document.createElement('div');
+      box.id = 'bh-addon-toast';
+      box.className = 'fixed bottom-5 right-5 z-[200] bg-slate-950 text-white rounded-2xl px-5 py-3 shadow-xl text-sm font-bold hidden';
+      document.body.appendChild(box);
+    }
+    box.textContent = msg;
+    box.classList.remove('hidden');
+    setTimeout(()=>box.classList.add('hidden'), 2200);
+  }
+
+  function statusBadge(text){
+    const color = text.includes('Aktif') || text.includes('Aman') || text.includes('Cair') || text.includes('Open') || text.includes('Terverifikasi') ? 'emerald' : text.includes('Review') || text.includes('Verifikasi') || text.includes('Proses') || text.includes('Sedang') ? 'amber' : text.includes('Suspend') || text.includes('Tinggi') || text.includes('Tertahan') ? 'rose' : 'slate';
+    return `<span class="inline-flex px-2.5 py-1 rounded-lg bg-${color}-50 text-${color}-700 border border-${color}-100 text-[11px] font-black">${text}</span>`;
+  }
+
+  function miniCard(title, value, icon, color='indigo'){
+    return `<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+      <div class="flex items-center justify-between gap-3"><div><p class="text-[10px] uppercase tracking-wide text-slate-500 font-black">${title}</p><div class="text-2xl font-black text-slate-900 mt-1">${value}</div></div><div class="w-11 h-11 rounded-xl bg-${color}-50 text-${color}-600 flex items-center justify-center"><i class="fa-solid ${icon}"></i></div></div>
+    </div>`;
+  }
+
+  function panel(title, sub, body, actions=''){
+    return `<div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
+      <div class="p-5 border-b border-slate-100 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"><div><h1 class="text-xl md:text-2xl font-black text-slate-800">${title}</h1><p class="text-sm text-slate-500 mt-1">${sub}</p></div>${actions}</div>
+      <div class="p-5">${body}</div>
+    </div>`;
+  }
+
+  function table(headers, rows){
+    return `<div class="overflow-x-auto rounded-2xl border border-slate-200"><table class="w-full text-left text-sm bg-white"><thead class="bg-slate-50 text-slate-500 text-xs uppercase"><tr>${headers.map(h=>`<th class="px-4 py-3 font-black whitespace-nowrap">${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+  }
+
+  function row(cells){ return `<tr class="border-t border-slate-100 hover:bg-indigo-50/30">${cells.map(c=>`<td class="px-4 py-3 whitespace-nowrap">${c}</td>`).join('')}</tr>`; }
+  function act(label, color='indigo'){ return `<button onclick="window.bhAddonNotify('${label} diproses')" class="bg-${color}-600 hover:bg-${color}-700 text-white rounded-xl px-3 py-2 text-xs font-black shadow-sm">${label}</button>`; }
+
+  window.bhAddonNotify = notify;
+
+  function addButton(nav, id, label, icon, fnName, colorClass){
+    if(!nav || document.getElementById(id)) return;
+    const btn = document.createElement('button');
+    btn.id = id;
+    btn.className = colorClass;
+    btn.setAttribute('onclick', `${fnName}('${id.replace(/^menu-(buyer|seller|admin)-/,'')}')`);
+    btn.innerHTML = `<i class="fa-solid ${icon} w-5 text-center"></i> <span class="text-sm">${label}</span>`;
+    nav.appendChild(btn);
+  }
+
+  function addView(container, id, html, max='max-w-6xl'){
+    if(!container || document.getElementById(id)) return;
+    const div = document.createElement('div');
+    div.id = id;
+    div.className = `hidden animate-fade-in ${max}`;
+    div.innerHTML = html;
+    container.appendChild(div);
+  }
+
+  function activeButton(selector, activeId, active, idle){
+    document.querySelectorAll(selector).forEach(el=>{ el.className = idle; });
+    const btn = document.getElementById(activeId);
+    if(btn) btn.className = active;
+  }
+
+  function hide(ids){ ids.forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.add('hidden'); }); }
+  function show(id){ const el=document.getElementById(id); if(el) el.classList.remove('hidden'); }
+
+  const buyerViews = ['buyer-ringkasan-view','buyer-pesanan-view','buyer-wishlist-view','buyer-alamat-view','buyer-bantuan-view','buyer-notif-view','buyer-keamanan-view','buyer-setting-view'];
+  const sellerViews = ['seller-ringkasan-view','seller-product-list','seller-add-product','seller-order-view','seller-tender-view','seller-dokumen-view','seller-promo-view','seller-ulasan-view','seller-analitik-view','seller-saldo-view','seller-setting-view'];
+  const adminViews = ['admin-overview-view','admin-user-view','admin-seller-view','admin-product-view','admin-order-view','admin-tender-view','admin-support-view','admin-cms-view','admin-setting-view','admin-desain-view','admin-pajak-view'];
+
+  function installBuyer(){
+    const nav = document.querySelector('#view-buyer nav');
+    const content = document.querySelector('#view-buyer .flex-1');
+    const base = 'buyer-menu-item flex-shrink-0 flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 px-4 py-2.5 md:py-3 rounded-xl font-medium transition-colors w-full text-left';
+    addButton(nav,'menu-buyer-ringkasan','Ringkasan','fa-gauge','toggleBuyerMenu',base);
+    addButton(nav,'menu-buyer-wishlist','Wishlist','fa-heart','toggleBuyerMenu',base);
+    addButton(nav,'menu-buyer-alamat','Alamat Proyek','fa-location-dot','toggleBuyerMenu',base);
+    addButton(nav,'menu-buyer-bantuan','Bantuan / Tiket','fa-headset','toggleBuyerMenu',base);
+    addButton(nav,'menu-buyer-notif','Notifikasi','fa-bell','toggleBuyerMenu',base);
+    addButton(nav,'menu-buyer-keamanan','Keamanan','fa-lock','toggleBuyerMenu',base);
+
+    addView(content,'buyer-ringkasan-view', `<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">${miniCard('Total Belanja','Rp 155 Jt','fa-wallet','emerald')}${miniCard('Pesanan Aktif','3','fa-box-open','indigo')}${miniCard('Wishlist','12','fa-heart','rose')}${miniCard('Tiket Open','1','fa-headset','amber')}</div>` + panel('Ringkasan Pembeli','Kontrol cepat untuk pesanan, alamat, invoice, wishlist, dan bantuan.', `<div class="grid md:grid-cols-3 gap-4"><button onclick="toggleBuyerMenu('pesanan')" class="p-5 rounded-2xl bg-indigo-50 border border-indigo-100 text-left"><i class="fa-solid fa-box-open text-indigo-600 text-2xl mb-3"></i><b>Cek Pesanan</b><p class="text-xs text-slate-500 mt-1">Lacak paket dan invoice</p></button><button onclick="toggleBuyerMenu('alamat')" class="p-5 rounded-2xl bg-amber-50 border border-amber-100 text-left"><i class="fa-solid fa-location-dot text-amber-600 text-2xl mb-3"></i><b>Alamat Proyek</b><p class="text-xs text-slate-500 mt-1">Kantor, gudang, proyek</p></button><button onclick="toggleBuyerMenu('bantuan')" class="p-5 rounded-2xl bg-rose-50 border border-rose-100 text-left"><i class="fa-solid fa-headset text-rose-600 text-2xl mb-3"></i><b>Buka Tiket</b><p class="text-xs text-slate-500 mt-1">Komplain dan bantuan</p></button></div>`));
+    addView(content,'buyer-wishlist-view', panel('Wishlist Produk','Produk yang disimpan pembeli untuk dibeli nanti.', `<div class="grid md:grid-cols-3 gap-4">${sample.products.slice(0,3).map(p=>`<div class="border border-slate-200 rounded-2xl p-4"><div class="h-28 rounded-xl bg-slate-100 flex items-center justify-center mb-3"><i class="fa-solid fa-box text-4xl text-slate-300"></i></div><b class="text-sm">${p[0]}</b><div class="text-amber-600 font-black mt-2">${p[2]}</div><button onclick="window.bhAddonNotify('Produk masuk keranjang')" class="mt-3 w-full bg-indigo-600 text-white rounded-xl py-2 text-xs font-black">Masuk Keranjang</button></div>`).join('')}</div>`));
+    addView(content,'buyer-alamat-view', panel('Alamat Proyek & Gudang','Pembeli bisa mengatur banyak alamat pengiriman.', `<div class="grid lg:grid-cols-2 gap-4">${['Kantor Pusat - Jakarta Selatan','Gudang Proyek - Karawang','Workshop - Tangerang'].map((a,i)=>`<div class="border border-slate-200 rounded-2xl p-4"><div class="flex justify-between gap-3"><b>${a}</b>${i===0?statusBadge('Utama'):''}</div><p class="text-sm text-slate-500 mt-2">Jl. Industri Raya No. ${i+12}, PIC: 08xxxxxxxx</p><div class="mt-3 flex gap-2">${act('Edit')}${act('Utamakan','emerald')}</div></div>`).join('')}</div><button onclick="window.bhAddonNotify('Form tambah alamat dibuka')" class="mt-4 bg-slate-900 text-white rounded-xl px-5 py-3 font-black text-sm"><i class="fa-solid fa-plus mr-2"></i>Tambah Alamat</button>`));
+    addView(content,'buyer-bantuan-view', panel('Bantuan & Tiket','Pembeli bisa membuat komplain, permintaan invoice, atau bantuan pengiriman.', table(['ID','Topik','Prioritas','Status','Aksi'], sample.tickets.map(t=>row([`<b>${t[0]}</b>`,t[2],statusBadge(t[3]),statusBadge(t[4]),`${act('Balas')}`]))), `<button onclick="window.bhAddonNotify('Tiket baru dibuat')" class="bg-rose-600 text-white px-4 py-2 rounded-xl text-xs font-black">Buat Tiket</button>`));
+    addView(content,'buyer-notif-view', panel('Notifikasi','Pusat pesan order, promo, tender cocok, dan pengingat pembayaran.', `<div class="space-y-3">${['Pesanan INV/2026/001 sedang dikirim','Promo gratis biaya admin untuk transaksi B2B minggu ini','Tender pompa irigasi cocok dengan wishlist Anda','Invoice pajak sudah tersedia'].map((n,i)=>`<div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex gap-3"><i class="fa-solid fa-bell text-indigo-600 mt-1"></i><div><b>${n}</b><p class="text-xs text-slate-500 mt-1">${i+1} jam lalu</p></div></div>`).join('')}</div>`));
+    addView(content,'buyer-keamanan-view', panel('Keamanan Akun','Kontrol password, OTP, dan perangkat login.', `<div class="grid md:grid-cols-2 gap-4"><div class="border rounded-2xl p-5"><b>Password</b><p class="text-sm text-slate-500 mt-1">Terakhir diubah 30 hari lalu</p><div class="mt-3">${act('Ubah Password')}</div></div><div class="border rounded-2xl p-5"><b>OTP / 2FA</b><p class="text-sm text-slate-500 mt-1">Status belum aktif</p><div class="mt-3">${act('Aktifkan','emerald')}</div></div></div>`));
+  }
+
+  function installSeller(){
+    const nav = document.querySelector('#view-seller nav');
+    const content = document.querySelector('#view-seller .flex-1');
+    const base = 'seller-menu-item flex-shrink-0 flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 px-4 py-2.5 md:py-3 rounded-xl font-medium transition-colors w-full text-left';
+    addButton(nav,'menu-seller-ringkasan','Ringkasan','fa-gauge','toggleSellerMenu',base);
+    addButton(nav,'menu-seller-order','Order Masuk','fa-receipt','toggleSellerMenu',base);
+    addButton(nav,'menu-seller-tender','Tender Bid','fa-hand-holding-dollar','toggleSellerMenu',base);
+    addButton(nav,'menu-seller-dokumen','Dokumen TKDN','fa-file-shield','toggleSellerMenu',base);
+    addButton(nav,'menu-seller-promo','Promo Toko','fa-bullhorn','toggleSellerMenu',base);
+    addButton(nav,'menu-seller-ulasan','Ulasan','fa-star','toggleSellerMenu',base);
+    addButton(nav,'menu-seller-analitik','Analitik','fa-chart-line','toggleSellerMenu',base);
+
+    addView(content,'seller-ringkasan-view', `<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">${miniCard('Omzet','Rp 245 Jt','fa-chart-line','emerald')}${miniCard('Produk Aktif','42','fa-boxes-stacked','amber')}${miniCard('Order Masuk','18','fa-receipt','indigo')}${miniCard('Dana Escrow','Rp 24,5 Jt','fa-vault','rose')}</div>` + panel('Ringkasan Seller','Kontrol cepat toko, produk, order, bid tender, dan escrow.', `<div class="grid md:grid-cols-4 gap-4"><button onclick="toggleSellerMenu('produk')" class="p-4 border rounded-2xl bg-indigo-50 text-left"><i class="fa-solid fa-box text-indigo-600 mb-2"></i><b class="block text-sm">Produk</b></button><button onclick="toggleSellerMenu('order')" class="p-4 border rounded-2xl bg-emerald-50 text-left"><i class="fa-solid fa-receipt text-emerald-600 mb-2"></i><b class="block text-sm">Order</b></button><button onclick="toggleSellerMenu('tender')" class="p-4 border rounded-2xl bg-amber-50 text-left"><i class="fa-solid fa-hand-holding-dollar text-amber-600 mb-2"></i><b class="block text-sm">Tender</b></button><button onclick="toggleSellerMenu('saldo')" class="p-4 border rounded-2xl bg-rose-50 text-left"><i class="fa-solid fa-vault text-rose-600 mb-2"></i><b class="block text-sm">Escrow</b></button></div>`));
+    addView(content,'seller-order-view', panel('Order Masuk','Seller bisa proses order, cetak invoice, dan update resi.', table(['Invoice','Buyer','Nilai','Status','Escrow','Aksi'], sample.orders.map(o=>row([`<b>${o[0]}</b>`,o[1],`<b>${o[3]}</b>`,statusBadge(o[4]),statusBadge(o[5]),`${act('Proses','emerald')} ${act('Resi','indigo')}`])))));
+    addView(content,'seller-tender-view', panel('Tender Bid','Seller bisa mencari tender dan mengirim penawaran.', table(['ID','Tender','Owner','HPS','Bid','Aksi'], sample.tenders.map(t=>row([`<b>${t[0]}</b>`,t[1],t[2],`<b>${t[3]}</b>`,t[4],`${act('Ajukan','amber')} ${act('Detail')}`])))));
+    addView(content,'seller-dokumen-view', panel('Dokumen TKDN & Legalitas','Upload dan cek status dokumen wajib seller.', `<div class="grid md:grid-cols-2 gap-4">${['NIB','NPWP','Akta Perusahaan','Sertifikat TKDN','SNI Produk','Surat Distributor'].map((d,i)=>`<div class="border rounded-2xl p-4 flex justify-between items-center"><div><b>${d}</b><p class="text-xs text-slate-500 mt-1">${i<4?'Terverifikasi':'Belum upload'}</p></div>${statusBadge(i<4?'Valid':'Pending')}</div>`).join('')}</div>`));
+    addView(content,'seller-promo-view', panel('Promo Toko','Atur diskon, voucher, bundling, dan iklan produk.', table(['Promo','Produk','Diskon','Periode','Status','Aksi'], [row(['Diskon Grosir Pompa','Pompa Sentrifugal','5%','Mei 2026',statusBadge('Aktif'),act('Edit')]), row(['Voucher Seller','Semua Produk','Rp 50.000','Mei 2026',statusBadge('Review'),act('Edit')])]), `<button onclick="window.bhAddonNotify('Promo baru dibuat')" class="bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-black">Buat Promo</button>`));
+    addView(content,'seller-ulasan-view', panel('Ulasan Pembeli','Pantau rating dan tanggapi ulasan.', table(['Buyer','Produk','Rating','Ulasan','Aksi'], [row(['Andi Surya','Pompa Sentrifugal','★★★★★','Barang sesuai dan cepat.',act('Balas')]), row(['Siti Aminah','Traktor Diesel','★★★★☆','Packing aman.',act('Balas')])])));
+    addView(content,'seller-analitik-view', panel('Analitik Toko','Ringkasan performa penjualan dan produk.', `<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">${miniCard('Kunjungan','12.450','fa-eye','indigo')}${miniCard('Konversi','4.8%','fa-percent','emerald')}${miniCard('Repeat Order','28%','fa-rotate','amber')}${miniCard('Rating','4.8','fa-star','rose')}</div><div class="bg-slate-50 border rounded-2xl p-5"><h3 class="font-black mb-4">Produk Terlaris</h3><div class="space-y-3">${sample.products.map((p,i)=>`<div class="flex justify-between items-center bg-white rounded-xl p-3 border"><span class="font-bold text-sm">#${i+1} ${p[0]}</span><span class="text-indigo-600 font-black">${120-i*22} terjual</span></div>`).join('')}</div></div>`));
+  }
+
+  function installAdmin(){
+    const nav = document.querySelector('#view-admin nav');
+    const content = document.querySelector('#view-admin .flex-1');
+    if(document.getElementById('admin-desain-view')) document.getElementById('admin-desain-view').classList.add('admin-content-view');
+    if(document.getElementById('admin-pajak-view')) document.getElementById('admin-pajak-view').classList.add('admin-content-view');
+    const base = 'admin-menu-item w-full flex items-center gap-3 text-emerald-400 hover:bg-slate-800 hover:text-emerald-300 px-4 py-3 rounded-xl font-medium transition-colors';
+    addButton(nav,'menu-admin-overview','Overview','fa-gauge-high','toggleAdminMenu',base);
+    addButton(nav,'menu-admin-user','User & Role','fa-users','toggleAdminMenu',base);
+    addButton(nav,'menu-admin-seller','Seller/Vendor','fa-store','toggleAdminMenu',base);
+    addButton(nav,'menu-admin-product','Produk','fa-boxes-stacked','toggleAdminMenu',base);
+    addButton(nav,'menu-admin-order','Order & Refund','fa-receipt','toggleAdminMenu',base);
+    addButton(nav,'menu-admin-tender','Tender','fa-briefcase','toggleAdminMenu',base);
+    addButton(nav,'menu-admin-support','Support','fa-headset','toggleAdminMenu',base);
+    addButton(nav,'menu-admin-cms','CMS Konten','fa-palette','toggleAdminMenu',base);
+    addButton(nav,'menu-admin-setting','Setting Sistem','fa-gear','toggleAdminMenu',base);
+
+    addView(content,'admin-overview-view', `<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">${miniCard('GMV Platform','Rp 1,45 M','fa-chart-line','emerald')}${miniCard('User','18.240','fa-users','indigo')}${miniCard('Vendor','1.240','fa-store','amber')}${miniCard('Escrow','Rp 1,45 M','fa-vault','rose')}</div>` + panel('Overview Admin','Pusat monitoring seluruh marketplace, tender, seller, buyer, dan escrow.', `<div class="grid md:grid-cols-3 gap-4"><button onclick="toggleAdminMenu('user')" class="p-5 rounded-2xl bg-indigo-50 border border-indigo-100 text-left"><i class="fa-solid fa-users text-indigo-600 text-2xl mb-3"></i><b>User & Role</b><p class="text-xs text-slate-500 mt-1">Kelola akses user</p></button><button onclick="toggleAdminMenu('product')" class="p-5 rounded-2xl bg-amber-50 border border-amber-100 text-left"><i class="fa-solid fa-boxes-stacked text-amber-600 text-2xl mb-3"></i><b>Moderasi Produk</b><p class="text-xs text-slate-500 mt-1">Approve/reject produk</p></button><button onclick="toggleAdminMenu('pajak')" class="p-5 rounded-2xl bg-emerald-50 border border-emerald-100 text-left"><i class="fa-solid fa-vault text-emerald-600 text-2xl mb-3"></i><b>Escrow</b><p class="text-xs text-slate-500 mt-1">Pantau dana</p></button></div>`),'max-w-6xl');
+    addView(content,'admin-user-view', panel('User & Role Management','Admin dapat mengubah role, suspend, dan verifikasi user.', table(['ID','Nama','Email','Role','Status','Aksi'], sample.users.map(u=>row([`<b>${u[0]}</b>`,u[1],u[2],u[3],statusBadge(u[4]),`${act('Edit Role')} ${act(u[4]==='Suspend'?'Aktifkan':'Suspend','rose')}`]))), `<button onclick="window.bhAddonNotify('User baru ditambahkan')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-black">Tambah User</button>`),'max-w-6xl');
+    addView(content,'admin-seller-view', panel('Seller / Vendor','Kontrol vendor, legalitas, badge TKDN, dan performa toko.', table(['Vendor','Bidang','Status','Produk','Avg TKDN','Aksi'], sample.sellers.map(s=>row([`<b>${s[0]}</b>`,s[1],statusBadge(s[2]),s[3],s[4],`${act('Verifikasi','emerald')} ${act('Audit')}`])))),'max-w-6xl');
+    addView(content,'admin-product-view', panel('Moderasi Produk','Approve, reject, edit kategori, dan cek sertifikat TKDN.', table(['Produk','Seller','Harga','TKDN','Status','Aksi'], sample.products.map(p=>row([`<b>${p[0]}</b>`,p[1],`<b>${p[2]}</b>`,p[3],statusBadge(p[4]),`${act('Approve','emerald')} ${act('Tolak','rose')} ${act('Edit')}`])))),'max-w-6xl');
+    addView(content,'admin-order-view', panel('Order & Refund','Monitor transaksi, dispute, pengiriman, dan refund.', table(['Invoice','Buyer','Seller','Nilai','Status','Escrow','Aksi'], sample.orders.map(o=>row([`<b>${o[0]}</b>`,o[1],o[2],`<b>${o[3]}</b>`,statusBadge(o[4]),statusBadge(o[5]),`${act('Audit')} ${act('Refund','rose')}`])))),'max-w-6xl');
+    addView(content,'admin-tender-view', panel('Moderasi Tender','Kelola proyek, bidding, validasi owner, dan pemenang tender.', table(['ID','Tender','Owner','HPS','Bid','Status','Aksi'], sample.tenders.map(t=>row([`<b>${t[0]}</b>`,t[1],t[2],`<b>${t[3]}</b>`,t[4],statusBadge(t[5]),`${act('Moderasi')} ${act('Tutup','rose')}`]))), `<button onclick="window.openTenderPostModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-black">Posting Tender</button>`),'max-w-6xl');
+    addView(content,'admin-support-view', panel('Support Center','Admin menangani tiket user dan seller.', table(['ID','User','Topik','Prioritas','Status','Aksi'], sample.tickets.map(t=>row([`<b>${t[0]}</b>`,t[1],t[2],statusBadge(t[3]),statusBadge(t[4]),`${act('Balas')} ${act('Close','emerald')}`])))),'max-w-6xl');
+    addView(content,'admin-cms-view', panel('CMS Konten & Tampilan','Atur banner, kategori, promo, artikel, dan tampilan marketplace.', `<div class="space-y-5"><div><label class="text-sm font-black text-slate-700">Teks Banner Marketplace</label><input id="addon-banner-text" class="mt-2 w-full border rounded-xl p-3" value="Solusi Lengkap Industri & Pertanian"></div><div class="grid md:grid-cols-3 gap-4"><button onclick="localStorage.setItem('addon_banner',document.getElementById('addon-banner-text').value);window.bhAddonNotify('Banner disimpan')" class="bg-indigo-600 text-white rounded-xl px-5 py-3 font-black">Simpan Banner</button><button onclick="window.bhAddonNotify('Preview marketplace dibuka')" class="bg-slate-900 text-white rounded-xl px-5 py-3 font-black">Preview</button><button onclick="window.bhAddonNotify('Cache tampilan dibersihkan')" class="bg-amber-500 text-indigo-950 rounded-xl px-5 py-3 font-black">Clear Cache</button></div><div class="p-5 rounded-2xl bg-gradient-to-r from-indigo-700 to-violet-800 text-white"><b>Preview Banner:</b><p class="text-2xl font-black mt-2">Solusi Lengkap Industri & Pertanian</p></div></div>`),'max-w-6xl');
+    addView(content,'admin-setting-view', panel('Setting Sistem','Kontrol global platform, maintenance, komisi, verifikasi, dan fitur wajib.', `<div class="grid md:grid-cols-2 gap-4"><label class="flex justify-between items-center border rounded-2xl p-5"><div><b>Website Online</b><p class="text-xs text-slate-500">Matikan jika perlu suspend platform.</p></div><input type="checkbox" checked class="w-5 h-5 accent-indigo-600"></label><label class="flex justify-between items-center border rounded-2xl p-5"><div><b>Maintenance Mode</b><p class="text-xs text-slate-500">User non-admin tidak bisa transaksi.</p></div><input type="checkbox" class="w-5 h-5 accent-indigo-600"></label><label class="flex justify-between items-center border rounded-2xl p-5"><div><b>Auto Approve Produk</b><p class="text-xs text-slate-500">Produk seller langsung tayang.</p></div><input type="checkbox" class="w-5 h-5 accent-indigo-600"></label><label class="flex justify-between items-center border rounded-2xl p-5"><div><b>Wajib TKDN Tender</b><p class="text-xs text-slate-500">Tender menampilkan syarat TKDN.</p></div><input type="checkbox" checked class="w-5 h-5 accent-indigo-600"></label></div><div class="mt-5 bg-slate-50 border rounded-2xl p-5"><label class="text-sm font-black">Komisi Platform (%)</label><input type="range" min="1" max="15" value="5" oninput="document.getElementById('addon-komisi').textContent=this.value+'%'" class="w-full mt-3 accent-indigo-600"><div id="addon-komisi" class="font-black text-indigo-700 mt-2">5%</div></div>`),'max-w-6xl');
+  }
+
+  function overrideToggles(){
+    window.toggleBuyerMenu = function(menu){
+      const active = 'buyer-menu-item flex-shrink-0 flex items-center gap-3 text-indigo-700 bg-indigo-50 px-4 py-2.5 md:py-3 rounded-xl font-bold transition-colors w-full text-left';
+      const idle = 'buyer-menu-item flex-shrink-0 flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 px-4 py-2.5 md:py-3 rounded-xl font-medium transition-colors w-full text-left';
+      hide(buyerViews); show(`buyer-${menu}-view`); activeButton('.buyer-menu-item',`menu-buyer-${menu}`,active,idle);
+    };
+    window.toggleSellerMenu = function(menu){
+      const active = 'seller-menu-item flex-shrink-0 flex items-center gap-3 text-indigo-700 bg-indigo-50 px-4 py-2.5 md:py-3 rounded-xl font-bold transition-colors w-full text-left';
+      const idle = 'seller-menu-item flex-shrink-0 flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 px-4 py-2.5 md:py-3 rounded-xl font-medium transition-colors w-full text-left';
+      hide(sellerViews);
+      const id = menu === 'produk' ? 'seller-product-list' : `seller-${menu}-view`;
+      show(id); activeButton('.seller-menu-item',`menu-seller-${menu}`,active,idle);
+    };
+    window.toggleAdminMenu = function(menu){
+      const active = 'admin-menu-item w-full flex items-center gap-3 text-white bg-indigo-600 px-4 py-3 rounded-xl font-bold shadow-md transition-colors';
+      const idle = 'admin-menu-item w-full flex items-center gap-3 text-emerald-400 hover:bg-slate-800 hover:text-emerald-300 px-4 py-3 rounded-xl font-medium transition-colors';
+      hide(adminViews); show(`admin-${menu}-view`); activeButton('.admin-menu-item',`menu-admin-${menu}`,active,idle);
+    };
+  }
+
+  function init(){
+    installBuyer(); installSeller(); installAdmin(); overrideToggles();
+    // Supaya halaman admin tidak kosong akibat class lama yang kurang lengkap.
+    if(document.getElementById('view-admin') && !document.getElementById('view-admin').classList.contains('hidden')) window.toggleAdminMenu('overview');
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+
 </body>
 </html>
