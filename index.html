@@ -2810,5 +2810,233 @@
 })();
 </script>
 
+
+<!-- ========================================================= -->
+<!-- ADDON V2: MENU ADMIN / USER / SELLER LANGSUNG EKSEKUSI    -->
+<!-- Addon ini tidak mengubah coding utama dan kalkulator.      -->
+<!-- ========================================================= -->
+<script>
+(function(){
+  const KEY = 'bhx_exec_state_v2';
+  const DEFAULT = {
+    active: { user:'overview', seller:'overview', admin:'overview' },
+    settings: { siteOnline:true, maintenance:false, autoApprove:false, wajibTkdn:true, commission:5, banner:'Solusi Lengkap Industri & Pertanian' },
+    users: [
+      {id:'USR-001', name:'Andi Surya', email:'andi@bisnis.id', role:'Pembeli', status:'Aktif', order:12, spend:155000000},
+      {id:'USR-002', name:'Budi Perkasa', email:'budi@vendor.id', role:'Seller', status:'Verifikasi', order:4, spend:45000000},
+      {id:'USR-003', name:'Siti Aminah', email:'siti@pabrik.id', role:'Pembeli', status:'Aktif', order:7, spend:78000000},
+      {id:'USR-004', name:'Rama Teknik', email:'rama@teknik.id', role:'Seller', status:'Suspend', order:1, spend:12000000}
+    ],
+    sellers: [
+      {id:'VEN-001', name:'PT. Bintang Pompa Nusantara', field:'Pompa & Irigasi', status:'Terverifikasi', products:42, tkdn:55},
+      {id:'VEN-002', name:'CV. Baja Mandiri', field:'Hydrolik & Pabrikasi', status:'Review', products:28, tkdn:40},
+      {id:'VEN-003', name:'PT. Surya Energi', field:'Panel Surya', status:'Terverifikasi', products:15, tkdn:62},
+      {id:'VEN-004', name:'Teknik Jaya Sentosa', field:'Perkakas & Mesin Las', status:'Aktif', products:120, tkdn:30}
+    ],
+    products: [
+      {id:'PRD-001', name:'Pompa Sentrifugal Industri 30kW', seller:'PT. Bintang Pompa', price:24500000, tkdn:45.5, stock:18, status:'Aktif'},
+      {id:'PRD-002', name:'Traktor Tangan Diesel G1000', seller:'CV. Agro Mandiri', price:15500000, tkdn:38.2, stock:9, status:'Review'},
+      {id:'PRD-003', name:'Mesin Press Hidrolik 50 Ton', seller:'CV. Baja Mandiri', price:45000000, tkdn:35.8, stock:3, status:'Aktif'},
+      {id:'PRD-004', name:'Helm Safety SNI Proyek', seller:'PT. Plastik Indo', price:45000, tkdn:80, stock:1200, status:'Aktif'}
+    ],
+    orders: [
+      {id:'INV/2026/001', buyer:'Andi Surya', seller:'PT. Bintang Pompa', product:'Pompa Sentrifugal Industri', value:24500000, status:'Dikirim', escrow:'Tertahan'},
+      {id:'INV/2026/002', buyer:'Siti Aminah', seller:'CV. Agro Mandiri', product:'Traktor Tangan Diesel', value:15500000, status:'Diproses', escrow:'Aman'},
+      {id:'INV/2026/003', buyer:'PT. Pabrik Baja', seller:'CV. Baja Mandiri', product:'Mesin Press Hidrolik', value:90000000, status:'Selesai', escrow:'Cair'}
+    ],
+    tenders: [
+      {id:'TDR-001', title:'Pengadaan 50 Unit Pompa Irigasi', owner:'Dinas Pertanian Jateng', hps:1250000000, bids:14, status:'Open'},
+      {id:'TDR-002', title:'Kebutuhan 10 Excavator PC200', owner:'PT Tambang Makmur', hps:15000000000, bids:8, status:'Review'},
+      {id:'TDR-003', title:'Pengadaan Helm Safety 5000 pcs', owner:'Kontraktor Nasional', hps:350000000, bids:23, status:'Close'}
+    ],
+    tickets: [
+      {id:'TKT-001', user:'Andi Surya', topic:'Pengiriman terlambat', priority:'Tinggi', status:'Open'},
+      {id:'TKT-002', user:'Budi Perkasa', topic:'Upload sertifikat TKDN gagal', priority:'Sedang', status:'Proses'},
+      {id:'TKT-003', user:'Siti Aminah', topic:'Minta invoice pajak', priority:'Rendah', status:'Close'}
+    ],
+    addresses: [
+      {id:'ADR-001', name:'Kantor Pusat - Jakarta Selatan', address:'Jl. Industri Raya No. 12, Jakarta Selatan', pic:'Andi / 08xxxxxxxx', main:true},
+      {id:'ADR-002', name:'Gudang Proyek - Karawang', address:'Kawasan Industri Karawang, Blok B2', pic:'Gudang / 08xxxxxxxx', main:false}
+    ],
+    wishlist:['PRD-001','PRD-003','PRD-004']
+  };
+  let S = load();
+
+  const userMenus = [
+    ['overview','fa-gauge','Ringkasan'], ['orders','fa-box-open','Pesanan Saya'], ['wishlist','fa-heart','Wishlist'], ['addresses','fa-location-dot','Alamat Proyek'], ['tickets','fa-headset','Bantuan / Tiket'], ['notifications','fa-bell','Notifikasi'], ['security','fa-lock','Keamanan'], ['profile','fa-user-gear','Profil']
+  ];
+  const sellerMenus = [
+    ['overview','fa-gauge','Ringkasan'], ['products','fa-boxes-stacked','Produk Saya'], ['orders','fa-receipt','Order Masuk'], ['bids','fa-hand-holding-dollar','Tender Bid'], ['documents','fa-file-shield','Dokumen TKDN'], ['promo','fa-bullhorn','Promo Toko'], ['reviews','fa-star','Ulasan'], ['analytics','fa-chart-line','Analitik'], ['escrow','fa-vault','Saldo/Escrow'], ['settings','fa-sliders','Setting Toko']
+  ];
+  const adminMenus = [
+    ['overview','fa-gauge-high','Overview'], ['users','fa-users','User & Role'], ['sellers','fa-store','Seller/Vendor'], ['products','fa-boxes-stacked','Produk'], ['orders','fa-receipt','Order & Refund'], ['tenders','fa-briefcase','Tender'], ['support','fa-headset','Support'], ['cms','fa-palette','CMS Konten'], ['finance','fa-vault','Escrow/Keuangan'], ['settings','fa-gear','Setting Sistem']
+  ];
+
+  function load(){ try { return merge(DEFAULT, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch(e){ return JSON.parse(JSON.stringify(DEFAULT)); } }
+  function merge(a,b){ const out = Array.isArray(a) ? [...a] : {...a}; for(const k in b){ if(b[k] && typeof b[k]==='object' && !Array.isArray(b[k]) && a[k]) out[k]=merge(a[k],b[k]); else out[k]=b[k]; } return out; }
+  function save(){ localStorage.setItem(KEY, JSON.stringify(S)); }
+  function rp(n){ return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0)); }
+  function toast(msg){ let t=document.getElementById('bhx-toast'); if(!t){ t=document.createElement('div'); t.id='bhx-toast'; t.className='fixed bottom-5 right-5 z-[300] bg-slate-950 text-white rounded-2xl px-5 py-3 shadow-xl text-sm font-bold hidden'; document.body.appendChild(t); } t.textContent=msg; t.classList.remove('hidden'); setTimeout(()=>t.classList.add('hidden'),2200); }
+  function color(s){ return /Aktif|Aman|Cair|Open|Terverifikasi|Selesai|Utama/i.test(s)?'emerald':/Review|Verifikasi|Proses|Sedang|Diproses/i.test(s)?'amber':/Suspend|Tinggi|Tertahan|Refund|Close/i.test(s)?'rose':'slate'; }
+  function badge(s){ const c=color(String(s)); return `<span class="inline-flex px-2.5 py-1 rounded-lg bg-${c}-50 text-${c}-700 border border-${c}-100 text-[11px] font-black">${s}</span>`; }
+  function card(t,v,ic,c='indigo',sub=''){ return `<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><div class="flex items-center justify-between gap-3"><div><p class="text-[10px] uppercase tracking-wide text-slate-500 font-black">${t}</p><div class="text-2xl font-black text-slate-900 mt-1">${v}</div>${sub?`<p class="text-xs text-slate-500 mt-1">${sub}</p>`:''}</div><div class="w-11 h-11 rounded-xl bg-${c}-50 text-${c}-600 flex items-center justify-center"><i class="fa-solid ${ic}"></i></div></div></div>`; }
+  function panel(title, sub, body, actions=''){ return `<div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in"><div class="p-5 border-b border-slate-100 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"><div><h1 class="text-xl md:text-2xl font-black text-slate-800">${title}</h1><p class="text-sm text-slate-500 mt-1">${sub}</p></div>${actions}</div><div class="p-5">${body}</div></div>`; }
+  function table(head, rows){ return `<div class="overflow-x-auto rounded-2xl border border-slate-200"><table class="w-full text-left text-sm bg-white"><thead class="bg-slate-50 text-slate-500 text-xs uppercase"><tr>${head.map(h=>`<th class="px-4 py-3 font-black whitespace-nowrap">${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`; }
+  function tr(cells){ return `<tr class="border-t border-slate-100 hover:bg-indigo-50/30">${cells.map(c=>`<td class="px-4 py-3 whitespace-nowrap">${c}</td>`).join('')}</tr>`; }
+  function action(label, fn, cls='indigo'){ return `<button onclick="BHX.${fn}" class="bg-${cls}-600 hover:bg-${cls}-700 text-white rounded-xl px-3 py-2 text-xs font-black shadow-sm whitespace-nowrap">${label}</button>`; }
+  function input(id, label, value='', type='text'){ return `<label class="block"><span class="text-xs font-black text-slate-600 uppercase">${label}</span><input id="${id}" type="${type}" value="${esc(value)}" class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-400"></label>`; }
+  function esc(v){ return String(v??'').replace(/[&<>'"]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m])); }
+
+  function ensureArea(kind){
+    const view = document.getElementById(`view-${kind}`);
+    if(!view) return null;
+    const content = view.querySelector('.flex-1') || view.querySelector('section') || view;
+    let area = document.getElementById(`bhx-${kind}-content`);
+    if(!area){
+      Array.from(content.children).forEach(ch=>ch.classList.add('hidden'));
+      area = document.createElement('div');
+      area.id = `bhx-${kind}-content`;
+      area.className = 'animate-fade-in max-w-6xl';
+      content.appendChild(area);
+    }
+    return area;
+  }
+  function installMenu(kind, menus){
+    const nav = document.querySelector(`#view-${kind} nav`);
+    if(!nav) return;
+    nav.innerHTML = '';
+    const dark = kind==='admin';
+    menus.forEach(([key, icon, label])=>{
+      const b=document.createElement('button');
+      b.id=`bhx-menu-${kind}-${key}`;
+      b.type='button';
+      b.onclick=()=>setMenu(kind,key);
+      b.innerHTML=`<i class="fa-solid ${icon} w-5 text-center"></i><span class="text-sm">${label}</span>`;
+      b.className=menuClass(kind, S.active[kind]===key, dark);
+      nav.appendChild(b);
+    });
+  }
+  function menuClass(kind, active, dark){
+    if(dark) return `w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${active?'text-white bg-indigo-600 font-black shadow-md':'text-emerald-400 hover:bg-slate-800 hover:text-emerald-300 font-medium'}`;
+    return `${kind}-menu-item flex-shrink-0 flex items-center gap-3 px-4 py-2.5 md:py-3 rounded-xl transition-colors w-full text-left ${active?'text-indigo-700 bg-indigo-50 font-black':'text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-medium'}`;
+  }
+  function setMenu(kind,key){ S.active[kind]=key; save(); renderKind(kind); }
+  function refreshMenu(kind, menus){ const dark=kind==='admin'; menus.forEach(([key])=>{ const el=document.getElementById(`bhx-menu-${kind}-${key}`); if(el) el.className=menuClass(kind,S.active[kind]===key,dark); }); }
+
+  function renderKind(kind){
+    if(kind==='user'){ refreshMenu('user',userMenus); ensureArea('buyer').innerHTML = renderUser(S.active.user); }
+    if(kind==='seller'){ refreshMenu('seller',sellerMenus); ensureArea('seller').innerHTML = renderSeller(S.active.seller); }
+    if(kind==='admin'){ refreshMenu('admin',adminMenus); ensureArea('admin').innerHTML = renderAdmin(S.active.admin); }
+  }
+
+  function renderUser(k){
+    if(k==='overview') return `<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">${card('Total Belanja',rp(155000000),'fa-wallet','emerald')}${card('Pesanan Aktif',S.orders.filter(o=>o.status!=='Selesai').length,'fa-box-open','indigo')}${card('Wishlist',S.wishlist.length,'fa-heart','rose')}${card('Tiket Open',S.tickets.filter(t=>t.status!=='Close').length,'fa-headset','amber')}</div>` + panel('Ringkasan Pembeli','Semua kontrol utama pembeli dibuat langsung bisa diklik.', `<div class="grid md:grid-cols-3 gap-4"><button onclick="BHX.setMenu('user','orders')" class="p-5 rounded-2xl bg-indigo-50 border border-indigo-100 text-left"><i class="fa-solid fa-box-open text-indigo-600 text-2xl mb-3"></i><b>Cek Pesanan</b><p class="text-xs text-slate-500 mt-1">Lacak paket dan invoice</p></button><button onclick="BHX.setMenu('user','addresses')" class="p-5 rounded-2xl bg-amber-50 border border-amber-100 text-left"><i class="fa-solid fa-location-dot text-amber-600 text-2xl mb-3"></i><b>Alamat Proyek</b><p class="text-xs text-slate-500 mt-1">Kantor, gudang, proyek</p></button><button onclick="BHX.setMenu('user','tickets')" class="p-5 rounded-2xl bg-rose-50 border border-rose-100 text-left"><i class="fa-solid fa-headset text-rose-600 text-2xl mb-3"></i><b>Buka Tiket</b><p class="text-xs text-slate-500 mt-1">Komplain dan bantuan</p></button></div>`);
+    if(k==='orders') return panel('Pesanan Saya','Lacak, invoice, komplain, dan beli ulang.', table(['Invoice','Produk','Seller','Nilai','Status','Aksi'], S.orders.map(o=>tr([`<b>${o.id}</b>`,o.product,o.seller,`<b>${rp(o.value)}</b>`,badge(o.status),`${action('Lacak',`trackOrder('${o.id}')`,'blue')} ${action('Komplain',`makeTicket('${o.id}')`,'rose')} ${action('Beli Lagi',`repeatOrder('${o.id}')`,'emerald')}`]))));
+    if(k==='wishlist') return panel('Wishlist Produk','Produk yang disimpan pembeli untuk dibeli nanti.', `<div class="grid md:grid-cols-3 gap-4">${S.wishlist.map(id=>S.products.find(p=>p.id===id)).filter(Boolean).map(p=>`<div class="border border-slate-200 rounded-2xl p-4"><div class="h-28 rounded-xl bg-slate-100 flex items-center justify-center mb-3"><i class="fa-solid fa-box text-4xl text-slate-300"></i></div><b class="text-sm">${p.name}</b><div class="text-amber-600 font-black mt-2">${rp(p.price)}</div><div class="mt-3 flex gap-2">${action('Keranjang',`cart('${p.id}')`,'indigo')} ${action('Hapus',`removeWishlist('${p.id}')`,'rose')}</div></div>`).join('')}</div>`);
+    if(k==='addresses') return panel('Alamat Proyek & Gudang','Tambah, edit, hapus, dan jadikan alamat utama.', `<div class="grid lg:grid-cols-2 gap-4">${S.addresses.map(a=>`<div class="border border-slate-200 rounded-2xl p-4"><div class="flex justify-between gap-3"><b>${a.name}</b>${a.main?badge('Utama'):''}</div><p class="text-sm text-slate-500 mt-2">${a.address}</p><p class="text-xs text-slate-400 mt-1">PIC: ${a.pic}</p><div class="mt-3 flex flex-wrap gap-2">${action('Edit',`editAddress('${a.id}')`,'indigo')} ${action('Utamakan',`mainAddress('${a.id}')`,'emerald')} ${action('Hapus',`deleteAddress('${a.id}')`,'rose')}</div></div>`).join('')}</div><button onclick="BHX.addAddress()" class="mt-4 bg-slate-900 text-white rounded-xl px-5 py-3 font-black text-sm"><i class="fa-solid fa-plus mr-2"></i>Tambah Alamat</button>`);
+    if(k==='tickets') return panel('Bantuan & Tiket','Buat komplain, balas tiket, dan tutup tiket.', table(['ID','Topik','Prioritas','Status','Aksi'], S.tickets.map(t=>tr([`<b>${t.id}</b>`,t.topic,badge(t.priority),badge(t.status),`${action('Balas',`replyTicket('${t.id}')`,'indigo')} ${action('Tutup',`closeTicket('${t.id}')`,'emerald')}`]))), `<button onclick="BHX.newTicket()" class="bg-rose-600 text-white px-4 py-2 rounded-xl text-xs font-black">Buat Tiket</button>`);
+    if(k==='notifications') return panel('Notifikasi','Pusat pesan order, promo, tender cocok, dan pengingat pembayaran.', `<div class="space-y-3">${['Pesanan INV/2026/001 sedang dikirim','Promo gratis biaya admin untuk transaksi B2B minggu ini','Tender pompa irigasi cocok dengan wishlist Anda','Invoice pajak sudah tersedia'].map((n,i)=>`<div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex gap-3"><i class="fa-solid fa-bell text-indigo-600 mt-1"></i><div><b>${n}</b><p class="text-xs text-slate-500 mt-1">${i+1} jam lalu</p></div><button onclick="BHX.toast('Notifikasi ditandai sudah dibaca')" class="ml-auto text-xs font-black text-indigo-600">Tandai</button></div>`).join('')}</div>`);
+    if(k==='security') return panel('Keamanan Akun','Kontrol password, OTP, dan perangkat login.', `<div class="grid md:grid-cols-2 gap-4"><div class="border rounded-2xl p-5"><b>Password</b><p class="text-sm text-slate-500 mt-1">Terakhir diubah 30 hari lalu</p><div class="mt-3">${action('Ubah Password','changePassword()','indigo')}</div></div><div class="border rounded-2xl p-5"><b>OTP / 2FA</b><p class="text-sm text-slate-500 mt-1">Status belum aktif</p><div class="mt-3">${action('Aktifkan','enableOtp()','emerald')}</div></div></div>`);
+    if(k==='profile') return panel('Profil User','Biodata pembeli dapat diedit dan disimpan di localStorage.', `<div class="grid md:grid-cols-2 gap-4">${input('bhx-profile-name','Nama Lengkap','User Demo')}${input('bhx-profile-email','Email','user@demo.id','email')}${input('bhx-profile-phone','WhatsApp','08xxxxxxxx')}${input('bhx-profile-company','Perusahaan','PT Demo Bisnis')}</div><button onclick="BHX.saveProfile()" class="mt-4 bg-indigo-600 text-white rounded-xl px-5 py-3 font-black text-sm">Simpan Profil</button>`);
+    return '';
+  }
+
+  function renderSeller(k){
+    if(k==='overview') return `<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">${card('Omzet',rp(245000000),'fa-chart-line','emerald')}${card('Produk Aktif',S.products.filter(p=>p.status==='Aktif').length,'fa-boxes-stacked','amber')}${card('Order Masuk',S.orders.length,'fa-receipt','indigo')}${card('Dana Escrow',rp(24500000),'fa-vault','rose')}</div>` + panel('Ringkasan Seller','Semua kontrol seller dibuat aktif tanpa mengganggu modul utama.', `<div class="grid md:grid-cols-4 gap-4"><button onclick="BHX.setMenu('seller','products')" class="p-4 border rounded-2xl bg-indigo-50 text-left"><i class="fa-solid fa-box text-indigo-600 mb-2"></i><b class="block text-sm">Produk</b></button><button onclick="BHX.setMenu('seller','orders')" class="p-4 border rounded-2xl bg-emerald-50 text-left"><i class="fa-solid fa-receipt text-emerald-600 mb-2"></i><b class="block text-sm">Order</b></button><button onclick="BHX.setMenu('seller','bids')" class="p-4 border rounded-2xl bg-amber-50 text-left"><i class="fa-solid fa-hand-holding-dollar text-amber-600 mb-2"></i><b class="block text-sm">Tender</b></button><button onclick="BHX.setMenu('seller','escrow')" class="p-4 border rounded-2xl bg-rose-50 text-left"><i class="fa-solid fa-vault text-rose-600 mb-2"></i><b class="block text-sm">Escrow</b></button></div>`);
+    if(k==='products') return panel('Produk Saya','Tambah, edit, publish, arsip, dan kontrol stok.', table(['Produk','Harga','TKDN','Stok','Status','Aksi'], S.products.map(p=>tr([`<b>${p.name}</b><span class="block text-xs text-slate-400">${p.seller}</span>`,rp(p.price),p.tkdn+'%',p.stock,badge(p.status),`${action('Edit',`editProduct('${p.id}')`,'indigo')} ${action('Publish',`publishProduct('${p.id}')`,'emerald')} ${action('Arsip',`archiveProduct('${p.id}')`,'rose')}`]))), `<button onclick="BHX.addProduct()" class="bg-amber-500 text-indigo-950 px-4 py-2 rounded-xl text-xs font-black">Tambah Produk</button>`);
+    if(k==='orders') return panel('Order Masuk','Proses order, update resi, chat buyer, dan cetak invoice.', table(['Invoice','Buyer','Produk','Nilai','Status','Aksi'], S.orders.map(o=>tr([`<b>${o.id}</b>`,o.buyer,o.product,`<b>${rp(o.value)}</b>`,badge(o.status),`${action('Proses',`processOrder('${o.id}')`,'emerald')} ${action('Input Resi',`inputResi('${o.id}')`,'indigo')} ${action('Chat',`chatBuyer('${o.id}')`,'amber')}`]))));
+    if(k==='bids') return panel('Tender Bid','Cari tender dan kirim penawaran langsung.', table(['ID','Tender','Owner','HPS','Bid','Status','Aksi'], S.tenders.map(t=>tr([`<b>${t.id}</b>`,t.title,t.owner,`<b>${rp(t.hps)}</b>`,t.bids,badge(t.status),`${action('Ajukan',`bidTender('${t.id}')`,'amber')} ${action('Detail',`detailTender('${t.id}')`,'indigo')}`]))));
+    if(k==='documents') return panel('Dokumen TKDN & Legalitas','Upload dan cek status dokumen wajib seller.', `<div class="grid md:grid-cols-2 gap-4">${['NIB','NPWP','Akta Perusahaan','Sertifikat TKDN','SNI Produk','Surat Distributor'].map((d,i)=>`<div class="border rounded-2xl p-4 flex justify-between items-center"><div><b>${d}</b><p class="text-xs text-slate-500 mt-1">${i<4?'Terverifikasi':'Belum Upload'}</p></div><div class="flex items-center gap-2">${badge(i<4?'Valid':'Pending')}<button onclick="BHX.uploadDoc('${d}')" class="bg-indigo-600 text-white rounded-lg px-3 py-2 text-xs font-black">Upload</button></div></div>`).join('')}</div>`);
+    if(k==='promo') return panel('Promo Toko','Buat voucher, diskon grosir, dan campaign toko.', `<div class="grid md:grid-cols-3 gap-4">${['Diskon 5% Grosir','Gratis Ongkir Kargo','Voucher Tender'].map((p,i)=>`<div class="border rounded-2xl p-4"><b>${p}</b><p class="text-xs text-slate-500 mt-1">Status: ${i===0?'Aktif':'Draft'}</p><div class="mt-3">${action('Aktifkan',`activatePromo('${p}')`,'emerald')}</div></div>`).join('')}</div><button onclick="BHX.createPromo()" class="mt-4 bg-amber-500 text-indigo-950 rounded-xl px-5 py-3 font-black text-sm">Buat Promo</button>`);
+    if(k==='reviews') return panel('Ulasan Pembeli','Balas ulasan dan pantau rating toko.', `<div class="space-y-3">${['Produk bagus, pengiriman cepat.','Butuh invoice pajak lebih cepat.','Barang sesuai spesifikasi tender.'].map((r,i)=>`<div class="border rounded-2xl p-4"><div class="flex justify-between"><b>Rating ${5-i}.0</b><span class="text-amber-500">★★★★★</span></div><p class="text-sm text-slate-600 mt-2">${r}</p><button onclick="BHX.toast('Balasan ulasan dikirim')" class="mt-3 bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-black">Balas</button></div>`).join('')}</div>`);
+    if(k==='analytics') return panel('Analitik Toko','Ringkasan performa produk dan penjualan.', `<div class="grid md:grid-cols-4 gap-4 mb-5">${card('Visit','12.4K','fa-eye','indigo')}${card('Konversi','4.8%','fa-arrow-trend-up','emerald')}${card('Chat Masuk','86','fa-comments','amber')}${card('Repeat Order','32%','fa-repeat','rose')}</div><div class="h-64 bg-slate-50 border rounded-2xl flex items-end gap-3 p-5">${[50,80,35,90,65,75].map((h,i)=>`<div class="flex-1 bg-indigo-500 rounded-t-xl" style="height:${h}%"></div>`).join('')}</div>`);
+    if(k==='escrow') return panel('Saldo & Escrow','Pantau dana aman, tertahan, dan penarikan.', `<div class="grid md:grid-cols-3 gap-4 mb-5">${card('Siap Cair',rp(24500000),'fa-wallet','emerald')}${card('Tertahan',rp(14500000),'fa-lock','rose')}${card('Komisi Platform',S.settings.commission+'%','fa-percent','amber')}</div><button onclick="BHX.withdraw()" class="bg-emerald-600 text-white px-5 py-3 rounded-xl font-black">Tarik Dana</button>`);
+    if(k==='settings') return panel('Setting Toko','Kurir, jam operasional, rekening, dan status toko.', `<div class="grid md:grid-cols-2 gap-4"><label class="flex justify-between border rounded-2xl p-4"><span class="font-bold">Terima Order Otomatis</span><input type="checkbox" checked class="accent-indigo-600"></label><label class="flex justify-between border rounded-2xl p-4"><span class="font-bold">Aktifkan Kargo B2B</span><input type="checkbox" checked class="accent-indigo-600"></label><label class="flex justify-between border rounded-2xl p-4"><span class="font-bold">Tampilkan Badge TKDN</span><input type="checkbox" checked class="accent-indigo-600"></label><label class="flex justify-between border rounded-2xl p-4"><span class="font-bold">Mode Libur Toko</span><input type="checkbox" class="accent-indigo-600"></label></div><button onclick="BHX.toast('Setting toko disimpan')" class="mt-4 bg-indigo-600 text-white rounded-xl px-5 py-3 font-black text-sm">Simpan Setting</button>`);
+    return '';
+  }
+
+  function renderAdmin(k){
+    if(k==='overview') return `<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">${card('GMV Platform',rp(S.orders.reduce((a,o)=>a+o.value,0)),'fa-chart-line','emerald')}${card('User',S.users.length,'fa-users','indigo')}${card('Vendor',S.sellers.length,'fa-store','amber')}${card('Escrow Aktif',rp(145080000),'fa-vault','rose')}</div>` + panel('Overview Admin','Pusat monitoring seluruh marketplace, tender, seller, buyer, dan escrow.', `<div class="grid md:grid-cols-3 gap-4"><button onclick="BHX.setMenu('admin','users')" class="p-5 rounded-2xl bg-indigo-50 border border-indigo-100 text-left"><i class="fa-solid fa-users text-indigo-600 text-2xl mb-3"></i><b>User & Role</b><p class="text-xs text-slate-500 mt-1">Kelola akses user</p></button><button onclick="BHX.setMenu('admin','products')" class="p-5 rounded-2xl bg-amber-50 border border-amber-100 text-left"><i class="fa-solid fa-boxes-stacked text-amber-600 text-2xl mb-3"></i><b>Moderasi Produk</b><p class="text-xs text-slate-500 mt-1">Approve/reject produk</p></button><button onclick="BHX.setMenu('admin','finance')" class="p-5 rounded-2xl bg-emerald-50 border border-emerald-100 text-left"><i class="fa-solid fa-vault text-emerald-600 text-2xl mb-3"></i><b>Escrow</b><p class="text-xs text-slate-500 mt-1">Pantau dana</p></button></div>`);
+    if(k==='users') return panel('User & Role Management','Tambah user, edit role, suspend, dan aktifkan kembali.', table(['ID','Nama','Email','Role','Status','Order','Aksi'], S.users.map(u=>tr([`<b>${u.id}</b>`,u.name,u.email,u.role,badge(u.status),u.order,`${action('Edit Role',`editUser('${u.id}')`,'indigo')} ${action(u.status==='Suspend'?'Aktifkan':'Suspend',`toggleUser('${u.id}')`,'rose')}`]))), `<button onclick="BHX.addUser()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-black">Tambah User</button>`);
+    if(k==='sellers') return panel('Seller / Vendor','Kontrol vendor, legalitas, badge TKDN, dan performa toko.', table(['ID','Vendor','Bidang','Status','Produk','Avg TKDN','Aksi'], S.sellers.map(s=>tr([`<b>${s.id}</b>`,s.name,s.field,badge(s.status),s.products,s.tkdn+'%',`${action('Verifikasi',`verifySeller('${s.id}')`,'emerald')} ${action('Audit',`auditSeller('${s.id}')`,'indigo')}`]))));
+    if(k==='products') return panel('Moderasi Produk','Approve, reject, edit kategori, dan cek sertifikat TKDN.', table(['ID','Produk','Seller','Harga','TKDN','Stok','Status','Aksi'], S.products.map(p=>tr([`<b>${p.id}</b>`,p.name,p.seller,`<b>${rp(p.price)}</b>`,p.tkdn+'%',p.stock,badge(p.status),`${action('Approve',`publishProduct('${p.id}')`,'emerald')} ${action('Tolak',`archiveProduct('${p.id}')`,'rose')} ${action('Edit',`editProduct('${p.id}')`,'indigo')}`]))), `<button onclick="BHX.addProduct()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-black">Tambah Produk</button>`);
+    if(k==='orders') return panel('Order & Refund','Monitor transaksi, dispute, pengiriman, dan refund.', table(['Invoice','Buyer','Seller','Produk','Nilai','Status','Escrow','Aksi'], S.orders.map(o=>tr([`<b>${o.id}</b>`,o.buyer,o.seller,o.product,`<b>${rp(o.value)}</b>`,badge(o.status),badge(o.escrow),`${action('Audit',`auditOrder('${o.id}')`,'indigo')} ${action('Refund',`refundOrder('${o.id}')`,'rose')} ${action('Selesai',`finishOrder('${o.id}')`,'emerald')}`]))));
+    if(k==='tenders') return panel('Moderasi Tender','Kelola proyek, bidding, validasi owner, dan pemenang tender.', table(['ID','Tender','Owner','HPS','Bid','Status','Aksi'], S.tenders.map(t=>tr([`<b>${t.id}</b>`,t.title,t.owner,`<b>${rp(t.hps)}</b>`,t.bids,badge(t.status),`${action('Moderasi',`detailTender('${t.id}')`,'indigo')} ${action('Tutup',`closeTender('${t.id}')`,'rose')} ${action('Open',`openTender('${t.id}')`,'emerald')}`]))), `<button onclick="BHX.addTender()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-black">Posting Tender</button>`);
+    if(k==='support') return panel('Support Center','Admin menangani tiket user dan seller.', table(['ID','User','Topik','Prioritas','Status','Aksi'], S.tickets.map(t=>tr([`<b>${t.id}</b>`,t.user,t.topic,badge(t.priority),badge(t.status),`${action('Balas',`replyTicket('${t.id}')`,'indigo')} ${action('Close',`closeTicket('${t.id}')`,'emerald')}`]))));
+    if(k==='cms') return panel('CMS Konten & Tampilan','Atur banner, kategori, promo, artikel, dan tampilan marketplace.', `<div class="space-y-5"><div><label class="text-sm font-black text-slate-700">Teks Banner Marketplace</label><input id="bhx-banner-text" class="mt-2 w-full border rounded-xl p-3" value="${esc(S.settings.banner)}"></div><div class="grid md:grid-cols-3 gap-4"><button onclick="BHX.saveBanner()" class="bg-indigo-600 text-white rounded-xl px-5 py-3 font-black">Simpan Banner</button><button onclick="switchAppView('marketplace')" class="bg-slate-900 text-white rounded-xl px-5 py-3 font-black">Preview</button><button onclick="BHX.toast('Cache tampilan dibersihkan')" class="bg-amber-500 text-indigo-950 rounded-xl px-5 py-3 font-black">Clear Cache</button></div><div class="p-5 rounded-2xl bg-gradient-to-r from-indigo-700 to-violet-800 text-white"><b>Preview Banner:</b><p class="text-2xl font-black mt-2">${esc(S.settings.banner)}</p></div></div>`);
+    if(k==='finance') return panel('Escrow & Keuangan','Pantau dana tertahan, cair, refund, dan komisi platform.', `<div class="grid md:grid-cols-4 gap-4 mb-5">${card('Total Escrow',rp(1450800000),'fa-vault','emerald')}${card('Dana Tertahan',rp(145000000),'fa-lock','rose')}${card('Siap Cair',rp(245000000),'fa-money-bill-transfer','blue')}${card('Komisi',S.settings.commission+'%','fa-percent','amber')}</div><div class="bg-slate-50 border rounded-2xl p-5"><label class="text-sm font-black">Komisi Platform (%)</label><input type="range" min="1" max="15" value="${S.settings.commission}" oninput="BHX.setCommission(this.value)" class="w-full mt-3 accent-indigo-600"><div id="bhx-komisi" class="font-black text-indigo-700 mt-2">${S.settings.commission}%</div></div>`);
+    if(k==='settings') return panel('Setting Sistem','Kontrol global platform, maintenance, komisi, verifikasi, dan fitur wajib.', `<div class="grid md:grid-cols-2 gap-4">${settingToggle('siteOnline','Website Online','Matikan jika perlu suspend platform.')}${settingToggle('maintenance','Maintenance Mode','User non-admin tidak bisa transaksi.')}${settingToggle('autoApprove','Auto Approve Produk','Produk seller langsung tayang.')}${settingToggle('wajibTkdn','Wajib TKDN Tender','Tender menampilkan syarat TKDN.')}</div><button onclick="BHX.saveSettings()" class="mt-5 bg-indigo-600 text-white rounded-xl px-5 py-3 font-black text-sm">Simpan Setting</button>`);
+    return '';
+  }
+  function settingToggle(key,title,sub){ return `<label class="flex justify-between items-center border rounded-2xl p-5"><div><b>${title}</b><p class="text-xs text-slate-500">${sub}</p></div><input id="bhx-set-${key}" type="checkbox" ${S.settings[key]?'checked':''} class="w-5 h-5 accent-indigo-600"></label>`; }
+
+  function promptModal(title, fields, onSave){
+    let m=document.getElementById('bhx-modal');
+    if(!m){
+      m=document.createElement('div');
+      m.id='bhx-modal';
+      m.className='fixed inset-0 bg-slate-950/80 z-[250] hidden items-center justify-center p-4 backdrop-blur-sm';
+      document.body.appendChild(m);
+    }
+    m.innerHTML = `<div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden"><div class="p-5 bg-slate-50 border-b flex justify-between items-center"><h3 class="font-black text-lg">${title}</h3><button onclick="BHX.closeModal()" class="w-9 h-9 rounded-xl hover:bg-slate-200"><i class="fa-solid fa-xmark"></i></button></div><div class="p-6 space-y-4">${fields.map(f=>input(f.id,f.label,f.value||'',f.type||'text')).join('')}<button onclick="${onSave}" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3 font-black">Simpan</button></div></div>`;
+    m.classList.remove('hidden'); m.classList.add('flex');
+  }
+  function closeModal(){ const m=document.getElementById('bhx-modal'); if(m){m.classList.add('hidden');m.classList.remove('flex');} }
+
+  const BHX = {
+    setMenu, toast, closeModal,
+    trackOrder:id=>toast('Tracking dibuka untuk '+id), repeatOrder:id=>toast('Pesanan '+id+' dimasukkan ulang ke keranjang'), cart:id=>toast('Produk '+id+' masuk keranjang'), changePassword:()=>toast('Form ubah password dibuka'), enableOtp:()=>toast('OTP/2FA diaktifkan'), saveProfile:()=>toast('Profil disimpan'), uploadDoc:d=>toast('Upload dokumen '+d+' dibuka'), createPromo:()=>toast('Form promo baru dibuka'), activatePromo:p=>toast('Promo '+p+' diaktifkan'), withdraw:()=>toast('Permintaan tarik dana dikirim'), inputResi:id=>toast('Input resi untuk '+id), chatBuyer:id=>toast('Chat buyer untuk '+id+' dibuka'), auditSeller:id=>toast('Audit seller '+id+' dibuka'), auditOrder:id=>toast('Audit order '+id+' dibuka'), detailTender:id=>toast('Detail tender '+id+' dibuka'),
+    makeTicket(id){ S.tickets.unshift({id:'TKT-'+Date.now(), user:'User Demo', topic:'Komplain order '+id, priority:'Tinggi', status:'Open'}); save(); renderKind('user'); toast('Tiket komplain dibuat'); },
+    newTicket(){ S.tickets.unshift({id:'TKT-'+Date.now(), user:'User Demo', topic:'Tiket baru dari user', priority:'Sedang', status:'Open'}); save(); renderKind('user'); toast('Tiket baru dibuat'); },
+    replyTicket:id=>toast('Balasan tiket '+id+' dikirim'),
+    closeTicket(id){ const t=S.tickets.find(x=>x.id===id); if(t) t.status='Close'; save(); renderKind(S.active.admin==='support'?'admin':'user'); toast('Tiket ditutup'); },
+    removeWishlist(id){ S.wishlist=S.wishlist.filter(x=>x!==id); save(); renderKind('user'); toast('Produk dihapus dari wishlist'); },
+    addAddress(){ promptModal('Tambah Alamat', [{id:'f-name',label:'Nama Alamat'},{id:'f-address',label:'Alamat Lengkap'},{id:'f-pic',label:'PIC / WhatsApp'}], 'BHX.saveAddress()'); },
+    saveAddress(){ S.addresses.push({id:'ADR-'+Date.now(), name:val('f-name')||'Alamat Baru', address:val('f-address')||'-', pic:val('f-pic')||'-', main:false}); save(); closeModal(); renderKind('user'); toast('Alamat ditambahkan'); },
+    editAddress(id){ const a=S.addresses.find(x=>x.id===id); if(!a)return; promptModal('Edit Alamat', [{id:'f-name',label:'Nama Alamat',value:a.name},{id:'f-address',label:'Alamat Lengkap',value:a.address},{id:'f-pic',label:'PIC / WhatsApp',value:a.pic}], `BHX.updateAddress('${id}')`); },
+    updateAddress(id){ const a=S.addresses.find(x=>x.id===id); if(a){a.name=val('f-name');a.address=val('f-address');a.pic=val('f-pic');} save(); closeModal(); renderKind('user'); toast('Alamat diperbarui'); },
+    mainAddress(id){ S.addresses.forEach(a=>a.main=a.id===id); save(); renderKind('user'); toast('Alamat utama diperbarui'); },
+    deleteAddress(id){ S.addresses=S.addresses.filter(a=>a.id!==id); save(); renderKind('user'); toast('Alamat dihapus'); },
+    addProduct(){ promptModal('Tambah Produk', [{id:'p-name',label:'Nama Produk'},{id:'p-price',label:'Harga',type:'number'},{id:'p-tkdn',label:'TKDN (%)',type:'number'},{id:'p-stock',label:'Stok',type:'number'}], 'BHX.saveProduct()'); },
+    saveProduct(){ S.products.unshift({id:'PRD-'+Date.now(), name:val('p-name')||'Produk Baru', seller:'Toko Teknik Jaya', price:Number(val('p-price')||0), tkdn:Number(val('p-tkdn')||0), stock:Number(val('p-stock')||0), status:S.settings.autoApprove?'Aktif':'Review'}); save(); closeModal(); renderKind(S.active.admin==='products'?'admin':'seller'); toast('Produk ditambahkan'); },
+    editProduct(id){ const p=S.products.find(x=>x.id===id); if(!p)return; promptModal('Edit Produk', [{id:'p-name',label:'Nama Produk',value:p.name},{id:'p-price',label:'Harga',value:p.price,type:'number'},{id:'p-tkdn',label:'TKDN (%)',value:p.tkdn,type:'number'},{id:'p-stock',label:'Stok',value:p.stock,type:'number'}], `BHX.updateProduct('${id}')`); },
+    updateProduct(id){ const p=S.products.find(x=>x.id===id); if(p){p.name=val('p-name');p.price=Number(val('p-price'));p.tkdn=Number(val('p-tkdn'));p.stock=Number(val('p-stock'));} save(); closeModal(); renderKind(S.active.admin==='products'?'admin':'seller'); toast('Produk diperbarui'); },
+    publishProduct(id){ const p=S.products.find(x=>x.id===id); if(p)p.status='Aktif'; save(); renderKind(S.active.admin==='products'?'admin':'seller'); toast('Produk aktif/tayang'); },
+    archiveProduct(id){ const p=S.products.find(x=>x.id===id); if(p)p.status='Arsip'; save(); renderKind(S.active.admin==='products'?'admin':'seller'); toast('Produk diarsipkan'); },
+    processOrder(id){ const o=S.orders.find(x=>x.id===id); if(o)o.status='Diproses'; save(); renderKind('seller'); toast('Order diproses'); },
+    finishOrder(id){ const o=S.orders.find(x=>x.id===id); if(o){o.status='Selesai';o.escrow='Cair';} save(); renderKind('admin'); toast('Order diselesaikan'); },
+    refundOrder(id){ const o=S.orders.find(x=>x.id===id); if(o){o.status='Refund';o.escrow='Refund';} save(); renderKind('admin'); toast('Refund diproses'); },
+    bidTender(id){ const t=S.tenders.find(x=>x.id===id); if(t)t.bids++; save(); renderKind('seller'); toast('Penawaran tender dikirim'); },
+    addTender(){ promptModal('Posting Tender', [{id:'t-title',label:'Judul Tender'},{id:'t-owner',label:'Owner / Instansi'},{id:'t-hps',label:'HPS / Anggaran',type:'number'}], 'BHX.saveTender()'); },
+    saveTender(){ S.tenders.unshift({id:'TDR-'+Date.now(), title:val('t-title')||'Tender Baru', owner:val('t-owner')||'Owner Demo', hps:Number(val('t-hps')||0), bids:0, status:'Open'}); save(); closeModal(); renderKind('admin'); toast('Tender diposting'); },
+    closeTender(id){ const t=S.tenders.find(x=>x.id===id); if(t)t.status='Close'; save(); renderKind('admin'); toast('Tender ditutup'); },
+    openTender(id){ const t=S.tenders.find(x=>x.id===id); if(t)t.status='Open'; save(); renderKind('admin'); toast('Tender dibuka'); },
+    addUser(){ promptModal('Tambah User', [{id:'u-name',label:'Nama'},{id:'u-email',label:'Email',type:'email'},{id:'u-role',label:'Role'}], 'BHX.saveUser()'); },
+    saveUser(){ S.users.unshift({id:'USR-'+Date.now(), name:val('u-name')||'User Baru', email:val('u-email')||'user@demo.id', role:val('u-role')||'Pembeli', status:'Aktif', order:0, spend:0}); save(); closeModal(); renderKind('admin'); toast('User ditambahkan'); },
+    editUser(id){ const u=S.users.find(x=>x.id===id); if(!u)return; promptModal('Edit User & Role', [{id:'u-name',label:'Nama',value:u.name},{id:'u-email',label:'Email',value:u.email,type:'email'},{id:'u-role',label:'Role',value:u.role}], `BHX.updateUser('${id}')`); },
+    updateUser(id){ const u=S.users.find(x=>x.id===id); if(u){u.name=val('u-name');u.email=val('u-email');u.role=val('u-role');} save(); closeModal(); renderKind('admin'); toast('User diperbarui'); },
+    toggleUser(id){ const u=S.users.find(x=>x.id===id); if(u)u.status=u.status==='Suspend'?'Aktif':'Suspend'; save(); renderKind('admin'); toast('Status user diperbarui'); },
+    verifySeller(id){ const s=S.sellers.find(x=>x.id===id); if(s)s.status='Terverifikasi'; save(); renderKind('admin'); toast('Seller terverifikasi'); },
+    saveBanner(){ S.settings.banner=val('bhx-banner-text')||S.settings.banner; localStorage.setItem('addon_banner',S.settings.banner); save(); renderKind('admin'); toast('Banner disimpan'); },
+    setCommission(v){ S.settings.commission=Number(v); const el=document.getElementById('bhx-komisi'); if(el)el.textContent=v+'%'; save(); },
+    saveSettings(){ ['siteOnline','maintenance','autoApprove','wajibTkdn'].forEach(k=>{ const el=document.getElementById('bhx-set-'+k); if(el) S.settings[k]=el.checked; }); save(); toast('Setting sistem disimpan'); }
+  };
+  function val(id){ const el=document.getElementById(id); return el ? el.value.trim() : ''; }
+  window.BHX = BHX;
+
+  function init(){
+    installMenu('buyer', userMenus);
+    installMenu('seller', sellerMenus);
+    installMenu('admin', adminMenus);
+    window.toggleBuyerMenu = (menu)=>{ const map={ringkasan:'overview',pesanan:'orders',setting:'profile'}; setMenu('user',map[menu]||menu); };
+    window.toggleSellerMenu = (menu)=>{ const map={ringkasan:'overview',produk:'products',order:'orders',tender:'bids',dokumen:'documents',saldo:'escrow',setting:'settings'}; setMenu('seller',map[menu]||menu); };
+    window.toggleAdminMenu = (menu)=>{ const map={overview:'overview',user:'users',seller:'sellers',product:'products',order:'orders',tender:'tenders',support:'support',cms:'cms',pajak:'finance',desain:'cms',setting:'settings'}; setMenu('admin',map[menu]||menu); };
+    ensureArea('buyer'); ensureArea('seller'); ensureArea('admin');
+    renderKind('user'); renderKind('seller'); renderKind('admin');
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
 </body>
 </html>
