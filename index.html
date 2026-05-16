@@ -428,115 +428,275 @@
             </div>
         </section>
 
-        <!-- ZONA PRODUK TKDN -->
+        <!-- ========================================== -->
+        <!-- DASHBOARD MONITORING P3DN & TKDN (BARU)    -->
+        <!-- ========================================== -->
         <section class="max-w-7xl mx-auto px-4 py-4 mb-4">
-            <div class="bg-gradient-to-br from-white via-rose-50/50 to-rose-100/50 border border-rose-100 rounded-3xl p-6 md:p-8 shadow-sm relative overflow-hidden">
-                <div class="absolute right-0 top-0 w-1/3 h-full bg-gradient-to-l from-rose-100 to-transparent opacity-60 pointer-events-none"></div>
-                <div class="absolute -right-8 -top-10 text-rose-600 opacity-5 rotate-12 pointer-events-none">
-                    <i class="fa-solid fa-certificate text-[250px]"></i>
+            <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+                
+                <!-- Header Dashboard P3DN -->
+                <div class="bg-gradient-to-r from-rose-800 to-red-600 p-6 md:p-8 text-white relative overflow-hidden">
+                    <!-- Dekorasi Pattern Latar -->
+                    <div class="absolute right-0 top-0 w-1/2 h-full opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 20px 20px;"></div>
+                    <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none transform rotate-12">
+                        <i class="fa-solid fa-chart-pie text-[200px]"></i>
+                    </div>
+
+                    <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="bg-white text-red-700 text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-md">Dashboard P3DN</span>
+                                <span class="bg-red-900/50 backdrop-blur border border-red-500/50 text-white text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> LIVE DATA</span>
+                            </div>
+                            <h2 class="text-2xl md:text-4xl font-black tracking-tight mb-2">Monitoring Nasional TKDN</h2>
+                            <p class="text-red-100 text-sm max-w-2xl leading-relaxed">
+                                Ringkasan Program Peningkatan Penggunaan Produk Dalam Negeri (P3DN). Integrasi data penyerapan anggaran Kementerian, Lembaga, dan BUMN terhadap produk bersertifikat lokal.
+                            </p>
+                        </div>
+                        
+                        <!-- Pencarian Cepat TKDN -->
+                        <div class="w-full md:w-80 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl shadow-lg">
+                            <label class="block text-xs font-bold text-red-100 mb-2 uppercase tracking-wide">Pencarian Cepat Sertifikat</label>
+                            <div class="flex relative">
+                                <input type="text" placeholder="No. Sertifikat / Nama PT..." class="w-full py-2.5 pl-4 pr-10 rounded-xl bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 shadow-inner">
+                                <button class="absolute right-0 top-0 h-full px-3 text-red-600 hover:text-red-800 transition-colors">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-2.5">
-                            <span class="bg-rose-600 text-white text-[10px] md:text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">ZONA BANGGA BUATAN INDONESIA</span>
+                <!-- Konten Statistik & Grafik -->
+                <div class="bg-slate-50 p-6 md:p-8">
+                    
+                    <!-- 4 Kartu KPI (Key Performance Indicators) -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center relative overflow-hidden group hover:border-red-300 transition-colors">
+                            <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-wallet text-xl"></i></div>
+                            <h4 class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Nilai Pengadaan</h4>
+                            <div class="text-xl md:text-2xl font-black text-slate-800">Rp 450,2 T</div>
+                            <div class="text-[10px] text-emerald-500 font-bold mt-1 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-up"></i> +12.4% (YTD)</div>
                         </div>
-                        <h2 class="text-xl md:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-2">Katalog Produk Ber-TKDN</h2>
-                        <p class="text-xs md:text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">
-                            Pusat pengadaan alat teknik bersertifikat Tingkat Komponen Dalam Negeri (TKDN) resmi untuk kebutuhan e-Katalog, proyek Pemerintah, dan BUMN.
-                        </p>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center relative overflow-hidden group hover:border-red-300 transition-colors">
+                            <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-percent text-xl"></i></div>
+                            <h4 class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Rata-rata Capaian</h4>
+                            <div class="text-xl md:text-2xl font-black text-slate-800">68.45 %</div>
+                            <div class="text-[10px] text-emerald-500 font-bold mt-1 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-up"></i> Target Nasional 40%</div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center relative overflow-hidden group hover:border-red-300 transition-colors">
+                            <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-industry text-xl"></i></div>
+                            <h4 class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Vendor Tersertifikasi</h4>
+                            <div class="text-xl md:text-2xl font-black text-slate-800">15.240</div>
+                            <div class="text-[10px] text-slate-400 font-bold mt-1">Perusahaan Lokal Aktif</div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center relative overflow-hidden group hover:border-red-300 transition-colors">
+                            <div class="w-10 h-10 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-boxes-stacked text-xl"></i></div>
+                            <h4 class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Produk Lokal Aktif</h4>
+                            <div class="text-xl md:text-2xl font-black text-slate-800">1.4M+</div>
+                            <div class="text-[10px] text-emerald-500 font-bold mt-1 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-up"></i> +50k Bulan ini</div>
+                        </div>
                     </div>
-                    <button class="bg-white border border-rose-200 text-rose-600 font-bold py-2.5 px-6 rounded-xl shadow-sm hover:bg-rose-50 transition-colors text-sm flex-shrink-0 flex items-center justify-center">
-                        Lihat Semua TKDN <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </button>
+
+                    <!-- Layout Bawah (Grafik Kiri, Info Kanan) -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        <!-- Grafik Batang Real-Time CSS -->
+                        <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5 md:p-6 shadow-sm">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-bold text-slate-800">Statistik Penggunaan Produk Dalam Negeri (Top 5 Kementerian)</h3>
+                                <button class="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 px-3 py-1.5 rounded-lg font-bold transition-colors">Export CSV</button>
+                            </div>
+                            
+                            <!-- Chart Area -->
+                            <div class="relative h-48 md:h-64 w-full flex items-end gap-2 md:gap-6 pt-4 border-b border-slate-200">
+                                <!-- Bar 1 -->
+                                <div class="w-full flex flex-col items-center justify-end h-full relative group">
+                                    <div class="absolute -top-8 bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Rp 120 T (85%)</div>
+                                    <div class="w-full bg-slate-100 rounded-t-lg h-[100%] relative overflow-hidden">
+                                        <div class="absolute bottom-0 w-full bg-rose-500 hover:bg-rose-400 rounded-t-lg h-[85%] transition-all duration-1000 cursor-pointer"></div>
+                                    </div>
+                                    <span class="text-[10px] md:text-xs font-bold text-slate-500 mt-2 truncate max-w-[50px] md:max-w-full">PUPR</span>
+                                </div>
+                                <!-- Bar 2 -->
+                                <div class="w-full flex flex-col items-center justify-end h-full relative group">
+                                    <div class="absolute -top-8 bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Rp 95 T (78%)</div>
+                                    <div class="w-full bg-slate-100 rounded-t-lg h-[100%] relative overflow-hidden">
+                                        <div class="absolute bottom-0 w-full bg-rose-500 hover:bg-rose-400 rounded-t-lg h-[78%] transition-all duration-1000 cursor-pointer"></div>
+                                    </div>
+                                    <span class="text-[10px] md:text-xs font-bold text-slate-500 mt-2 truncate max-w-[50px] md:max-w-full">KEMHAN</span>
+                                </div>
+                                <!-- Bar 3 -->
+                                <div class="w-full flex flex-col items-center justify-end h-full relative group">
+                                    <div class="absolute -top-8 bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Rp 82 T (92%)</div>
+                                    <div class="w-full bg-slate-100 rounded-t-lg h-[100%] relative overflow-hidden">
+                                        <div class="absolute bottom-0 w-full bg-rose-500 hover:bg-rose-400 rounded-t-lg h-[92%] transition-all duration-1000 cursor-pointer"></div>
+                                    </div>
+                                    <span class="text-[10px] md:text-xs font-bold text-slate-500 mt-2 truncate max-w-[50px] md:max-w-full">KEMENKES</span>
+                                </div>
+                                <!-- Bar 4 -->
+                                <div class="w-full flex flex-col items-center justify-end h-full relative group">
+                                    <div class="absolute -top-8 bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Rp 65 T (60%)</div>
+                                    <div class="w-full bg-slate-100 rounded-t-lg h-[100%] relative overflow-hidden">
+                                        <div class="absolute bottom-0 w-full bg-rose-500 hover:bg-rose-400 rounded-t-lg h-[60%] transition-all duration-1000 cursor-pointer"></div>
+                                    </div>
+                                    <span class="text-[10px] md:text-xs font-bold text-slate-500 mt-2 truncate max-w-[50px] md:max-w-full">DIKBUD</span>
+                                </div>
+                                <!-- Bar 5 -->
+                                <div class="w-full flex flex-col items-center justify-end h-full relative group">
+                                    <div class="absolute -top-8 bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Rp 40 T (72%)</div>
+                                    <div class="w-full bg-slate-100 rounded-t-lg h-[100%] relative overflow-hidden">
+                                        <div class="absolute bottom-0 w-full bg-rose-500 hover:bg-rose-400 rounded-t-lg h-[72%] transition-all duration-1000 cursor-pointer"></div>
+                                    </div>
+                                    <span class="text-[10px] md:text-xs font-bold text-slate-500 mt-2 truncate max-w-[50px] md:max-w-full">POLRI</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel Kanan (Tautan & Pengumuman) -->
+                        <div class="space-y-6">
+                            
+                            <!-- Tautan Cepat Sistem Pengadaan -->
+                            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                                <h3 class="font-bold text-slate-800 mb-4 text-sm"><i class="fa-solid fa-link text-blue-600 mr-2"></i> Tautan Sistem Pengadaan</h3>
+                                <div class="space-y-3">
+                                    <a href="#" class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50 transition-colors group">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500 group-hover:text-blue-600 group-hover:bg-white"><i class="fa-solid fa-gavel"></i></div>
+                                            <span class="text-xs font-bold text-slate-700 group-hover:text-blue-700">INAPROC / LPSE Nasional</span>
+                                        </div>
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400"></i>
+                                    </a>
+                                    <a href="#" class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50 transition-colors group">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500 group-hover:text-blue-600 group-hover:bg-white"><i class="fa-solid fa-book-open"></i></div>
+                                            <span class="text-xs font-bold text-slate-700 group-hover:text-blue-700">e-Katalog LKPP</span>
+                                        </div>
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400"></i>
+                                    </a>
+                                    <a href="#" class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50 transition-colors group">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500 group-hover:text-blue-600 group-hover:bg-white"><i class="fa-solid fa-industry"></i></div>
+                                            <span class="text-xs font-bold text-slate-700 group-hover:text-blue-700">SIINas Kemenperin</span>
+                                        </div>
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Pengumuman Terbaru -->
+                            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                                <h3 class="font-bold text-slate-800 mb-4 text-sm"><i class="fa-solid fa-bullhorn text-amber-500 mr-2"></i> Pengumuman Terbaru P3DN</h3>
+                                <div class="space-y-4">
+                                    <div class="group cursor-pointer">
+                                        <div class="text-[10px] text-slate-400 font-bold mb-1">16 Mei 2026</div>
+                                        <h4 class="text-xs font-bold text-slate-700 group-hover:text-red-600 leading-tight">Pembaruan Regulasi Penilaian Bobot Manfaat Perusahaan (BMP) di Sektor Industri Mesin.</h4>
+                                    </div>
+                                    <div class="h-px bg-slate-100"></div>
+                                    <div class="group cursor-pointer">
+                                        <div class="text-[10px] text-slate-400 font-bold mb-1">10 Mei 2026</div>
+                                        <h4 class="text-xs font-bold text-slate-700 group-hover:text-red-600 leading-tight">Jadwal Audit Serentak Surveyor Independen SIINas Wilayah Jawa-Bali.</h4>
+                                    </div>
+                                </div>
+                                <button class="w-full mt-4 text-xs font-bold text-slate-500 hover:text-slate-800 border border-slate-200 rounded-lg py-2 hover:bg-slate-50">Baca Semua Berita</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Etalase Produk Unggulan TKDN -->
+        <section class="max-w-7xl mx-auto px-4 py-2 mb-8">
+            <h3 class="text-lg font-black text-slate-800 mb-4 flex items-center"><i class="fa-solid fa-fire text-red-500 mr-2"></i> Produk Paling Dicari (e-Katalog)</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+                <!-- Produk TKDN 1 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 hover:border-red-300 transition-all duration-300 group cursor-pointer flex flex-col">
+                    <div class="h-36 md:h-48 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1585675100414-22b9f9ffbd19?auto=format&fit=crop&q=80&w=400&h=300" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <div class="absolute top-0 left-0 bg-red-600 text-white text-[10px] md:text-xs font-black px-3 py-1.5 rounded-br-lg shadow-md flex items-center gap-1">
+                            <i class="fa-solid fa-check-circle"></i> TKDN 45.5%
+                        </div>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800 line-clamp-2 mb-1.5 group-hover:text-red-600 transition-colors">Pompa Sentrifugal Industri 30kW Stainless</h3>
+                            <div class="text-[10px] text-slate-500 mb-2 font-mono bg-slate-100 px-2 py-0.5 rounded w-max border border-slate-200">No: 1234/SJ/TKDN</div>
+                        </div>
+                        <div>
+                            <div class="text-base md:text-lg font-black text-slate-900 mb-2">Rp 24.500.000</div>
+                            <div class="flex items-center text-[10px] md:text-xs text-slate-500 border-t border-slate-100 pt-2">
+                                <i class="fa-solid fa-industry mr-1.5 text-slate-400"></i> PT. Bintang Pompa
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5 relative z-10">
-                    <!-- Produk TKDN 1 -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-rose-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 hover:border-rose-300 transition-all duration-300 group cursor-pointer flex flex-col">
-                        <div class="h-36 md:h-48 overflow-hidden relative">
-                            <img src="https://images.unsplash.com/photo-1585675100414-22b9f9ffbd19?auto=format&fit=crop&q=80&w=400&h=300" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                            <div class="absolute top-0 left-0 bg-rose-600 text-white text-[10px] md:text-xs font-black px-3 py-1.5 rounded-br-lg shadow-md flex items-center gap-1">
-                                <i class="fa-solid fa-check-circle"></i> TKDN 45.5%
-                            </div>
+                <!-- Produk TKDN 2 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 hover:border-red-300 transition-all duration-300 group cursor-pointer flex flex-col">
+                    <div class="h-36 md:h-48 overflow-hidden relative flex items-center justify-center bg-slate-50">
+                        <i class="fa-solid fa-helmet-safety text-5xl text-slate-300 group-hover:scale-110 transition-transform duration-500"></i>
+                        <div class="absolute top-0 left-0 bg-red-600 text-white text-[10px] md:text-xs font-black px-3 py-1.5 rounded-br-lg shadow-md flex items-center gap-1">
+                            <i class="fa-solid fa-check-circle"></i> TKDN 80.0%
                         </div>
-                        <div class="p-4 flex-1 flex flex-col justify-between">
-                            <div>
-                                <h3 class="text-sm font-bold text-slate-800 line-clamp-2 mb-1.5 group-hover:text-rose-600 transition-colors">Pompa Sentrifugal Industri 30kW</h3>
-                                <div class="text-[10px] text-slate-500 mb-2 font-mono bg-slate-100 px-2 py-0.5 rounded w-max">No: 1234/SJ/TKDN</div>
-                            </div>
-                            <div>
-                                <div class="text-base md:text-lg font-black text-slate-900 mb-2">Rp 24.500.000</div>
-                                <div class="flex items-center text-[10px] md:text-xs text-slate-500 border-t border-slate-100 pt-2">
-                                    <i class="fa-solid fa-industry mr-1.5 text-slate-400"></i> PT. Bintang Pompa
-                                </div>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800 line-clamp-2 mb-1.5 group-hover:text-red-600 transition-colors">Helm Safety Proyek SNI Inner Fastrack (Lokal)</h3>
+                            <div class="text-[10px] text-slate-500 mb-2 font-mono bg-slate-100 px-2 py-0.5 rounded w-max border border-slate-200">No: 5591/SJ/TKDN</div>
+                        </div>
+                        <div>
+                            <div class="text-base md:text-lg font-black text-slate-900 mb-2">Rp 45.000</div>
+                            <div class="flex items-center text-[10px] md:text-xs text-slate-500 border-t border-slate-100 pt-2">
+                                <i class="fa-solid fa-industry mr-1.5 text-slate-400"></i> PT. Plastik Indo
                             </div>
                         </div>
                     </div>
-
-                    <!-- Produk TKDN 2 -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-rose-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 hover:border-rose-300 transition-all duration-300 group cursor-pointer flex flex-col">
-                        <div class="h-36 md:h-48 overflow-hidden relative">
-                            <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=400&h=300" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                            <div class="absolute top-0 left-0 bg-rose-600 text-white text-[10px] md:text-xs font-black px-3 py-1.5 rounded-br-lg shadow-md flex items-center gap-1">
-                                <i class="fa-solid fa-check-circle"></i> TKDN 62.0%
-                            </div>
+                </div>
+                
+                <!-- Produk TKDN 3 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 hover:border-red-300 transition-all duration-300 group cursor-pointer flex flex-col hidden md:flex">
+                    <div class="h-36 md:h-48 overflow-hidden relative flex items-center justify-center bg-slate-50">
+                        <i class="fa-solid fa-gears text-5xl text-slate-300 group-hover:scale-110 transition-transform duration-500"></i>
+                        <div class="absolute top-0 left-0 bg-red-600 text-white text-[10px] md:text-xs font-black px-3 py-1.5 rounded-br-lg shadow-md flex items-center gap-1">
+                            <i class="fa-solid fa-check-circle"></i> TKDN 35.8%
                         </div>
-                        <div class="p-4 flex-1 flex flex-col justify-between">
-                            <div>
-                                <h3 class="text-sm font-bold text-slate-800 line-clamp-2 mb-1.5 group-hover:text-rose-600 transition-colors">Panel Surya Monocrystalline 450Wp</h3>
-                                <div class="text-[10px] text-slate-500 mb-2 font-mono bg-slate-100 px-2 py-0.5 rounded w-max">No: 5562/SJ/TKDN</div>
-                            </div>
-                            <div>
-                                <div class="text-base md:text-lg font-black text-slate-900 mb-2">Rp 2.100.000</div>
-                                <div class="flex items-center text-[10px] md:text-xs text-slate-500 border-t border-slate-100 pt-2">
-                                    <i class="fa-solid fa-industry mr-1.5 text-slate-400"></i> PT. Surya Energi
-                                </div>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800 line-clamp-2 mb-1.5 group-hover:text-red-600 transition-colors">Mesin Press Hidrolik 50 Ton Pabrikasi Dalam Negeri</h3>
+                            <div class="text-[10px] text-slate-500 mb-2 font-mono bg-slate-100 px-2 py-0.5 rounded w-max border border-slate-200">No: 9912/SJ/TKDN</div>
+                        </div>
+                        <div>
+                            <div class="text-base md:text-lg font-black text-slate-900 mb-2">Rp 45.000.000</div>
+                            <div class="flex items-center text-[10px] md:text-xs text-slate-500 border-t border-slate-100 pt-2">
+                                <i class="fa-solid fa-industry mr-1.5 text-slate-400"></i> CV. Baja Mandiri
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Produk TKDN 3 & 4 (Hanya tampil di Desktop/Tablet) -->
-                    <div class="hidden md:flex bg-white rounded-2xl shadow-sm border border-rose-100 overflow-hidden hover:shadow-xl hover:-translate-y-1.5 hover:border-rose-300 transition-all duration-300 group cursor-pointer flex-col">
-                        <div class="h-48 overflow-hidden relative flex items-center justify-center bg-slate-50">
-                            <i class="fa-solid fa-gears text-5xl text-slate-300 group-hover:scale-110 transition-transform duration-500"></i>
-                            <div class="absolute top-0 left-0 bg-rose-600 text-white text-[10px] md:text-xs font-black px-3 py-1.5 rounded-br-lg shadow-md flex items-center gap-1">
-                                <i class="fa-solid fa-check-circle"></i> TKDN 35.8%
-                            </div>
+                <!-- Produk TKDN 4 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 hover:border-red-300 transition-all duration-300 group cursor-pointer flex flex-col hidden md:flex">
+                    <div class="h-36 md:h-48 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=400&h=300" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <div class="absolute top-0 left-0 bg-red-600 text-white text-[10px] md:text-xs font-black px-3 py-1.5 rounded-br-lg shadow-md flex items-center gap-1">
+                            <i class="fa-solid fa-check-circle"></i> TKDN 62.0%
                         </div>
-                        <div class="p-4 flex-1 flex flex-col justify-between">
-                            <div>
-                                <h3 class="text-sm font-bold text-slate-800 line-clamp-2 mb-1.5 group-hover:text-rose-600 transition-colors">Mesin Press Hidrolik 50 Ton Pabrikasi Lokal</h3>
-                            </div>
-                            <div>
-                                <div class="text-base md:text-lg font-black text-slate-900 mb-2">Rp 45.000.000</div>
-                                <div class="flex items-center text-[10px] md:text-xs text-slate-500 border-t border-slate-100 pt-2">
-                                    <i class="fa-solid fa-industry mr-1.5 text-slate-400"></i> CV. Baja Mandiri
-                                </div>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800 line-clamp-2 mb-1.5 group-hover:text-red-600 transition-colors">Panel Surya Monocrystalline 450Wp SNI</h3>
+                            <div class="text-[10px] text-slate-500 mb-2 font-mono bg-slate-100 px-2 py-0.5 rounded w-max border border-slate-200">No: 7621/SJ/TKDN</div>
+                        </div>
+                        <div>
+                            <div class="text-base md:text-lg font-black text-slate-900 mb-2">Rp 2.100.000</div>
+                            <div class="flex items-center text-[10px] md:text-xs text-slate-500 border-t border-slate-100 pt-2">
+                                <i class="fa-solid fa-industry mr-1.5 text-slate-400"></i> PT. Surya Energi
                             </div>
                         </div>
                     </div>
-
-                    <div class="hidden md:flex bg-white rounded-2xl shadow-sm border border-rose-100 overflow-hidden hover:shadow-xl hover:-translate-y-1.5 hover:border-rose-300 transition-all duration-300 group cursor-pointer flex-col">
-                        <div class="h-48 overflow-hidden relative flex items-center justify-center bg-slate-50">
-                            <i class="fa-solid fa-helmet-safety text-5xl text-slate-300 group-hover:scale-110 transition-transform duration-500"></i>
-                            <div class="absolute top-0 left-0 bg-rose-600 text-white text-[10px] md:text-xs font-black px-3 py-1.5 rounded-br-lg shadow-md flex items-center gap-1">
-                                <i class="fa-solid fa-check-circle"></i> TKDN 80.0%
-                            </div>
-                        </div>
-                        <div class="p-4 flex-1 flex flex-col justify-between">
-                            <div>
-                                <h3 class="text-sm font-bold text-slate-800 line-clamp-2 mb-1.5 group-hover:text-rose-600 transition-colors">Helm Safety Proyek SNI Inner Fastrack</h3>
-                            </div>
-                            <div>
-                                <div class="text-base md:text-lg font-black text-slate-900 mb-2">Rp 45.000</div>
-                                <div class="flex items-center text-[10px] md:text-xs text-slate-500 border-t border-slate-100 pt-2">
-                                    <i class="fa-solid fa-industry mr-1.5 text-slate-400"></i> PT. Plastik Indo
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
             </div>
         </section>
