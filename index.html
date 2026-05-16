@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BisnisHub x Kalimaja - Super App Ekspedisi & B2B Marketplace</title>
+    <title>BisnisHub - Super App Ekspedisi & B2B Marketplace</title>
     
     <!-- CSS & Frameworks -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -65,12 +65,12 @@
         <!-- Main Top Header -->
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <div class="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm border border-white/30 shadow-inner flex items-center gap-2">
-                    <i data-lucide="package-search" class="w-8 h-8 text-white drop-shadow-md"></i>
+                <div class="bg-gradient-to-br from-amber-300 to-yellow-500 p-2.5 rounded-xl border border-white/30 shadow-inner flex items-center gap-2">
+                    <i data-lucide="box" class="w-8 h-8 text-indigo-950 drop-shadow-md"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold tracking-tight drop-shadow-sm flex items-center gap-2">
-                        BisnisHub <span class="text-amber-300 font-extrabold text-xl">x Kalimaja</span>
+                    <h1 class="text-2xl font-black tracking-tight drop-shadow-sm flex items-center gap-2 text-amber-400">
+                        BisnisHub
                     </h1>
                     <p class="text-indigo-100 text-xs sm:text-sm font-medium">Platform Logistik & Pengadaan B2B Terpadu</p>
                 </div>
@@ -556,7 +556,10 @@
         <div class="w-full md:w-64 bg-white shadow-sm border-r border-slate-200 md:min-h-[80vh] flex flex-col flex-shrink-0 relative">
             <div class="p-5 border-b border-slate-100 flex items-center gap-4 bg-white">
                 <div class="relative group cursor-pointer" onclick="document.getElementById('buyer-photo-upload').click()">
-                    <img id="buyer-profile-img" src="https://ui-avatars.com/api/?name=Budi+Santoso&background=4f46e5&color=fff" class="w-12 h-12 rounded-full border-2 border-indigo-100 object-cover" alt="User">
+                    <div id="buyer-profile-img-container" class="w-12 h-12 rounded-full border-2 border-indigo-100 bg-indigo-50 flex items-center justify-center overflow-hidden">
+                        <i data-lucide="user" class="w-6 h-6 text-indigo-400" id="buyer-default-icon"></i>
+                        <img id="buyer-profile-img" src="" class="w-full h-full object-cover hidden" alt="User">
+                    </div>
                     <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <i class="fa-solid fa-camera text-white text-xs"></i>
                     </div>
@@ -601,7 +604,10 @@
                     <!-- Foto Profil -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-7 flex items-center gap-6">
                         <div class="relative group cursor-pointer flex-shrink-0" onclick="document.getElementById('buyer-photo-upload').click()">
-                            <img id="buyer-profile-img-large" src="https://ui-avatars.com/api/?name=Budi+Santoso&background=4f46e5&color=fff" class="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-slate-100 object-cover shadow-sm transition-transform group-hover:scale-105" alt="User">
+                            <div id="buyer-profile-img-large-container" class="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-slate-100 bg-slate-50 flex items-center justify-center overflow-hidden shadow-sm transition-transform group-hover:scale-105">
+                                <i data-lucide="user" class="w-10 h-10 text-slate-300" id="buyer-default-icon-large"></i>
+                                <img id="buyer-profile-img-large" src="" class="w-full h-full object-cover hidden" alt="User">
+                            </div>
                             <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <i class="fa-solid fa-camera text-white text-xl"></i>
                             </div>
@@ -677,7 +683,10 @@
             <div class="p-5 border-b border-slate-100 flex items-center bg-white">
                 <div class="flex items-center gap-3">
                     <div class="relative group cursor-pointer" onclick="document.getElementById('store-logo-upload-input').click()">
-                        <img id="seller-store-logo" src="https://ui-avatars.com/api/?name=Toko+Teknik&background=e0e7ff&color=4f46e5" class="w-10 h-10 rounded-lg object-cover" alt="Store">
+                        <div id="seller-store-logo-container" class="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center overflow-hidden">
+                            <i data-lucide="store" class="w-5 h-5 text-indigo-400" id="seller-default-icon"></i>
+                            <img id="seller-store-logo" src="" class="w-full h-full object-cover hidden" alt="Store">
+                        </div>
                     </div>
                     <div>
                         <h2 class="font-bold text-slate-800 text-sm leading-tight">Toko Teknik Jaya</h2>
@@ -919,7 +928,10 @@
                 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col md:flex-row gap-6">
                     <div class="relative group cursor-pointer w-24 h-24 flex-shrink-0" onclick="document.getElementById('store-logo-upload-input').click()">
-                        <img id="seller-store-logo-large" src="https://ui-avatars.com/api/?name=Toko+Teknik&background=e0e7ff&color=4f46e5" class="w-full h-full rounded-2xl object-cover border-2 border-slate-100 shadow-sm" alt="Store">
+                        <div id="seller-store-logo-large-container" class="w-full h-full rounded-2xl border-2 border-slate-100 bg-slate-50 flex items-center justify-center overflow-hidden shadow-sm transition-transform group-hover:scale-105">
+                            <i data-lucide="store" class="w-10 h-10 text-slate-300" id="seller-default-icon-large"></i>
+                            <img id="seller-store-logo-large" src="" class="w-full h-full object-cover hidden" alt="Store">
+                        </div>
                         <div class="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <i class="fa-solid fa-camera text-white text-xl"></i>
                         </div>
@@ -1912,6 +1924,42 @@
             document.getElementById(`admin-pajak-view`).classList.add('hidden');
             document.getElementById(`admin-${menu}-view`).classList.remove('hidden');
             document.getElementById(`menu-admin-${menu}`).classList.add('text-white', 'bg-indigo-600', 'shadow-md', 'font-bold');
+        }
+
+        window.updateBuyerProfile = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const src = e.target.result;
+                    document.getElementById('buyer-profile-img').src = src;
+                    document.getElementById('buyer-profile-img-large').src = src;
+                    
+                    document.getElementById('buyer-profile-img').classList.remove('hidden');
+                    document.getElementById('buyer-profile-img-large').classList.remove('hidden');
+                    document.getElementById('buyer-default-icon').classList.add('hidden');
+                    document.getElementById('buyer-default-icon-large').classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        window.updateStoreLogo = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const src = e.target.result;
+                    document.getElementById('seller-store-logo').src = src;
+                    document.getElementById('seller-store-logo-large').src = src;
+                    
+                    document.getElementById('seller-store-logo').classList.remove('hidden');
+                    document.getElementById('seller-store-logo-large').classList.remove('hidden');
+                    document.getElementById('seller-default-icon').classList.add('hidden');
+                    document.getElementById('seller-default-icon-large').classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
         }
 
         window.toggleAddProduct = function(showForm) {
