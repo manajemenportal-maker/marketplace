@@ -1663,6 +1663,23 @@
                 try { await loadDraftFromFirestore(user); } catch(e){}
                 
                 const email = user.email || 'User';
+                const displayName = user.displayName || email.split('@')[0]; // Ambil nama asli dari Firebase
+                
+                // --- UPDATE UI DASHBOARD PEMBELI ---
+                const sidebarName = document.getElementById('buyer-sidebar-name');
+                const settingName = document.getElementById('buyer-setting-name');
+                const imgSmall = document.getElementById('buyer-profile-img');
+                const imgLarge = document.getElementById('buyer-profile-img-large');
+                
+                if(sidebarName) sidebarName.textContent = displayName;
+                if(settingName) settingName.value = displayName;
+                
+                // Ubah gambar inisial mengikuti nama asli
+                const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=4f46e5&color=fff`;
+                if(imgSmall && !imgSmall.src.includes('data:image')) imgSmall.src = avatarUrl;
+                if(imgLarge && !imgLarge.src.includes('data:image')) imgLarge.src = avatarUrl;
+                // -----------------------------------
+
                 document.getElementById('current-user-email').textContent = email.substring(0, 15) + '...';
                 document.querySelector('#auth-display-info span:first-child').textContent = "Masuk Sebagai:";
                 
