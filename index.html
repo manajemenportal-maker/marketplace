@@ -2436,7 +2436,7 @@
                 selectedTab.classList.add('active', 'text-white', 'border-amber-400');
             }
 
-            if(viewName === 'marketplace') initMpSlider();
+            if(viewName === 'marketplace') window.initMpSlider();
             window.scrollTo(0, 0); 
         }
 
@@ -2451,6 +2451,15 @@
             }
         }
 
+        // Tutup dropdown menu jika user klik di luar area
+        document.addEventListener('click', function(event) {
+            const wrapper = document.getElementById('desktop-category-wrapper');
+            const dropdown = document.getElementById('category-dropdown');
+            if (wrapper && !wrapper.contains(event.target) && dropdown && !dropdown.classList.contains('hidden')) {
+                window.toggleCategoryMenu();
+            }
+        });
+
         window.toggleBuyerMenu = function(menu) {
             document.querySelectorAll('.buyer-menu-item').forEach(el => {
                 el.classList.remove('text-indigo-700', 'bg-indigo-50', 'font-bold');
@@ -2458,8 +2467,12 @@
             });
             document.getElementById(`buyer-pesanan-view`).classList.add('hidden');
             document.getElementById(`buyer-setting-view`).classList.add('hidden');
-            document.getElementById(`buyer-${menu}-view`).classList.remove('hidden');
-            document.getElementById(`menu-buyer-${menu}`).classList.add('text-indigo-700', 'bg-indigo-50', 'font-bold');
+            
+            const viewEl = document.getElementById(`buyer-${menu}-view`);
+            if(viewEl) viewEl.classList.remove('hidden');
+            
+            const menuEl = document.getElementById(`menu-buyer-${menu}`);
+            if(menuEl) menuEl.classList.add('text-indigo-700', 'bg-indigo-50', 'font-bold');
         }
 
         window.toggleSellerMenu = function(menu) {
@@ -2472,9 +2485,13 @@
                 if(el) el.classList.add('hidden');
             });
             document.getElementById('seller-add-product').classList.add('hidden');
+            
             const viewId = menu === 'produk' ? 'seller-product-list' : `seller-${menu}-view`;
-            document.getElementById(viewId).classList.remove('hidden');
-            document.getElementById(`menu-seller-${menu}`).classList.add('text-indigo-700', 'bg-indigo-50', 'font-bold');
+            const viewEl = document.getElementById(viewId);
+            if(viewEl) viewEl.classList.remove('hidden');
+            
+            const menuEl = document.getElementById(`menu-seller-${menu}`);
+            if(menuEl) menuEl.classList.add('text-indigo-700', 'bg-indigo-50', 'font-bold');
         }
 
         window.toggleAdminMenu = function(menu) {
@@ -2484,8 +2501,12 @@
             });
             document.getElementById(`admin-desain-view`).classList.add('hidden');
             document.getElementById(`admin-pajak-view`).classList.add('hidden');
-            document.getElementById(`admin-${menu}-view`).classList.remove('hidden');
-            document.getElementById(`menu-admin-${menu}`).classList.add('text-white', 'bg-indigo-600', 'shadow-md', 'font-bold');
+            
+            const viewEl = document.getElementById(`admin-${menu}-view`);
+            if(viewEl) viewEl.classList.remove('hidden');
+            
+            const menuEl = document.getElementById(`menu-admin-${menu}`);
+            if(menuEl) menuEl.classList.add('text-white', 'bg-indigo-600', 'shadow-md', 'font-bold');
         }
 
         window.toggleAddProduct = function(showForm) {
@@ -2528,6 +2549,30 @@
             window.simulateSave(btn);
         };
 
+        window.updateBuyerProfile = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('buyer-profile-img').src = e.target.result;
+                    document.getElementById('buyer-profile-img-large').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.updateStoreLogo = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('seller-store-logo').src = e.target.result;
+                    document.getElementById('seller-store-logo-large').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        };
+
         window.openTenderPostModal = function() { document.getElementById('modal-tender-post').classList.remove('hidden'); }
         window.openTenderBidModal = function(title, budget) {
             document.getElementById('bid-tender-title').textContent = title;
@@ -2535,53 +2580,84 @@
             document.getElementById('modal-tender-bid').classList.remove('hidden');
         }
 
-        // CAROUSEL MARKETPLACE
-        let mpCurrentSlide = 0; let mpSlideInterval; let mpAutoSlideDelay = 5000;
-        function initMpSlider() {
-            const container = document.getElementById('mp-slide-container');
-            if (!container) return;
-            const indicators = document.getElementById('mp-slide-indicators');
-            indicators.innerHTML = ''; 
-            for (let i = 0; i < container.children.length; i++) {
+        // ==========================================
+        // MARKETPLACE CAROUSEL B2B (Kalimaja)
+        // ==========================================
+        let mpCurrentSlide = 0;
+        let mpSlideInterval;
+        let mpAutoSlideDelay = 5000;
+
+        window.initMpSlider = function() {
+            const slideContainer = document.getElementById('mp-slide-container');
+            if (!slideContainer) return;
+            const totalSlides = slideContainer.children.length;
+            const indicatorContainer = document.getElementById('mp-slide-indicators');
+            if(indicatorContainer) indicatorContainer.innerHTML = ''; 
+
+            for (let i = 0; i < totalSlides; i++) {
                 const dot = document.createElement('button');
                 dot.className = `h-2 rounded-full transition-all duration-500 ${i === 0 ? 'bg-amber-400 w-8 shadow-sm' : 'bg-white/40 hover:bg-white/80 w-2.5'}`;
-                dot.onclick = () => { mpCurrentSlide = i; updateMpSliderPosition(); pauseMpSlider(); resumeMpSlider(); };
-                indicators.appendChild(dot);
+                dot.onclick = () => window.goToMpSlide(i);
+                if(indicatorContainer) indicatorContainer.appendChild(dot);
             }
-            startMpAutoSlide();
+            window.startMpAutoSlide();
         }
-        function updateMpSliderPosition() {
-            const container = document.getElementById('mp-slide-container');
-            const indicators = document.getElementById('mp-slide-indicators');
-            if(!container) return;
-            container.style.transform = `translateX(-${mpCurrentSlide * 100}%)`;
-            for (let i = 0; i < container.children.length; i++) {
-                indicators.children[i].className = i === mpCurrentSlide ? 'h-2 rounded-full transition-all duration-500 bg-amber-400 w-8 shadow-sm' : 'h-2 rounded-full transition-all duration-500 bg-white/40 hover:bg-white/80 w-2.5';
+
+        window.updateMpSliderPosition = function() {
+            const slideContainer = document.getElementById('mp-slide-container');
+            const indicatorContainer = document.getElementById('mp-slide-indicators');
+            if(!slideContainer) return;
+            const totalSlides = slideContainer.children.length;
+            slideContainer.style.transform = `translateX(-${mpCurrentSlide * 100}%)`;
+
+            for (let i = 0; i < totalSlides; i++) {
+                const dot = indicatorContainer.children[i];
+                if(dot) {
+                    if (i === mpCurrentSlide) dot.className = 'h-2 rounded-full transition-all duration-500 bg-amber-400 w-8 shadow-sm';
+                    else dot.className = 'h-2 rounded-full transition-all duration-500 bg-white/40 hover:bg-white/80 w-2.5';
+                }
             }
         }
+
         window.nextMpSlide = function() {
-            const container = document.getElementById('mp-slide-container');
-            if(!container) return;
-            mpCurrentSlide = (mpCurrentSlide + 1) % container.children.length;
-            updateMpSliderPosition();
+            const slideContainer = document.getElementById('mp-slide-container');
+            if(!slideContainer) return;
+            mpCurrentSlide = (mpCurrentSlide + 1) % slideContainer.children.length;
+            window.updateMpSliderPosition();
         }
+
         window.prevMpSlide = function() {
-            const container = document.getElementById('mp-slide-container');
-            if(!container) return;
-            mpCurrentSlide = (mpCurrentSlide - 1 + container.children.length) % container.children.length;
-            updateMpSliderPosition();
+            const slideContainer = document.getElementById('mp-slide-container');
+            if(!slideContainer) return;
+            const totalSlides = slideContainer.children.length;
+            mpCurrentSlide = (mpCurrentSlide - 1 + totalSlides) % totalSlides;
+            window.updateMpSliderPosition();
         }
-        function startMpAutoSlide() { clearInterval(mpSlideInterval); mpSlideInterval = setInterval(window.nextMpSlide, mpAutoSlideDelay); }
+
+        window.goToMpSlide = function(index) {
+            mpCurrentSlide = index;
+            window.updateMpSliderPosition();
+            window.pauseMpSlider(); window.resumeMpSlider();
+        }
+
+        window.startMpAutoSlide = function() {
+            clearInterval(mpSlideInterval);
+            mpSlideInterval = setInterval(window.nextMpSlide, mpAutoSlideDelay);
+        }
         window.pauseMpSlider = function() { clearInterval(mpSlideInterval); }
-        window.resumeMpSlider = function() { startMpAutoSlide(); }
+        window.resumeMpSlider = function() { window.startMpAutoSlide(); }
         window.saveMpSliderSettings = function() {
             const selectEl = document.getElementById('admin-slider-delay');
-            if (selectEl) { mpAutoSlideDelay = parseInt(selectEl.value, 10); startMpAutoSlide(); }
+            if (selectEl) {
+                mpAutoSlideDelay = parseInt(selectEl.value, 10);
+                window.startMpAutoSlide(); 
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             const savedView = localStorage.getItem('superapp_current_view') || 'marketplace';
-            switchAppView(savedView);
+            window.switchAppView(savedView);
+            window.initMpSlider();
         });
 
     </script>
