@@ -133,6 +133,7 @@
                 <button onclick="switchAppView('forum')" id="tab-forum" class="app-tab py-3 text-xs sm:text-sm font-medium text-indigo-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2">
                     <i class="fa-solid fa-users-rectangle"></i> Bursa Tender & Forum
                 </button>
+                <!-- Tombol Navigasi Kalkulator (Wajib Ada) -->
                 <button onclick="switchAppView('kalkulator')" id="tab-kalkulator" class="app-tab py-3 text-xs sm:text-sm font-medium text-indigo-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2">
                     <i data-lucide="calculator" class="w-4 h-4"></i> Kalkulator Ekspedisi
                 </button>
@@ -150,6 +151,102 @@
             </div>
         </div>
     </header>
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: KALKULATOR BISNISHUB (Terisolasi)  -->
+    <!-- ========================================== -->
+    <main id="view-kalkulator" class="max-w-7xl mx-auto px-4 py-8 hidden animate-fade-in">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1 space-y-4">
+                <!-- Form Kalkulator Utama -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-bold mb-6 flex items-center gap-2 text-slate-800">
+                        <i data-lucide="map" class="w-5 h-5 text-violet-500"></i> Detail Pengiriman
+                    </h2>
+                    
+                    <form id="shipping-form" class="space-y-5">
+                        <div class="space-y-3">
+                            <label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-emerald-500"></i> Kota Asal
+                            </label>
+                            <div class="grid gap-3">
+                                <select id="origin-prov" class="w-full rounded-xl border-slate-300 border p-3 text-sm focus:ring-2 focus:ring-violet-500 outline-none transition-shadow">
+                                    <option value="" disabled selected hidden>Pilih Provinsi...</option>
+                                </select>
+                                <select id="origin-city" disabled class="w-full rounded-xl border-slate-300 border p-3 text-sm focus:ring-2 focus:ring-violet-500 outline-none disabled:bg-slate-100 disabled:opacity-70 transition-shadow">
+                                    <option value="">Pilih Kota/Kabupaten...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 pt-2">
+                            <label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-rose-500"></i> Kota Tujuan
+                            </label>
+                            <div class="grid gap-3">
+                                <select id="dest-prov" class="w-full rounded-xl border-slate-300 border p-3 text-sm focus:ring-2 focus:ring-violet-500 outline-none transition-shadow">
+                                    <option value="" disabled selected hidden>Pilih Provinsi...</option>
+                                </select>
+                                <select id="dest-city" disabled class="w-full rounded-xl border-slate-300 border p-3 text-sm focus:ring-2 focus:ring-violet-500 outline-none disabled:bg-slate-100 disabled:opacity-70 transition-shadow">
+                                    <option value="">Pilih Kota/Kabupaten...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 pt-2">
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                    <i data-lucide="package" class="w-4 h-4 text-indigo-500"></i> Berat (kg)
+                                </label>
+                                <input id="weight" type="number" min="1" step="0.1" value="1" class="w-full rounded-xl border-slate-300 border p-3 text-sm focus:ring-2 focus:ring-violet-500 outline-none transition-shadow">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                    <i data-lucide="truck" class="w-4 h-4 text-amber-500"></i> Kurir
+                                </label>
+                                <select id="courier" class="w-full rounded-xl border-slate-300 border p-3 text-sm focus:ring-2 focus:ring-violet-500 outline-none transition-shadow"></select>
+                            </div>
+                        </div>
+
+                        <div id="error-container" class="hidden p-3 bg-red-50 text-red-600 rounded-xl text-sm flex items-start gap-2 border border-red-100">
+                            <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
+                            <p id="error-message" class="font-medium"></p>
+                        </div>
+
+                        <div>
+                            <button type="submit" id="submit-btn" class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg disabled:opacity-70 tracking-wide">
+                                <i data-lucide="search" id="btn-icon" class="w-5 h-5"></i>
+                                <span id="btn-text">Cek Tarif Sekarang</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tombol Cetak PDF/Excel -->
+                <button id="btn-open-modal" class="w-full bg-gradient-to-b from-yellow-300 via-amber-400 to-amber-500 text-amber-900 font-extrabold py-4 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_6px_0_0_#b45309,0_10px_20px_rgba(0,0,0,0.2)] hover:translate-y-[2px] hover:shadow-[0_4px_0_0_#b45309,0_8px_15px_rgba(0,0,0,0.2)] active:translate-y-[6px] active:shadow-[0_0px_0_0_#b45309,0_0px_0px_rgba(0,0,0,0)] border border-yellow-200 relative overflow-hidden group mt-4">
+                    <i data-lucide="crown" class="w-6 h-6 text-amber-800 drop-shadow-md"></i>
+                    <span class="drop-shadow-sm text-lg uppercase tracking-wide">Cetak Rekap Tarif</span>
+                    <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/50 to-transparent group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                </button>
+            </div>
+
+            <!-- Kontainer Hasil Ongkir (Sebelah Kanan) -->
+            <div class="lg:col-span-2 flex flex-col h-full">
+                <div id="results-container" class="h-full flex-1">
+                    <div id="default-carousel-view" class="h-full bg-slate-100 rounded-2xl overflow-hidden relative flex flex-col shadow-sm border border-slate-200 min-h-[450px]">
+                        <div id="carousel-slides-container" class="absolute inset-0 z-0 bg-slate-200 flex items-center justify-center text-slate-400">
+                            <!-- Placeholder animasi sebelum hasil muncul -->
+                            <div class="text-center">
+                                <i data-lucide="package-search" class="w-16 h-16 mx-auto text-slate-300 mb-4"></i>
+                                <h3 class="text-xl font-bold text-slate-500">Mulai Pencarian Tarif</h3>
+                                <p class="text-sm text-slate-400 mt-2">Pilih asal, tujuan, dan berat paket di sebelah kiri.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <!-- ========================================== -->
     <!-- VIEW 2: MARKETPLACE B2B (UTAMA)            -->
