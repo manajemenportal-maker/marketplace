@@ -147,11 +147,11 @@
         <!-- Super App Navigation Tabs -->
         <div class="bg-indigo-800/50 border-t border-white/10 backdrop-blur-md">
             <div class="max-w-7xl mx-auto px-4 flex gap-2 sm:gap-6 overflow-x-auto hide-scrollbar">
-                <button onclick="switchAppView('kalkulator')" id="tab-kalkulator" class="app-tab active py-3 text-xs sm:text-sm font-bold text-white border-b-2 border-amber-400 whitespace-nowrap flex items-center gap-2">
-                    <i data-lucide="calculator" class="w-4 h-4"></i> Kalkulator Ekspedisi
-                </button>
-                <button onclick="switchAppView('marketplace')" id="tab-marketplace" class="app-tab py-3 text-xs sm:text-sm font-medium text-indigo-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2">
+                <button onclick="switchAppView('marketplace')" id="tab-marketplace" class="app-tab active py-3 text-xs sm:text-sm font-bold text-white border-b-2 border-amber-400 whitespace-nowrap flex items-center gap-2">
                     <i class="fa-solid fa-store"></i> Marketplace B2B
+                </button>
+                <button onclick="switchAppView('kalkulator')" id="tab-kalkulator" class="app-tab py-3 text-xs sm:text-sm font-medium text-indigo-200 border-b-2 border-transparent hover:text-white transition-colors whitespace-nowrap flex items-center gap-2">
+                    <i data-lucide="calculator" class="w-4 h-4"></i> Kalkulator Ekspedisi
                 </button>
                 <div class="w-px h-5 bg-white/20 my-auto hidden sm:block"></div>
                 <!-- Dynamic Dashboards -->
@@ -171,7 +171,7 @@
     <!-- ========================================== -->
     <!-- VIEW 1: KALKULATOR BISNISHUB               -->
     <!-- ========================================== -->
-    <main id="view-kalkulator" class="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in block">
+    <main id="view-kalkulator" class="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in hidden">
         <div class="lg:col-span-1 space-y-4">
             <!-- Form Kalkulator Utama -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
@@ -270,7 +270,7 @@
     <!-- ========================================== -->
     <!-- VIEW 2: MARKETPLACE KALIMAJA B2B           -->
     <!-- ========================================== -->
-    <main id="view-marketplace" class="min-h-screen hidden animate-fade-in bg-slate-50 pb-20">
+    <main id="view-marketplace" class="min-h-screen block animate-fade-in bg-slate-50 pb-20">
         
         <!-- Marketplace Sub-Header (Search & Dropdown) -->
         <div class="bg-white border-b border-slate-200 shadow-sm sticky top-[72px] z-30">
@@ -1411,7 +1411,7 @@
         });
 
         document.getElementById('btn-logout').addEventListener('click', () => {
-            signOut(auth).then(() => { authModal.classList.add('hidden'); window.switchAppView('kalkulator'); alert("Anda berhasil keluar."); });
+            signOut(auth).then(() => { authModal.classList.add('hidden'); window.switchAppView('marketplace'); alert("Anda berhasil keluar."); });
         });
 
         // ============================================
@@ -2106,7 +2106,7 @@
         // 5. INISIALISASI UI DOM & KALKULATOR LOGIC
         // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
-            const savedView = localStorage.getItem('superapp_current_view') || 'kalkulator';
+            const savedView = localStorage.getItem('superapp_current_view') || 'marketplace';
             window.switchAppView(savedView);
 
             // Populate Kalkulator UI
