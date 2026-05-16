@@ -1922,6 +1922,20 @@
             }, 800);
         };
 
+        window.saveStoreProfile = function(btn) {
+            const newName = document.getElementById('store-setting-name').value;
+            const sidebarName = document.getElementById('seller-sidebar-name');
+            if(newName && sidebarName) {
+                sidebarName.textContent = newName;
+                const img1 = document.getElementById('seller-store-logo');
+                const img2 = document.getElementById('seller-store-logo-large');
+                const newAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(newName)}&background=e0e7ff&color=4f46e5`;
+                if(img1 && !img1.src.includes('data:image')) img1.src = newAvatarUrl;
+                if(img2 && !img2.src.includes('data:image')) img2.src = newAvatarUrl;
+            }
+            window.simulateSave(btn);
+        };
+
         window.updateSiteLogo = function(event) {
             const file = event.target.files[0];
             if (file) {
