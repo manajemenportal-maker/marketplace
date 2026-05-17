@@ -3421,3 +3421,498 @@
 
 </body>
 </html>
+
+
+<!-- ========================================================= -->
+<!-- ADDON V4: ADMIN SUBMENU SELALU DI FRAME KANAN             -->
+<!-- Tujuan: klik menu bar admin kiri tidak membuka lanjutan    -->
+<!-- di bawah sidebar. Submenu + detail dipindahkan ke kanan.   -->
+<!-- Tidak menyentuh kalkulator ekspedisi / logika utama.       -->
+<!-- ========================================================= -->
+<style id="bhx-admin-right-submenu-style">
+  #view-admin nav .bhx-admin-submenu-left,
+  #view-admin nav .submenu,
+  #view-admin nav .dropdown-menu,
+  #view-admin nav .collapse,
+  #view-admin nav ul,
+  #view-admin nav .pl-8,
+  #view-admin nav .ml-8 {
+    display: none !important;
+  }
+
+  #view-admin nav button,
+  #view-admin nav a {
+    position: relative !important;
+  }
+
+  #view-admin nav button.bhx-admin-master-active::after {
+    content: '';
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 10px solid #4f46e5;
+  }
+
+  #bhx-admin-main-right-frame {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 285px minmax(0,1fr);
+    gap: 16px;
+    min-height: 680px;
+  }
+
+  #bhx-admin-main-right-frame .bhx-sub-right-menu {
+    background: #0f172a;
+    border-radius: 24px;
+    padding: 14px;
+    align-self: start;
+    position: sticky;
+    top: 120px;
+    max-height: calc(100vh - 150px);
+    overflow: auto;
+    box-shadow: 0 20px 50px rgba(15,23,42,.16);
+  }
+
+  #bhx-admin-main-right-frame .bhx-sub-title {
+    color: white;
+    font-weight: 900;
+    font-size: 15px;
+    padding: 8px 10px 14px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    margin-bottom: 10px;
+  }
+
+  #bhx-admin-main-right-frame .bhx-sub-button {
+    width: 100%;
+    border: 0;
+    text-align: left;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px 12px;
+    border-radius: 16px;
+    color: #cbd5e1;
+    font-weight: 800;
+    font-size: 13px;
+    transition: .18s ease;
+  }
+
+  #bhx-admin-main-right-frame .bhx-sub-button:hover {
+    background: #1e293b;
+    color: white;
+  }
+
+  #bhx-admin-main-right-frame .bhx-sub-button.active {
+    background: #4f46e5;
+    color: white;
+    box-shadow: 0 12px 26px rgba(79,70,229,.35);
+  }
+
+  #bhx-admin-main-right-frame .bhx-sub-button small {
+    display: block;
+    opacity: .72;
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 2px;
+    line-height: 1.35;
+  }
+
+  #bhx-admin-main-right-frame .bhx-detail-frame {
+    min-width: 0;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15,23,42,.06);
+  }
+
+  #bhx-admin-main-right-frame .bhx-detail-head {
+    padding: 22px;
+    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(135deg,#eef2ff,#f8fafc);
+  }
+
+  #bhx-admin-main-right-frame .bhx-detail-head h2 {
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 900;
+    color: #0f172a;
+  }
+
+  #bhx-admin-main-right-frame .bhx-detail-head p {
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 14px;
+  }
+
+  #bhx-admin-main-right-frame .bhx-detail-body {
+    padding: 22px;
+  }
+
+  .bhx-admin-card-grid {
+    display: grid;
+    grid-template-columns: repeat(4,minmax(0,1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .bhx-admin-mini-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 16px;
+    background: white;
+  }
+
+  .bhx-admin-mini-card p {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #64748b;
+    font-weight: 900;
+  }
+
+  .bhx-admin-mini-card b {
+    display: block;
+    font-size: 22px;
+    color: #0f172a;
+    margin-top: 4px;
+    font-weight: 900;
+  }
+
+  .bhx-admin-action-btn {
+    border-radius: 13px;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 900;
+    color: white;
+    background: #4f46e5;
+    box-shadow: 0 10px 18px rgba(79,70,229,.18);
+  }
+
+  .bhx-admin-action-btn:hover { background:#4338ca; }
+  .bhx-admin-action-btn.green { background:#059669; }
+  .bhx-admin-action-btn.red { background:#e11d48; }
+  .bhx-admin-action-btn.dark { background:#0f172a; }
+  .bhx-admin-action-btn.amber { background:#f59e0b; color:#1e1b4b; }
+
+  @media (max-width: 980px) {
+    #bhx-admin-main-right-frame {
+      grid-template-columns: 1fr;
+    }
+    #bhx-admin-main-right-frame .bhx-sub-right-menu {
+      position: relative;
+      top: auto;
+      max-height: none;
+      display: grid;
+      grid-template-columns: repeat(2,minmax(0,1fr));
+    }
+    #bhx-admin-main-right-frame .bhx-sub-title {
+      grid-column: 1 / -1;
+    }
+    .bhx-admin-card-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  }
+</style>
+
+<script id="bhx-admin-right-submenu-script">
+(function(){
+  const LS_KEY = 'bhx_admin_right_submenu_v4';
+  const mainMenus = {
+    overview: {
+      title: 'Overview Admin', icon: 'fa-gauge-high',
+      tabs: [
+        ['monitor','fa-chart-line','Monitoring','KPI platform harian'],
+        ['activity','fa-clock-rotate-left','Aktivitas','Log admin terbaru'],
+        ['alert','fa-triangle-exclamation','Alert Sistem','Butuh perhatian'],
+        ['target','fa-bullseye','Target Bisnis','GMV dan transaksi']
+      ]
+    },
+    users: {
+      title: 'User & Role', icon: 'fa-users',
+      tabs: [
+        ['list','fa-list','Daftar User','Semua akun pembeli'],
+        ['role','fa-user-shield','Role & Akses','Atur hak akses'],
+        ['verify','fa-id-card','Verifikasi','KYC dan akun baru'],
+        ['segment','fa-layer-group','Segmentasi','Buyer, vendor, admin']
+      ]
+    },
+    sellers: {
+      title: 'Seller / Vendor', icon: 'fa-store',
+      tabs: [
+        ['pending','fa-hourglass-half','Vendor Pending','Menunggu approval'],
+        ['legal','fa-file-signature','Dokumen Legal','NIB, NPWP, Akta'],
+        ['tkdn','fa-certificate','Badge TKDN','Validasi sertifikat'],
+        ['audit','fa-magnifying-glass-chart','Audit Vendor','Performa seller']
+      ]
+    },
+    products: {
+      title: 'Moderasi Produk', icon: 'fa-boxes-stacked',
+      tabs: [
+        ['review','fa-clipboard-check','Review Produk','Approve / tolak'],
+        ['active','fa-box-open','Produk Aktif','Sudah tayang'],
+        ['category','fa-tags','Kategori','Kelola kategori'],
+        ['stock','fa-warehouse','Stok & Harga','Monitor stok']
+      ]
+    },
+    orders: {
+      title: 'Order & Refund', icon: 'fa-receipt',
+      tabs: [
+        ['transaction','fa-money-bill-transfer','Transaksi','Order berjalan'],
+        ['refund','fa-rotate-left','Refund','Dana kembali'],
+        ['dispute','fa-scale-balanced','Dispute','Kasus bermasalah'],
+        ['invoice','fa-file-invoice','Invoice','Dokumen transaksi']
+      ]
+    },
+    tenders: {
+      title: 'Moderasi Tender', icon: 'fa-briefcase',
+      tabs: [
+        ['open','fa-folder-open','Tender Aktif','Sedang tayang'],
+        ['posting','fa-pen-to-square','Posting Tender','Buat proyek baru'],
+        ['bids','fa-hand-holding-dollar','Bid Masuk','Penawaran vendor'],
+        ['archive','fa-box-archive','Arsip Tender','Riwayat tender']
+      ]
+    },
+    support: {
+      title: 'Support Center', icon: 'fa-headset',
+      tabs: [
+        ['ticket','fa-ticket','Tiket Open','Butuh respon'],
+        ['chat','fa-comments','Live Chat','Percakapan user'],
+        ['faq','fa-circle-question','FAQ','Pusat bantuan'],
+        ['escalation','fa-arrow-up-right-dots','Eskalasi','Kasus prioritas']
+      ]
+    },
+    cms: {
+      title: 'CMS Konten', icon: 'fa-palette',
+      tabs: [
+        ['hero','fa-image','Hero Banner','Judul dan gambar'],
+        ['promo','fa-bullhorn','Promo Homepage','Campaign utama'],
+        ['menu','fa-bars','Menu Navigasi','Urutan menu'],
+        ['page','fa-file-lines','Halaman Statis','Tentang, syarat, kontak']
+      ]
+    },
+    finance: {
+      title: 'Escrow / Keuangan', icon: 'fa-vault',
+      tabs: [
+        ['escrow','fa-vault','Dana Escrow','Dana tertahan'],
+        ['withdraw','fa-building-columns','Penarikan Seller','Withdraw request'],
+        ['commission','fa-percent','Komisi Platform','Fee dan margin'],
+        ['report','fa-chart-pie','Laporan Keuangan','Export dan audit']
+      ]
+    },
+    settings: {
+      title: 'Setting Sistem', icon: 'fa-gear',
+      tabs: [
+        ['platform','fa-power-off','Status Platform','Online / maintenance'],
+        ['approval','fa-shield-check','Approval','Aturan verifikasi'],
+        ['payment','fa-credit-card','Payment','Gateway & rekening'],
+        ['security','fa-lock','Keamanan Login','OTP dan sesi admin'],
+        ['api','fa-plug','Integrasi API','Shipping, payment, WA'],
+        ['backup','fa-database','Backup & Log','Export data sistem']
+      ]
+    }
+  };
+
+  function load(){
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); }
+    catch(e){ return {}; }
+  }
+  function save(st){ localStorage.setItem(LS_KEY, JSON.stringify(st)); }
+  function getActiveMain(){
+    try {
+      const s = JSON.parse(localStorage.getItem('bhx_exec_state_v2') || '{}');
+      return (s.active && s.active.admin) || load().main || 'overview';
+    } catch(e){ return load().main || 'overview'; }
+  }
+  function getActiveSub(main){
+    const st = load();
+    const first = mainMenus[main]?.tabs?.[0]?.[0] || 'monitor';
+    return (st.subs && st.subs[main]) || first;
+  }
+  function rupiah(n){ return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0)); }
+  function toast(msg){
+    if(window.BHX && BHX.toast) return BHX.toast(msg);
+    let t=document.getElementById('bhx-toast');
+    if(!t){ t=document.createElement('div'); t.id='bhx-toast'; t.className='fixed bottom-5 right-5 z-[300] bg-slate-950 text-white rounded-2xl px-5 py-3 shadow-xl text-sm font-bold hidden'; document.body.appendChild(t); }
+    t.textContent=msg; t.classList.remove('hidden'); setTimeout(()=>t.classList.add('hidden'),2200);
+  }
+  function miniCards(items){
+    return `<div class="bhx-admin-card-grid">${items.map(i=>`<div class="bhx-admin-mini-card"><p>${i[0]}</p><b>${i[1]}</b><span class="text-xs text-slate-500">${i[2]||''}</span></div>`).join('')}</div>`;
+  }
+  function simpleTable(headers, rows){
+    return `<div class="overflow-x-auto rounded-2xl border border-slate-200"><table class="w-full text-left text-sm"><thead class="bg-slate-50 text-slate-500 text-xs uppercase"><tr>${headers.map(h=>`<th class="px-4 py-3 font-black whitespace-nowrap">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr class="border-t border-slate-100 hover:bg-indigo-50/30">${r.map(c=>`<td class="px-4 py-3 whitespace-nowrap">${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  }
+  function pill(text,color='indigo'){
+    return `<span class="inline-flex px-2.5 py-1 rounded-lg bg-${color}-50 text-${color}-700 border border-${color}-100 text-[11px] font-black">${text}</span>`;
+  }
+  function action(label, cls=''){
+    return `<button type="button" onclick="BHAdminRightSubmenu.action('${label}')" class="bhx-admin-action-btn ${cls}">${label}</button>`;
+  }
+  function detailTemplate(title, sub, body){
+    return `<section class="bhx-detail-frame"><div class="bhx-detail-head"><h2>${title}</h2><p>${sub}</p></div><div class="bhx-detail-body">${body}</div></section>`;
+  }
+
+  function detailContent(main, sub){
+    const title = mainMenus[main]?.title || 'Admin';
+    const tab = (mainMenus[main]?.tabs || []).find(x=>x[0]===sub) || ['', '', 'Detail', ''];
+    const name = tab[2];
+    const desc = tab[3];
+
+    if(main==='overview') {
+      if(sub==='monitor') return detailTemplate(name, desc, miniCards([['GMV',rupiah(1450800000),'+18% bulan ini'],['User Aktif','1.245','Buyer + seller'],['Produk Aktif','8.420','Marketplace'],['Tender Open','32','Butuh bid']]) + simpleTable(['Area','Status','Aksi'], [['Marketplace',pill('Online','emerald'),action('Cek')],['Escrow',pill('Normal','emerald'),action('Audit','dark')],['Support',pill('12 Open','amber'),action('Lihat')]]));
+      if(sub==='activity') return detailTemplate(name, desc, simpleTable(['Waktu','Aktivitas','Admin'], [['Hari ini 09:10','Approve produk pompa','Admin Pusat'],['Hari ini 10:22','Suspend user spam','Admin Pusat'],['Hari ini 11:40','Update banner homepage','Admin Pusat']]));
+      if(sub==='alert') return detailTemplate(name, desc, simpleTable(['Prioritas','Alert','Aksi'], [[pill('Tinggi','rose'),'3 refund menunggu keputusan',action('Proses','red')],[pill('Sedang','amber'),'5 seller belum upload NPWP',action('Ingatkan','amber')],[pill('Rendah','slate'),'Backup mingguan tersedia',action('Download','dark')]]));
+      return detailTemplate(name, desc, miniCards([['Target GMV','Rp 2 M','72% tercapai'],['Target Vendor','500','380 aktif'],['Target Tender','100','32 open'],['Target Order','1.000','615 order']]) + `<div class="flex gap-3 flex-wrap">${action('Update Target')}${action('Export','dark')}</div>`);
+    }
+
+    if(main==='users') {
+      if(sub==='list') return detailTemplate(name, desc, simpleTable(['ID','Nama','Role','Status','Aksi'], [['USR-001','Andi Surya','Buyer',pill('Aktif','emerald'),action('Edit')],['USR-002','Budi Perkasa','Seller',pill('Verifikasi','amber'),action('Verifikasi','green')],['USR-004','Rama Teknik','Seller',pill('Suspend','rose'),action('Aktifkan')]]) + `<div class="mt-4">${action('Tambah User')}</div>`);
+      if(sub==='role') return detailTemplate(name, desc, simpleTable(['Role','Akses','Status'], [['Admin','Full control',pill('Aktif','emerald')],['Seller','Produk, order, escrow',pill('Aktif','emerald')],['Buyer','Belanja, tiket, alamat',pill('Aktif','emerald')]]) + `<div class="mt-4">${action('Simpan Role')}</div>`);
+      if(sub==='verify') return detailTemplate(name, desc, simpleTable(['User','Dokumen','Status','Aksi'], [['Budi Perkasa','KTP + NPWP',pill('Review','amber'),action('Approve','green')],['PT Baja Mandiri','NIB + Akta',pill('Review','amber'),action('Approve','green')]]));
+      return detailTemplate(name, desc, miniCards([['Buyer','845','Pembeli'],['Seller','380','Vendor'],['Admin','8','Internal'],['Suspend','12','Perlu cek']]) + `<div class="flex gap-3 flex-wrap">${action('Export Segment')}${action('Broadcast','amber')}</div>`);
+    }
+
+    if(main==='sellers') {
+      if(sub==='pending') return detailTemplate(name, desc, simpleTable(['Vendor','Email','Status','Aksi'], [['CV Baja Mandiri','sales@baja.id',pill('Pending','amber'),action('Verifikasi','green')],['PT Surya Energi','admin@surya.id',pill('Pending','amber'),action('Audit')]]));
+      if(sub==='legal') return detailTemplate(name, desc, simpleTable(['Vendor','NIB','NPWP','Akta','Aksi'], [['CV Baja Mandiri',pill('Valid','emerald'),pill('Valid','emerald'),pill('Review','amber'),action('Cek File')],['PT Plastik Indo',pill('Valid','emerald'),pill('Valid','emerald'),pill('Valid','emerald'),action('Audit','dark')]]));
+      if(sub==='tkdn') return detailTemplate(name, desc, simpleTable(['Produk','Vendor','TKDN','Status'], [['Pompa Industri','PT Bintang Pompa','45.5%',pill('Valid','emerald')],['Panel Surya','PT Surya Energi','62%',pill('Valid','emerald')],['Traktor Diesel','CV Agro Mandiri','38.2%',pill('Perlu Cek','amber')]]));
+      return detailTemplate(name, desc, miniCards([['Top Vendor','PT Bintang Pompa','Rating 4.9'],['Order Seller','245','Bulan ini'],['Komplain','7','Perlu respon'],['Suspend','2','Audit risiko']]) + simpleTable(['Vendor','Skor','Rekomendasi'], [['PT Bintang Pompa','92/100','Naikkan badge'],['CV Baja Mandiri','76/100','Cek dokumen'],['Rama Teknik','31/100','Suspend sementara']]));
+    }
+
+    if(main==='products') {
+      if(sub==='review') return detailTemplate(name, desc, simpleTable(['Produk','Seller','TKDN','Status','Aksi'], [['Traktor Diesel','CV Agro Mandiri','38.2%',pill('Review','amber'),action('Approve','green')],['Produk Baru Demo','Toko Teknik Jaya','40%',pill('Review','amber'),action('Approve','green')]]));
+      if(sub==='active') return detailTemplate(name, desc, simpleTable(['Produk','Harga','Stok','Aksi'], [['Pompa Industri',rupiah(24500000),'18',action('Edit')],['Helm Safety',rupiah(45000),'1200',action('Arsip','red')],['ERP Manufaktur',rupiah(15000000),'999',action('Edit')]]));
+      if(sub==='category') return detailTemplate(name, desc, simpleTable(['Kategori','Jumlah Produk','Aksi'], [['Pompa & Kompresor','240',action('Edit')],['Pertanian','180',action('Edit')],['Software Industri','72',action('Edit')]]) + `<div class="mt-4">${action('Tambah Kategori')}</div>`);
+      return detailTemplate(name, desc, miniCards([['Stok Rendah','18','Perlu restock'],['Harga Naik','24','7 hari terakhir'],['Promo Aktif','11','Campaign'],['Produk Arsip','35','Tidak tayang']]) + simpleTable(['Produk','Stok','Harga'], [['Mesin Press','3',rupiah(45000000)],['Forklift','4',rupiah(185000000)],['Helm Safety','1200',rupiah(45000)]]));
+    }
+
+    if(main==='orders') {
+      if(sub==='transaction') return detailTemplate(name, desc, simpleTable(['Invoice','Buyer','Seller','Total','Status'], [['INV-001','Andi','PT Bintang Pompa',rupiah(24500000),pill('Dikirim','blue')],['INV-002','Siti','CV Agro Mandiri',rupiah(15500000),pill('Diproses','amber')]]));
+      if(sub==='refund') return detailTemplate(name, desc, simpleTable(['Invoice','Nominal','Alasan','Aksi'], [['INV-004',rupiah(850000),'Barang rusak',action('Approve Refund','red')],['INV-008',rupiah(2100000),'Salah alamat',action('Tolak')]]));
+      if(sub==='dispute') return detailTemplate(name, desc, simpleTable(['Kasus','Buyer','Seller','Status','Aksi'], [['DSP-001','PT Pabrik Baja','CV Baja Mandiri',pill('Mediasi','amber'),action('Buka Detail')],['DSP-002','Andi','PT Bintang Pompa',pill('Open','rose'),action('Mediasi','amber')]]));
+      return detailTemplate(name, desc, simpleTable(['Invoice','Tanggal','File','Aksi'], [['INV-001','17 Mei 2026','invoice_001.pdf',action('Download','dark')],['INV-002','17 Mei 2026','invoice_002.pdf',action('Download','dark')]]));
+    }
+
+    if(main==='tenders') {
+      if(sub==='open') return detailTemplate(name, desc, simpleTable(['Tender','Owner','HPS','Bid','Aksi'], [['Pengadaan Pompa','Dinas Pertanian',rupiah(1250000000),'14',action('Moderasi')],['Excavator PC200','PT Tambang',rupiah(15000000000),'8',action('Tutup','red')]]));
+      if(sub==='posting') return detailTemplate(name, desc, `<div class="grid md:grid-cols-2 gap-4"><input class="border rounded-xl p-3" placeholder="Judul tender"><input class="border rounded-xl p-3" placeholder="Owner"><input class="border rounded-xl p-3" placeholder="HPS"><input class="border rounded-xl p-3" placeholder="Minimum TKDN"><textarea class="md:col-span-2 border rounded-xl p-3" rows="4" placeholder="Spesifikasi tender"></textarea></div><div class="mt-4">${action('Posting Tender','green')}</div>`);
+      if(sub==='bids') return detailTemplate(name, desc, simpleTable(['Tender','Vendor','Penawaran','Status','Aksi'], [['Pompa Irigasi','PT Bintang Pompa',rupiah(1180000000),pill('Masuk','emerald'),action('Bandingkan')],['Excavator','CV Alat Berat',rupiah(14200000000),pill('Masuk','emerald'),action('Bandingkan')]]));
+      return detailTemplate(name, desc, simpleTable(['Tender','Selesai','Pemenang','Nilai'], [['Helm Safety','20 Mei 2026','PT Plastik Indo',rupiah(330000000)],['Genset Silent','10 Mei 2026','PT Surya Energi',rupiah(880000000)]]));
+    }
+
+    if(main==='support') {
+      if(sub==='ticket') return detailTemplate(name, desc, simpleTable(['ID','User','Topik','Prioritas','Aksi'], [['TKT-001','Andi','Pengiriman terlambat',pill('Tinggi','rose'),action('Balas')],['TKT-002','Budi','Upload TKDN gagal',pill('Sedang','amber'),action('Balas')]]));
+      if(sub==='chat') return detailTemplate(name, desc, `<div class="space-y-3"><div class="p-4 rounded-2xl bg-slate-50 border"><b>Andi:</b> Paket saya sudah sampai mana?</div><div class="p-4 rounded-2xl bg-indigo-50 border border-indigo-100"><b>Admin:</b> Sedang dicek ke kurir.</div><div class="flex gap-2"><input class="flex-1 border rounded-xl p-3" placeholder="Ketik balasan admin"><button class="bhx-admin-action-btn">Kirim</button></div></div>`);
+      if(sub==='faq') return detailTemplate(name, desc, simpleTable(['Judul FAQ','Kategori','Aksi'], [['Cara checkout escrow','Pembeli',action('Edit')],['Cara upload TKDN','Seller',action('Edit')],['Cara ajukan tender','Tender',action('Edit')]]) + `<div class="mt-4">${action('Tambah FAQ')}</div>`);
+      return detailTemplate(name, desc, simpleTable(['Kasus','Level','PIC','Aksi'], [['Refund besar',pill('Urgent','rose'),'Finance',action('Eskalasi','red')],['Vendor komplain',pill('Sedang','amber'),'Operasional',action('Assign')]]));
+    }
+
+    if(main==='cms') {
+      if(sub==='hero') return detailTemplate(name, desc, `<div class="grid md:grid-cols-2 gap-4"><label><span class="text-xs font-black uppercase text-slate-500">Judul Hero</span><input class="mt-1 w-full border rounded-xl p-3" value="Belanja Industri & Tender Lebih Mudah"></label><label><span class="text-xs font-black uppercase text-slate-500">URL Gambar</span><input class="mt-1 w-full border rounded-xl p-3" placeholder="https://..."></label><textarea class="md:col-span-2 border rounded-xl p-3" rows="3">Produk teknik, mesin, pertanian, alat berat, TKDN, logistik, escrow dan bursa tender.</textarea></div><div class="mt-4">${action('Simpan Hero')}</div>`);
+      if(sub==='promo') return detailTemplate(name, desc, simpleTable(['Promo','Posisi','Status','Aksi'], [['Gratis Admin B2B','Homepage',pill('Aktif','emerald'),action('Edit')],['Diskon Kargo','Produk Detail',pill('Draft','amber'),action('Aktifkan','green')]]));
+      if(sub==='menu') return detailTemplate(name, desc, simpleTable(['Menu','Urutan','Tampil','Aksi'], [['Marketplace','1',pill('Ya','emerald'),action('Edit')],['TKDN','2',pill('Ya','emerald'),action('Edit')],['Kalkulator','4',pill('Ya','emerald'),action('Edit')]]));
+      return detailTemplate(name, desc, simpleTable(['Halaman','Slug','Status','Aksi'], [['Tentang Kami','/tentang',pill('Publish','emerald'),action('Edit')],['Syarat Layanan','/syarat',pill('Publish','emerald'),action('Edit')],['Kontak','/kontak',pill('Draft','amber'),action('Edit')]]));
+    }
+
+    if(main==='finance') {
+      if(sub==='escrow') return detailTemplate(name, desc, miniCards([['Total Escrow',rupiah(1450800000),'Semua transaksi'],['Tertahan',rupiah(145000000),'Menunggu diterima'],['Siap Cair',rupiah(245000000),'Seller withdrawal'],['Refund',rupiah(12500000),'Perlu audit']]) + simpleTable(['Invoice','Seller','Dana','Status'], [['INV-001','PT Bintang Pompa',rupiah(24500000),pill('Tertahan','rose')],['INV-003','CV Baja Mandiri',rupiah(90000000),pill('Cair','blue')]]));
+      if(sub==='withdraw') return detailTemplate(name, desc, simpleTable(['Seller','Nominal','Bank','Aksi'], [['PT Bintang Pompa',rupiah(24500000),'BCA ****123',action('Cairkan','green')],['CV Baja Mandiri',rupiah(12000000),'BRI ****444',action('Tahan','red')]]));
+      if(sub==='commission') return detailTemplate(name, desc, `<div class="bg-slate-50 border rounded-2xl p-5"><label class="text-sm font-black">Komisi Platform: <span id="bhx-admin-v4-komisi">5%</span></label><input type="range" min="1" max="15" value="5" oninput="document.getElementById('bhx-admin-v4-komisi').textContent=this.value+'%'" class="w-full mt-4 accent-indigo-600"></div><div class="mt-4">${action('Simpan Komisi')}</div>`);
+      return detailTemplate(name, desc, simpleTable(['Laporan','Periode','Aksi'], [['Escrow Bulanan','Mei 2026',action('Export Excel','green')],['Komisi Platform','Mei 2026',action('Export PDF','red')],['Refund & Dispute','Mei 2026',action('Export','dark')]]));
+    }
+
+    if(main==='settings') {
+      if(sub==='platform') return detailTemplate(name, desc, `<div class="grid md:grid-cols-2 gap-4"><label class="flex justify-between border rounded-2xl p-4"><span><b>Website Online</b><small class="block text-slate-500">Platform bisa diakses user</small></span><input type="checkbox" checked class="accent-indigo-600"></label><label class="flex justify-between border rounded-2xl p-4"><span><b>Maintenance Mode</b><small class="block text-slate-500">Tampilkan mode perawatan</small></span><input type="checkbox" class="accent-indigo-600"></label></div><div class="mt-4">${action('Simpan Status')}</div>`);
+      if(sub==='approval') return detailTemplate(name, desc, `<div class="grid md:grid-cols-2 gap-4"><label class="flex justify-between border rounded-2xl p-4"><span><b>Auto Approve Produk</b><small class="block text-slate-500">Produk seller langsung tayang</small></span><input type="checkbox" class="accent-indigo-600"></label><label class="flex justify-between border rounded-2xl p-4"><span><b>Wajib Verifikasi Seller</b><small class="block text-slate-500">Cek legalitas sebelum jualan</small></span><input type="checkbox" checked class="accent-indigo-600"></label></div><div class="mt-4">${action('Simpan Approval')}</div>`);
+      if(sub==='payment') return detailTemplate(name, desc, `<div class="grid md:grid-cols-2 gap-4"><input class="border rounded-xl p-3" value="BCA 8680605956"><input class="border rounded-xl p-3" value="Midtrans / Xendit"><input class="border rounded-xl p-3" placeholder="API Key Payment"><input class="border rounded-xl p-3" placeholder="Webhook URL"></div><div class="mt-4">${action('Simpan Payment')}</div>`);
+      if(sub==='security') return detailTemplate(name, desc, `<div class="grid md:grid-cols-2 gap-4"><label class="flex justify-between border rounded-2xl p-4"><span><b>OTP Admin</b><small class="block text-slate-500">Login admin wajib OTP</small></span><input type="checkbox" checked class="accent-indigo-600"></label><label class="flex justify-between border rounded-2xl p-4"><span><b>Session Timeout</b><small class="block text-slate-500">Logout otomatis</small></span><input type="checkbox" checked class="accent-indigo-600"></label></div><div class="mt-4">${action('Simpan Security')}</div>`);
+      if(sub==='api') return detailTemplate(name, desc, simpleTable(['Integrasi','Status','Aksi'], [['RajaOngkir / Shipping',pill('Demo','amber'),action('Setup')],['WhatsApp Gateway',pill('Belum','slate'),action('Setup')],['Payment Gateway',pill('Siap','emerald'),action('Tes API')]]));
+      return detailTemplate(name, desc, `<div class="grid md:grid-cols-3 gap-4">${action('Export Backup','green')}${action('Import Backup','amber')}${action('Lihat Log','dark')}</div><div class="mt-5">${simpleTable(['Waktu','Log'], [['17 Mei 2026 09:00','Admin login'],['17 Mei 2026 09:30','Setting disimpan'],['17 Mei 2026 10:00','Backup dibuat']])}</div>`);
+    }
+
+    return detailTemplate(name, desc, `<p class="text-slate-500">Konten ${title} / ${name} siap ditampilkan di frame kanan.</p>`);
+  }
+
+  function render(main, sub){
+    const area = document.getElementById('bhx-admin-content');
+    if(!area || !mainMenus[main]) return;
+    const meta = mainMenus[main];
+    const activeSub = sub || getActiveSub(main);
+    area.innerHTML = `<div class="mb-5"><h1 class="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3"><i class="fa-solid ${meta.icon} text-indigo-600"></i>${meta.title}</h1><p class="text-sm text-slate-500 mt-1">Submenu lanjutan sekarang tampil di frame kanan, bukan di bawah bar kiri admin.</p></div><div id="bhx-admin-main-right-frame"><aside class="bhx-sub-right-menu"><div class="bhx-sub-title"><i class="fa-solid ${meta.icon} mr-2 text-indigo-300"></i>Submenu ${meta.title}</div>${meta.tabs.map(([key,icon,label,small])=>`<button type="button" data-admin-right-sub="${key}" onclick="BHAdminRightSubmenu.open('${main}','${key}')" class="bhx-sub-button ${activeSub===key?'active':''}"><i class="fa-solid ${icon} w-5 text-center mt-0.5"></i><span><span>${label}</span><small>${small}</small></span></button>`).join('')}</aside><div id="bhx-admin-main-detail">${detailContent(main, activeSub)}</div></div>`;
+    markLeft(main);
+  }
+
+  function markLeft(main){
+    document.querySelectorAll('#view-admin nav button').forEach(btn=>{
+      btn.classList.remove('bhx-admin-master-active');
+      if(btn.id === `bhx-menu-admin-${main}`) btn.classList.add('bhx-admin-master-active');
+    });
+  }
+
+  function open(main, sub){
+    const st = load();
+    st.main = main;
+    st.subs = st.subs || {};
+    st.subs[main] = sub;
+    save(st);
+    render(main, sub);
+  }
+
+  function patchBHX(){
+    if(!window.BHX || window.BHX.__adminRightSubmenuV4) return false;
+    const oldSetMenu = window.BHX.setMenu;
+    window.BHX.setMenu = function(kind, key){
+      if(kind === 'admin') {
+        oldSetMenu(kind, key);
+        setTimeout(()=>open(key, getActiveSub(key)), 0);
+        return;
+      }
+      return oldSetMenu(kind, key);
+    };
+    window.BHX.__adminRightSubmenuV4 = true;
+    return true;
+  }
+
+  function patchLeftButtons(){
+    Object.keys(mainMenus).forEach(main=>{
+      const btn = document.getElementById(`bhx-menu-admin-${main}`);
+      if(btn && !btn.dataset.rightSubmenuPatched) {
+        btn.dataset.rightSubmenuPatched = '1';
+        btn.onclick = function(e){
+          e.preventDefault();
+          if(window.BHX && BHX.setMenu) BHX.setMenu('admin', main);
+          else open(main, getActiveSub(main));
+        };
+      }
+    });
+    markLeft(getActiveMain());
+  }
+
+  function boot(){
+    patchBHX();
+    patchLeftButtons();
+    const adminView = document.getElementById('view-admin');
+    if(adminView && !adminView.classList.contains('hidden')) {
+      const main = getActiveMain();
+      open(main, getActiveSub(main));
+    }
+  }
+
+  window.BHAdminRightSubmenu = {
+    open,
+    action(label){ toast(label + ' diproses'); }
+  };
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+  setTimeout(boot, 300);
+  setTimeout(boot, 1000);
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('#tab-admin, #view-admin nav button');
+    if(btn) setTimeout(boot, 50);
+  });
+})();
+</script>
