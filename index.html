@@ -5585,3 +5585,281 @@
   },600);
 })();
 </script>
+
+<!-- ========================================================= -->
+<!-- ADDON V13 FINAL: USER SIDEBAR BERSIH + KELOLA TOKO KANAN  -->
+<!-- Tujuan: hanya 1 tombol Kelola Toko di kiri, semua submenu  -->
+<!-- tampil di frame kanan. Tidak menyentuh kalkulator/admin.   -->
+<!-- ========================================================= -->
+<style id="bhx-v13-user-store-final-style">
+  #view-buyer nav button[data-bhx-v13-main="1"]{
+    width:100% !important;
+    display:flex !important;
+    align-items:center !important;
+    gap:.75rem !important;
+    padding:.9rem 1rem !important;
+    border-radius:16px !important;
+    border:1px solid transparent !important;
+    background:transparent !important;
+    color:#475569 !important;
+    font-weight:900 !important;
+    text-align:left !important;
+    position:relative !important;
+    flex-shrink:0 !important;
+  }
+  #view-buyer nav button[data-bhx-v13-main="1"]:hover{
+    background:#f8fafc !important;
+    color:#4f46e5 !important;
+    border-color:#e2e8f0 !important;
+  }
+  #view-buyer nav button[data-bhx-v13-main="1"].active{
+    background:#eef2ff !important;
+    color:#4338ca !important;
+    border-color:#c7d2fe !important;
+    box-shadow:0 8px 18px rgba(79,70,229,.10) !important;
+  }
+  #view-buyer nav button[data-bhx-v13-main="1"].active::after{
+    content:'';
+    position:absolute;
+    right:-11px;
+    top:50%;
+    transform:translateY(-50%);
+    width:0;height:0;
+    border-top:10px solid transparent;
+    border-bottom:10px solid transparent;
+    border-left:11px solid #eef2ff;
+  }
+  #view-buyer nav button[data-bhx-v13-main="1"] i{width:1.25rem;text-align:center;}
+
+  /* Semua submenu/elemen lama yang nyasar di sidebar kiri user dipaksa hilang */
+  #view-buyer nav .bhx-v10-store-sub,
+  #view-buyer nav .bhx-v10-store-shell,
+  #view-buyer nav .bhx-v10-store-list,
+  #view-buyer nav .bhx-v10-store-btn,
+  #view-buyer nav .bhx-v11-store-panel,
+  #view-buyer nav .bhx-v9-product-upload-wrap,
+  #view-buyer nav .bhx-v9-product-sub,
+  #view-buyer nav .submenu,
+  #view-buyer nav .dropdown-menu,
+  #view-buyer nav ul,
+  #view-buyer nav .collapse,
+  #view-buyer nav .pl-8,
+  #view-buyer nav .ml-8{
+    display:none !important;
+  }
+
+  #bhx-v13-user-right-frame{
+    width:100%;
+    display:grid;
+    grid-template-columns:280px minmax(0,1fr);
+    gap:18px;
+    align-items:start;
+  }
+  #bhx-v13-user-right-frame .bhx-v13-submenu{
+    background:#0f172a;
+    border-radius:24px;
+    padding:14px;
+    box-shadow:0 20px 50px rgba(15,23,42,.14);
+    position:sticky;
+    top:120px;
+    max-height:calc(100vh - 150px);
+    overflow:auto;
+  }
+  #bhx-v13-user-right-frame .bhx-v13-subhead{
+    color:white;
+    border-bottom:1px solid rgba(255,255,255,.1);
+    padding:8px 10px 14px;
+    margin-bottom:10px;
+  }
+  #bhx-v13-user-right-frame .bhx-v13-subhead b{display:block;font-size:15px;font-weight:900;}
+  #bhx-v13-user-right-frame .bhx-v13-subhead small{display:block;color:#cbd5e1;font-size:11px;line-height:1.35;margin-top:4px;}
+  #bhx-v13-user-right-frame .bhx-v13-subbtn{
+    width:100%;
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:13px 12px;
+    border-radius:16px;
+    color:#cbd5e1;
+    font-size:13px;
+    font-weight:900;
+    text-align:left;
+    transition:.18s ease;
+  }
+  #bhx-v13-user-right-frame .bhx-v13-subbtn:hover{background:#1e293b;color:white;}
+  #bhx-v13-user-right-frame .bhx-v13-subbtn.active{background:#4f46e5;color:white;box-shadow:0 12px 26px rgba(79,70,229,.35);}
+  #bhx-v13-user-right-frame .bhx-v13-subbtn i{width:20px;text-align:center;margin-top:2px;}
+  #bhx-v13-user-right-frame .bhx-v13-subbtn small{display:block;color:#94a3b8;font-size:11px;font-weight:700;line-height:1.3;margin-top:2px;}
+  #bhx-v13-user-right-frame .bhx-v13-subbtn.active small{color:#ddd6fe;}
+  .bhx-v13-panel{background:#fff;border:1px solid #e2e8f0;border-radius:24px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:hidden;}
+  .bhx-v13-panel-head{padding:20px;border-bottom:1px solid #e2e8f0;background:#fff;}
+  .bhx-v13-panel-head h2{font-size:22px;font-weight:900;color:#0f172a;margin:0;}
+  .bhx-v13-panel-head p{font-size:13px;color:#64748b;margin:6px 0 0;}
+  .bhx-v13-panel-body{padding:20px;}
+  .bhx-v13-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+  .bhx-v13-grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+  .bhx-v13-span-2{grid-column:span 2 / span 2;}
+  .bhx-v13-field label{display:block;font-size:12px;font-weight:900;color:#475569;margin-bottom:6px;}
+  .bhx-v13-field input,.bhx-v13-field select,.bhx-v13-field textarea{
+    width:100%;border:1px solid #cbd5e1;border-radius:14px;padding:11px 13px;font-size:14px;outline:none;background:#fff;
+  }
+  .bhx-v13-field input:focus,.bhx-v13-field select:focus,.bhx-v13-field textarea:focus{box-shadow:0 0 0 3px rgba(79,70,229,.18);border-color:#818cf8;}
+  .bhx-v13-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}
+  .bhx-v13-action{border-radius:14px;padding:12px 16px;font-size:13px;font-weight:900;background:#4f46e5;color:#fff;box-shadow:0 6px 16px rgba(79,70,229,.16);}
+  .bhx-v13-action.green{background:#059669;}
+  .bhx-v13-action.dark{background:#0f172a;}
+  .bhx-v13-action.light{background:#f8fafc;color:#334155;border:1px solid #e2e8f0;box-shadow:none;}
+  .bhx-v13-card{border:1px solid #e2e8f0;background:#f8fafc;border-radius:20px;padding:16px;}
+  .bhx-v13-card small{display:block;color:#64748b;font-weight:900;text-transform:uppercase;font-size:10px;margin-bottom:4px;}
+  .bhx-v13-card b{display:block;color:#0f172a;font-weight:900;}
+  @media(max-width:980px){
+    #bhx-v13-user-right-frame{grid-template-columns:1fr;}
+    #bhx-v13-user-right-frame .bhx-v13-submenu{position:static;max-height:none;}
+    .bhx-v13-grid,.bhx-v13-grid-3{grid-template-columns:1fr;}
+    .bhx-v13-span-2{grid-column:auto;}
+  }
+</style>
+<script id="bhx-v13-user-store-final-script">
+(function(){
+  const MAIN=[
+    ['overview','fa-gauge','Ringkasan User'],
+    ['pesanan','fa-box-open','Pesanan Saya'],
+    ['wishlist','fa-heart','Wishlist'],
+    ['alamat','fa-location-dot','Alamat Proyek'],
+    ['bantuan','fa-headset','Bantuan / Tiket'],
+    ['notifikasi','fa-bell','Notifikasi'],
+    ['keamanan','fa-lock','Keamanan Akun'],
+    ['profile','fa-user-gear','Profil User'],
+    ['add_product','fa-cloud-arrow-up','Tambah Produk'],
+    ['store_setting','fa-store','Kelola Toko']
+  ];
+  const STORE_TABS=[
+    ['profile','fa-store','Profil Toko','Nama toko, logo, slogan, deskripsi'],
+    ['legal','fa-file-shield','Legalitas','NIB, NPWP, akta, izin usaha'],
+    ['bank','fa-building-columns','Rekening & Pencairan','Bank dan jadwal withdraw'],
+    ['shipping','fa-truck','Kurir & Gudang','Alamat gudang dan jasa kirim'],
+    ['hours','fa-clock','Jam Operasional','Hari dan jam buka toko'],
+    ['policy','fa-scale-balanced','Kebijakan Toko','Retur, garansi, minimum order'],
+    ['preview','fa-eye','Preview Toko','Lihat ringkasan toko']
+  ];
+  const DATA_KEY='bhx_v13_store_data';
+  const ACTIVE_KEY='bhx_v13_store_active';
+  const MAIN_KEY='bhx_v13_user_main';
+  let cleaning=false;
+
+  const defaults={storeName:'Toko Teknik Jaya',slogan:'Pusat Alat Teknik & Industri',wa:'085111033789',email:'sales@tokoteknik.id',city:'Tangerang',address:'Jl. Industri Raya No. 12',desc:'Distributor alat teknik, mesin, pabrikasi, dan kebutuhan pengadaan proyek B2B.',nib:'',npwp:'',akta:'',bank:'BCA',accName:'',accNo:'',warehouse:'Gudang Utama Tangerang',weightOrigin:'Tangerang',cargo:true,regular:true,open:'08:00',close:'17:00',days:'Senin - Sabtu',returnPolicy:'Retur diterima maksimal 3 hari setelah barang diterima.',warranty:'Garansi toko 7 hari dan garansi produk mengikuti distributor.',moq:'1'};
+  function data(){try{return {...defaults,...JSON.parse(localStorage.getItem(DATA_KEY)||'{}')}}catch(e){return {...defaults}}}
+  function saveData(d){localStorage.setItem(DATA_KEY,JSON.stringify(d));}
+  function toast(msg){
+    if(window.BHX && BHX.toast) return BHX.toast(msg);
+    if(window.bhAddonNotify) return window.bhAddonNotify(msg);
+    const t=document.getElementById('toast')||document.getElementById('bhx-toast');
+    if(t){t.textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2200);}else console.log(msg);
+  }
+  function nav(){return document.querySelector('#view-buyer nav');}
+  function contentArea(){
+    const view=document.getElementById('view-buyer'); if(!view) return null;
+    return document.getElementById('bhx-buyer-content') || view.querySelector('.flex-1') || view.querySelector('[class*="flex-1"]') || view;
+  }
+  function mainButton([key,icon,label]){return `<button type="button" data-bhx-v13-main="1" data-key="${key}" class="${localStorage.getItem(MAIN_KEY)===key?'active':''}"><i class="fa-solid ${icon}"></i><span class="text-sm">${label}</span></button>`;}
+
+  function rebuildSidebar(active){
+    const n=nav(); if(!n || cleaning) return;
+    cleaning=true;
+    n.innerHTML=MAIN.map(mainButton).join('');
+    n.querySelectorAll('button[data-bhx-v13-main="1"]').forEach(btn=>{
+      btn.onclick=function(e){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openMain(this.dataset.key);return false;};
+    });
+    markMain(active || localStorage.getItem(MAIN_KEY) || 'overview');
+    cleaning=false;
+  }
+  function cleanSidebar(){
+    const n=nav(); if(!n || cleaning) return;
+    const canonical=[...n.querySelectorAll('button[data-bhx-v13-main="1"]')];
+    const hasAll=canonical.length===MAIN.length && MAIN.every(m=>canonical.some(b=>b.dataset.key===m[0]));
+    if(!hasAll){rebuildSidebar(localStorage.getItem(MAIN_KEY)||'overview');return;}
+    // Hapus duplikat Kelola/Setting/Pengaturan Toko dari script lama.
+    [...n.children].forEach(ch=>{
+      const txt=(ch.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
+      const isCanon=ch.matches && ch.matches('button[data-bhx-v13-main="1"]');
+      if(!isCanon) ch.remove();
+      else if((txt.includes('kelola toko')||txt.includes('setting toko')||txt.includes('pengaturan toko')) && ch.dataset.key!=='store_setting') ch.remove();
+    });
+    // Kalau masih lebih dari satu tombol store canonical karena cloning, sisakan store_setting pertama.
+    const storeBtns=[...n.querySelectorAll('button[data-bhx-v13-main="1"]')].filter(b=>/kelola toko|setting toko|pengaturan toko/i.test(b.textContent||''));
+    storeBtns.forEach((b,i)=>{ if(i>0) b.remove(); });
+    n.querySelectorAll('button[data-bhx-v13-main="1"]').forEach(btn=>{
+      btn.onclick=function(e){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openMain(this.dataset.key);return false;};
+    });
+    markMain(localStorage.getItem(MAIN_KEY)||'overview');
+  }
+  function markMain(key){
+    const n=nav(); if(!n) return;
+    n.querySelectorAll('button[data-bhx-v13-main="1"]').forEach(b=>b.classList.toggle('active',b.dataset.key===key));
+  }
+  function openMain(key){
+    localStorage.setItem(MAIN_KEY,key); markMain(key); cleanSidebar();
+    if(key==='store_setting') return renderStore(localStorage.getItem(ACTIVE_KEY)||'profile');
+    if(key==='add_product'){
+      if(window.BHUserProductV9 && typeof BHUserProductV9.openSub==='function') BHUserProductV9.openSub(localStorage.getItem('bhx_v9_user_product_active')||'basic');
+      else if(window.BHX && typeof BHX.setMenu==='function') BHX.setMenu('user','overview');
+      setTimeout(()=>{markMain('add_product'); cleanSidebar();},120);
+      return;
+    }
+    const map={overview:'overview',pesanan:'orders',wishlist:'wishlist',alamat:'addresses',bantuan:'tickets',notifikasi:'notifications',keamanan:'security',profile:'profile'};
+    if(window.BHX && typeof BHX.setMenu==='function') BHX.setMenu('user', map[key]||key);
+    else if(window.toggleBuyerMenu){ const old={overview:'setting',pesanan:'pesanan',profile:'setting'}; window.toggleBuyerMenu(old[key]||key); }
+    setTimeout(()=>{markMain(key); cleanSidebar();},120);
+  }
+  function field(d,k,label,type='text',span=''){return `<div class="bhx-v13-field ${span}"><label>${label}</label><input type="${type}" data-store-field="${k}" value="${(d[k]||'').toString().replace(/"/g,'&quot;')}"></div>`;}
+  function area(d,k,label,span=''){return `<div class="bhx-v13-field ${span}"><label>${label}</label><textarea rows="4" data-store-field="${k}">${d[k]||''}</textarea></div>`;}
+  function select(d,k,label,ops,span=''){return `<div class="bhx-v13-field ${span}"><label>${label}</label><select data-store-field="${k}">${ops.map(o=>`<option ${d[k]===o?'selected':''}>${o}</option>`).join('')}</select></div>`;}
+  function actions(){return `<div class="bhx-v13-actions"><button class="bhx-v13-action green" onclick="BHUserStoreV13.save()"><i class="fa-solid fa-save mr-2"></i>Simpan Setting Toko</button><button class="bhx-v13-action light" onclick="BHUserStoreV13.open('preview')"><i class="fa-solid fa-eye mr-2"></i>Preview</button><button class="bhx-v13-action dark" onclick="BHUserStoreV13.reset()"><i class="fa-solid fa-rotate-left mr-2"></i>Reset</button></div>`;}
+  function panel(title,desc,body){return `<section class="bhx-v13-panel"><div class="bhx-v13-panel-head"><h2>${title}</h2><p>${desc}</p></div><div class="bhx-v13-panel-body">${body}</div></section>`;}
+  function tabMenu(active){return `<aside class="bhx-v13-submenu"><div class="bhx-v13-subhead"><b><i class="fa-solid fa-store mr-2"></i>Kelola Toko</b><small>Semua submenu toko tampil full di frame kanan. Bar kiri hanya menu utama.</small></div>${STORE_TABS.map(t=>`<button type="button" class="bhx-v13-subbtn ${active===t[0]?'active':''}" onclick="BHUserStoreV13.open('${t[0]}')"><i class="fa-solid ${t[1]}"></i><span><b>${t[2]}</b><small>${t[3]}</small></span></button>`).join('')}</aside>`;}
+  function storeContent(tab){
+    const d=data();
+    if(tab==='profile') return panel('Profil Toko','Data dasar toko dan kontak utama.',`<div class="bhx-v13-grid">${field(d,'storeName','Nama Toko')}${field(d,'slogan','Slogan / Tagline')}${field(d,'wa','WhatsApp Toko')}${field(d,'email','Email Toko','email')}${select(d,'city','Kota Domisili',['Jakarta','Tangerang','Bandung','Surabaya','Semarang','Medan','Makassar'])}${field(d,'address','Alamat Toko / Kantor','text','bhx-v13-span-2')}${area(d,'desc','Deskripsi Toko','bhx-v13-span-2')}</div>${actions()}`);
+    if(tab==='legal') return panel('Legalitas Toko','Lengkapi dokumen legal untuk verifikasi seller.',`<div class="bhx-v13-grid">${field(d,'nib','Nomor Induk Berusaha / NIB')}${field(d,'npwp','NPWP Perusahaan')}${field(d,'akta','Nomor Akta / AHU')}${field(d,'sppkp','SPPKP / PKP')}${field(d,'tkdn','Nomor Sertifikat TKDN')}${field(d,'sni','Nomor Sertifikat SNI')}<div class="bhx-v13-field bhx-v13-span-2"><label>Upload Dokumen Legal</label><input type="file" multiple></div></div>${actions()}`);
+    if(tab==='bank') return panel('Rekening & Pencairan','Atur rekening toko dan metode pencairan dana.',`<div class="bhx-v13-grid">${select(d,'bank','Bank Tujuan',['BCA','BRI','BNI','Mandiri','BSI','CIMB'])}${field(d,'accNo','Nomor Rekening')}${field(d,'accName','Nama Pemilik Rekening')}${select(d,'withdrawSchedule','Jadwal Pencairan',['Harian','Mingguan','Manual'])}</div><div class="mt-4 grid md:grid-cols-3 gap-4"><div class="bhx-v13-card"><small>Saldo Siap Cair</small><b>Rp 24.500.000</b></div><div class="bhx-v13-card"><small>Dana Tertahan</small><b>Rp 14.500.000</b></div><div class="bhx-v13-card"><small>Status Rekening</small><b>Belum Diverifikasi</b></div></div>${actions()}`);
+    if(tab==='shipping') return panel('Kurir & Gudang','Kelola alamat gudang dan opsi pengiriman.',`<div class="bhx-v13-grid">${field(d,'warehouse','Nama Gudang')}${select(d,'weightOrigin','Kota Asal Pengiriman',['Jakarta','Tangerang','Bandung','Surabaya','Semarang','Medan','Makassar'])}${field(d,'warehouseAddress','Alamat Gudang','text','bhx-v13-span-2')}<label class="bhx-v13-card"><input type="checkbox" data-store-check="cargo" ${d.cargo?'checked':''}> <b class="inline ml-2">Aktifkan Kargo B2B</b><p class="text-xs text-slate-500 mt-1">Dakota, Indah Cargo, JTR, trucking.</p></label><label class="bhx-v13-card"><input type="checkbox" data-store-check="regular" ${d.regular?'checked':''}> <b class="inline ml-2">Aktifkan Kurir Reguler</b><p class="text-xs text-slate-500 mt-1">JNE, J&T, SiCepat, POS.</p></label></div>${actions()}`);
+    if(tab==='hours') return panel('Jam Operasional','Atur jam buka toko dan mode libur.',`<div class="bhx-v13-grid">${select(d,'days','Hari Operasional',['Senin - Jumat','Senin - Sabtu','Setiap Hari'])}${field(d,'open','Jam Buka','time')}${field(d,'close','Jam Tutup','time')}<label class="bhx-v13-card"><input type="checkbox" data-store-check="holiday" ${d.holiday?'checked':''}> <b class="inline ml-2">Mode Libur Toko</b><p class="text-xs text-slate-500 mt-1">Order tetap masuk tetapi diproses setelah toko buka.</p></label></div>${actions()}`);
+    if(tab==='policy') return panel('Kebijakan Toko','Atur retur, garansi, minimum order, dan syarat transaksi.',`<div class="bhx-v13-grid">${field(d,'moq','Minimum Order / MOQ')}${field(d,'warranty','Garansi Produk')}${area(d,'returnPolicy','Kebijakan Retur','bhx-v13-span-2')}${area(d,'terms','Syarat Tambahan','bhx-v13-span-2')}</div>${actions()}`);
+    return panel('Preview Toko','Ringkasan tampilan toko sebelum disimpan.',`<div class="grid lg:grid-cols-2 gap-5"><div class="border rounded-3xl p-5 bg-gradient-to-br from-indigo-900 to-violet-900 text-white"><div class="w-16 h-16 rounded-2xl bg-white text-indigo-700 flex items-center justify-center font-black text-xl mb-4">TK</div><h3 class="text-2xl font-black">${d.storeName}</h3><p class="text-indigo-100 mt-1">${d.slogan}</p><p class="text-sm text-indigo-100 mt-4">${d.desc}</p><div class="mt-5 flex flex-wrap gap-2"><span class="px-3 py-1 rounded-full bg-white/15 text-xs font-black">${d.city}</span><span class="px-3 py-1 rounded-full bg-white/15 text-xs font-black">Kargo: ${d.cargo?'Aktif':'Off'}</span><span class="px-3 py-1 rounded-full bg-white/15 text-xs font-black">Jam ${d.open}-${d.close}</span></div></div><div class="space-y-3"><div class="bhx-v13-card"><small>Kontak</small><b>${d.wa||'-'}</b><p class="text-xs text-slate-500 mt-1">${d.email||'-'}</p></div><div class="bhx-v13-card"><small>Rekening</small><b>${d.bank} • ${d.accNo||'Belum diisi'}</b><p class="text-xs text-slate-500 mt-1">${d.accName||'-'}</p></div><div class="bhx-v13-card"><small>Legalitas</small><b>${d.nib?'NIB Terisi':'NIB Belum Diisi'}</b><p class="text-xs text-slate-500 mt-1">NPWP: ${d.npwp||'-'}</p></div></div></div>${actions()}`);
+  }
+  function renderStore(tab){
+    localStorage.setItem(MAIN_KEY,'store_setting');
+    localStorage.setItem(ACTIVE_KEY,tab||'profile');
+    cleanSidebar(); markMain('store_setting');
+    const area=contentArea(); if(!area) return toast('Area konten user tidak ditemukan');
+    area.innerHTML=`<div class="mb-5"><h1 class="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3"><i class="fa-solid fa-store text-indigo-600"></i>Kelola Toko</h1><p class="text-sm text-slate-500 mt-1">Submenu toko sudah dipindahkan ke frame kanan. Tidak ada submenu yang tampil di bawah bar kiri.</p></div><div id="bhx-v13-user-right-frame">${tabMenu(tab||'profile')}${storeContent(tab||'profile')}</div>`;
+    if(window.lucide) try{lucide.createIcons();}catch(e){}
+  }
+  function save(){
+    const d=data();
+    document.querySelectorAll('[data-store-field]').forEach(el=>{d[el.dataset.storeField]=el.value;});
+    document.querySelectorAll('[data-store-check]').forEach(el=>{d[el.dataset.storeCheck]=el.checked;});
+    saveData(d); toast('Setting toko disimpan'); renderStore(localStorage.getItem(ACTIVE_KEY)||'profile');
+  }
+  function reset(){localStorage.removeItem(DATA_KEY);toast('Setting toko direset');renderStore('profile');}
+  function boot(){
+    const view=document.getElementById('view-buyer'); if(!view) return;
+    // Matikan duplikasi lama: rebuild sidebar final setiap kali user panel aktif.
+    rebuildSidebar(localStorage.getItem(MAIN_KEY)||'overview');
+    cleanSidebar();
+  }
+  window.BHUserStoreV13={boot,open:renderStore,save,reset,clean:cleanSidebar,rebuild:rebuildSidebar,openMain};
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  [100,300,700,1200,2200,4000].forEach(ms=>setTimeout(boot,ms));
+  document.addEventListener('click',function(e){
+    if(e.target.closest('#tab-buyer,#view-buyer nav,#view-buyer')) setTimeout(()=>{cleanSidebar();},50);
+  },true);
+  setInterval(()=>{ if(!document.getElementById('view-buyer')?.classList.contains('hidden')) cleanSidebar(); },650);
+  setTimeout(()=>{
+    const view=document.getElementById('view-buyer'); if(!view) return;
+    const obs=new MutationObserver(()=>{ if(cleaning) return; clearTimeout(window.__bhx_v13_clean); window.__bhx_v13_clean=setTimeout(cleanSidebar,25); });
+    obs.observe(view,{childList:true,subtree:true});
+  },500);
+})();
+</script>
