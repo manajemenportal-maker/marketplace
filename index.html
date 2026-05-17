@@ -3878,6 +3878,235 @@
 })();
 </script>
 
+
+
+<!-- ========================================================= -->
+<!-- ADDON V8: PINDAHKAN RINGKASAN SELLER ADMIN KE FRAME KANAN -->
+<!-- Tidak menyentuh kalkulator, marketplace, logic utama,       -->
+<!-- dan tidak mengubah admin/user yang sudah mantap.             -->
+<!-- ========================================================= -->
+<style id="bhx-v8-seller-summary-right-style">
+  /* Pastikan elemen ringkasan seller tidak muncul di bawah bar kiri admin */
+  #view-admin nav .bhx-left-seller-summary,
+  #view-admin nav [data-seller-summary-left],
+  #view-admin .bhx-admin-left-seller-summary,
+  #view-admin aside .bhx-admin-left-seller-summary {
+    display:none !important;
+    height:0 !important;
+    overflow:hidden !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+
+  .bhx-v8-seller-summary {
+    border:1px solid #e2e8f0;
+    border-radius:22px;
+    background:linear-gradient(135deg,#ffffff,#f8fafc);
+    padding:18px;
+    margin-bottom:18px;
+    box-shadow:0 1px 2px rgba(15,23,42,.04);
+  }
+  .bhx-v8-seller-summary-head {
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:14px;
+  }
+  .bhx-v8-seller-summary-head h3 {
+    font-size:20px;
+    font-weight:900;
+    color:#0f172a;
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .bhx-v8-seller-summary-head p {
+    font-size:13px;
+    color:#64748b;
+    margin-top:5px;
+  }
+  .bhx-v8-seller-summary-grid {
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:12px;
+  }
+  .bhx-v8-seller-summary-card {
+    border:1px solid #e2e8f0;
+    border-radius:18px;
+    padding:14px;
+    background:#fff;
+  }
+  .bhx-v8-seller-summary-card small {
+    display:block;
+    font-size:10px;
+    font-weight:900;
+    text-transform:uppercase;
+    color:#64748b;
+    letter-spacing:.03em;
+  }
+  .bhx-v8-seller-summary-card b {
+    display:block;
+    font-size:20px;
+    font-weight:900;
+    color:#0f172a;
+    margin-top:8px;
+  }
+  .bhx-v8-seller-actions {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:14px;
+  }
+  .bhx-v8-seller-actions button {
+    border:0;
+    border-radius:12px;
+    padding:9px 12px;
+    background:#4f46e5;
+    color:white;
+    font-size:12px;
+    font-weight:900;
+  }
+  .bhx-v8-seller-actions button.green { background:#059669; }
+  .bhx-v8-seller-actions button.amber { background:#d97706; }
+  .bhx-v8-seller-actions button.dark { background:#0f172a; }
+  @media(max-width:1100px){ .bhx-v8-seller-summary-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+</style>
+<script id="bhx-v8-seller-summary-right-script">
+(function(){
+  if(window.__BHV8SellerSummaryRight) return;
+  window.__BHV8SellerSummaryRight = true;
+
+  function toast(msg){
+    if(window.BHX && BHX.toast) return BHX.toast(msg);
+    if(window.BHAdminV5 && BHAdminV5.action) return BHAdminV5.action(msg);
+    alert(msg);
+  }
+
+  function adminSidebar(){
+    const view = document.getElementById('view-admin');
+    if(!view) return null;
+    const nav = view.querySelector('nav');
+    if(!nav) return null;
+    return nav.closest('aside, .w-full, div') || nav.parentElement;
+  }
+
+  function cleanLeftSellerSummary(){
+    const side = adminSidebar();
+    if(!side) return;
+    const nav = side.querySelector('nav');
+
+    // Hide exact seller-summary cards/text that accidentally appear below left bar.
+    side.querySelectorAll('*').forEach(el=>{
+      if(!el || el === nav) return;
+      const txt = (el.textContent || '').replace(/\s+/g,' ').trim();
+      const isMainSellerButton = el.matches('button') && /Seller\s*\/\s*Vendor/i.test(txt);
+      const isLeftSellerSummary = /Ringkasan\s+Seller/i.test(txt) && !isMainSellerButton;
+      if(isLeftSellerSummary && !el.closest('#bhx-v5-admin-frame') && !el.closest('#bhx-admin-main-right-frame')) {
+        el.classList.add('bhx-admin-left-seller-summary');
+        el.setAttribute('data-seller-summary-left','1');
+        el.style.display = 'none';
+      }
+    });
+
+    // If a button named Ringkasan Seller was inserted into the left nav, remove/hide it.
+    if(nav){
+      nav.querySelectorAll('button').forEach(btn=>{
+        const txt=(btn.textContent||'').replace(/\s+/g,' ').trim();
+        if(/Ringkasan\s+Seller/i.test(txt) && !/Seller\s*\/\s*Vendor/i.test(txt)) {
+          btn.classList.add('bhx-left-seller-summary');
+          btn.style.display='none';
+        }
+      });
+    }
+  }
+
+  function isSellerAdminPage(){
+    const view=document.getElementById('view-admin');
+    if(!view || view.classList.contains('hidden')) return false;
+    const title = view.querySelector('#bhx-v5-admin-frame, #bhx-admin-main-right-frame, #bhx-admin-content, .flex-1')?.textContent || view.textContent || '';
+    return /Seller\s*\/\s*Vendor|Daftar\s+Seller|Verifikasi\s+Seller|Audit\s+Vendor|Badge\s*&\s*Level/i.test(title);
+  }
+
+  function sellerSummaryHtml(){
+    return `<div class="bhx-v8-seller-summary" id="bhx-v8-seller-summary-right">
+      <div class="bhx-v8-seller-summary-head">
+        <div>
+          <h3><i class="fa-solid fa-store text-indigo-600"></i>Ringkasan Seller</h3>
+          <p>Ringkasan seller sekarang berada di frame kanan agar sidebar kiri tetap bersih dan semua menu utama terlihat.</p>
+        </div>
+        <span class="inline-flex px-3 py-1 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-black">FRAME KANAN</span>
+      </div>
+      <div class="bhx-v8-seller-summary-grid">
+        <div class="bhx-v8-seller-summary-card"><small>Total Seller</small><b>342</b><p class="text-xs text-slate-500 mt-1">Vendor terdaftar</p></div>
+        <div class="bhx-v8-seller-summary-card"><small>Terverifikasi</small><b>286</b><p class="text-xs text-slate-500 mt-1">Legalitas valid</p></div>
+        <div class="bhx-v8-seller-summary-card"><small>Menunggu Review</small><b>28</b><p class="text-xs text-slate-500 mt-1">Butuh approval</p></div>
+        <div class="bhx-v8-seller-summary-card"><small>Produk Seller</small><b>8.420</b><p class="text-xs text-slate-500 mt-1">Aktif & review</p></div>
+        <div class="bhx-v8-seller-summary-card"><small>Withdraw</small><b>Rp 245 Jt</b><p class="text-xs text-slate-500 mt-1">Siap cair</p></div>
+      </div>
+      <div class="bhx-v8-seller-actions">
+        <button class="green" onclick="BHV8SellerSummaryRight.action('Verifikasi seller dibuka')"><i class="fa-solid fa-certificate mr-1"></i>Verifikasi Seller</button>
+        <button onclick="BHV8SellerSummaryRight.action('Audit vendor dibuka')"><i class="fa-solid fa-clipboard-check mr-1"></i>Audit Vendor</button>
+        <button class="amber" onclick="BHV8SellerSummaryRight.action('Withdraw seller dibuka')"><i class="fa-solid fa-money-bill-transfer mr-1"></i>Withdraw Seller</button>
+        <button class="dark" onclick="BHV8SellerSummaryRight.action('Export ringkasan seller diproses')"><i class="fa-solid fa-file-export mr-1"></i>Export Ringkasan</button>
+      </div>
+    </div>`;
+  }
+
+  function insertRightSellerSummary(){
+    if(!isSellerAdminPage()) return;
+    const frame = document.querySelector('#bhx-v5-admin-frame, #bhx-admin-main-right-frame');
+    if(!frame) return;
+
+    // Detail panel kanan versi V5/V4
+    let target = frame.querySelector('.bhx-v5-detail-body') || frame.querySelector('.bhx-detail-body') || frame.querySelector('#bhx-admin-main-detail') || frame.querySelector('section:last-child');
+    if(!target) return;
+    if(target.querySelector('#bhx-v8-seller-summary-right')) return;
+    target.insertAdjacentHTML('afterbegin', sellerSummaryHtml());
+  }
+
+  function patchAdminSellerClick(){
+    const candidates = [
+      document.getElementById('bhx-v5-left-sellers'),
+      document.getElementById('bhx-menu-admin-sellers'),
+      document.getElementById('menu-admin-seller')
+    ].filter(Boolean);
+    document.querySelectorAll('#view-admin nav button').forEach(btn=>{
+      const txt=(btn.textContent||'').replace(/\s+/g,' ').trim();
+      if(/Seller\s*\/\s*Vendor|Seller|Vendor/i.test(txt)) candidates.push(btn);
+    });
+    [...new Set(candidates)].forEach(btn=>{
+      if(btn.dataset.bhv8SellerPatch) return;
+      btn.dataset.bhv8SellerPatch='1';
+      btn.addEventListener('click',()=>setTimeout(()=>{ cleanLeftSellerSummary(); insertRightSellerSummary(); },120), true);
+    });
+  }
+
+  function boot(){
+    cleanLeftSellerSummary();
+    patchAdminSellerClick();
+    insertRightSellerSummary();
+  }
+
+  window.BHV8SellerSummaryRight = {
+    boot,
+    action(msg){ toast(msg); }
+  };
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  setTimeout(boot,200);
+  setTimeout(boot,700);
+  setTimeout(boot,1500);
+  document.addEventListener('click', function(e){
+    if(e.target.closest('#tab-admin,#view-admin nav button,#view-admin [onclick*="admin"],#view-admin [onclick*="seller"]')) {
+      setTimeout(boot,80);
+      setTimeout(boot,260);
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
 
@@ -4600,5 +4829,99 @@
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
   setTimeout(boot,200); setTimeout(boot,800); setTimeout(boot,1600);
   document.addEventListener('click',e=>{ if(e.target.closest('#tab-admin,#view-admin nav button')) setTimeout(boot,60); });
+})();
+</script>
+
+<!-- ======================================================= -->
+<!-- PATCH USER MENU: TAMBAH PRODUK LENGKAP DI FRAME KANAN   -->
+<!-- Aman: addon ini tidak mengubah kalkulator/admin utama.   -->
+<!-- ======================================================= -->
+<style id="bhx-user-add-product-v9-style">
+  .bhx-v9-product-upload-wrap{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;align-items:start}
+  .bhx-v9-product-sub{background:#fff;border:1px solid #e2e8f0;border-radius:24px;overflow:hidden;box-shadow:0 10px 28px rgba(15,23,42,.06);position:sticky;top:130px}
+  .bhx-v9-product-sub-head{padding:18px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff}
+  .bhx-v9-product-sub-head b{display:block;font-size:16px;font-weight:900}.bhx-v9-product-sub-head small{display:block;margin-top:4px;color:#e0e7ff;font-size:11px;line-height:1.4}
+  .bhx-v9-product-sub button{width:100%;border:0;background:#fff;text-align:left;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;border-bottom:1px solid #f1f5f9;color:#475569;cursor:pointer}
+  .bhx-v9-product-sub button:hover{background:#f8fafc;color:#3730a3}.bhx-v9-product-sub button.active{background:#eef2ff;color:#3730a3;border-left:5px solid #4f46e5;padding-left:11px}
+  .bhx-v9-product-sub button i{width:22px;text-align:center;margin-top:2px}.bhx-v9-product-sub button b{display:block;font-size:13px;font-weight:900}.bhx-v9-product-sub button small{display:block;font-size:11px;color:#64748b;margin-top:2px;line-height:1.35}
+  .bhx-v9-product-panel{background:#fff;border:1px solid #e2e8f0;border-radius:24px;box-shadow:0 10px 28px rgba(15,23,42,.06);overflow:hidden}.bhx-v9-product-panel-head{padding:20px;border-bottom:1px solid #f1f5f9;background:#fff}.bhx-v9-product-panel-head h2{font-size:22px;font-weight:900;color:#0f172a}.bhx-v9-product-panel-head p{font-size:13px;color:#64748b;margin-top:5px}.bhx-v9-product-body{padding:20px}
+  .bhx-v9-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.bhx-v9-grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.bhx-v9-field label{display:block;font-size:11px;font-weight:900;color:#475569;text-transform:uppercase;margin-bottom:6px}.bhx-v9-field input,.bhx-v9-field select,.bhx-v9-field textarea{width:100%;border:1px solid #cbd5e1;border-radius:14px;padding:12px;font-size:14px;outline:0;background:#fff}.bhx-v9-field textarea{min-height:120px}.bhx-v9-span-2{grid-column:1/-1}.bhx-v9-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.bhx-v9-btn{border:0;border-radius:14px;padding:12px 16px;font-size:12px;font-weight:900;color:#fff;background:#4f46e5;cursor:pointer}.bhx-v9-btn.green{background:#059669}.bhx-v9-btn.amber{background:#d97706}.bhx-v9-btn.dark{background:#0f172a}.bhx-v9-btn.red{background:#e11d48}.bhx-v9-btn.light{background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe}
+  .bhx-v9-upload-box{border:2px dashed #cbd5e1;border-radius:18px;background:#f8fafc;min-height:180px;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;cursor:pointer;overflow:hidden}.bhx-v9-upload-box:hover{border-color:#4f46e5;background:#eef2ff}.bhx-v9-upload-box img{width:100%;height:220px;object-fit:cover;border-radius:14px}.bhx-v9-gallery{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}.bhx-v9-gallery .slot{border:1px dashed #cbd5e1;border-radius:16px;background:#f8fafc;height:95px;display:flex;align-items:center;justify-content:center;text-align:center;color:#94a3b8;font-size:11px;font-weight:800;overflow:hidden}.bhx-v9-gallery img{width:100%;height:100%;object-fit:cover}.bhx-v9-note{padding:14px;border-radius:16px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:12px;font-weight:700;line-height:1.5}.bhx-v9-preview{border:1px solid #e2e8f0;border-radius:20px;overflow:hidden;background:#fff}.bhx-v9-preview-img{height:230px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#94a3b8}.bhx-v9-preview-img img{width:100%;height:100%;object-fit:cover}.bhx-v9-preview-content{padding:18px}.bhx-v9-pill{display:inline-flex;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;font-size:11px;font-weight:900;margin:3px}.bhx-v9-spec-row{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;margin-bottom:10px}.bhx-v9-menu-added{position:relative}.bhx-v9-menu-added:after{content:'BARU';font-size:9px;font-weight:900;color:#fff;background:#e11d48;border-radius:999px;padding:2px 6px;margin-left:auto}
+  @media(max-width:980px){.bhx-v9-product-upload-wrap{grid-template-columns:1fr}.bhx-v9-product-sub{position:relative;top:auto}.bhx-v9-grid,.bhx-v9-grid-3{grid-template-columns:1fr}.bhx-v9-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.bhx-v9-spec-row{grid-template-columns:1fr}}
+</style>
+<script id="bhx-user-add-product-v9-script">
+(function(){
+  const DRAFT='bhx_v9_user_add_product_draft';
+  const MAIN='bhx_v9_user_add_product_main';
+  const SUBS=[
+    ['basic','fa-circle-info','Info Produk','Nama, kategori, merek, deskripsi'],
+    ['price','fa-tags','Harga & Stok','Harga grosir, MOQ, varian, stok'],
+    ['media','fa-images','Gambar & Media','Foto utama, galeri, video'],
+    ['spec','fa-list-check','Spesifikasi','Dimensi, berat, bahan, garansi'],
+    ['tkdn','fa-file-shield','Dokumen Legal/TKDN','Sertifikat, NIB, SNI, brosur'],
+    ['shipping','fa-truck-fast','Pengiriman','Kargo, berat, asal gudang'],
+    ['preview','fa-eye','Preview & Submit','Cek sebelum diajukan']
+  ];
+  const defaultDraft={
+    name:'',category:'Perkakas & Tools',brand:'',sku:'',condition:'Baru',short:'',description:'',
+    priceRetail:'',priceWholesale:'',moq:'1',stock:'',unit:'Unit',variant1:'',variant2:'',mainImage:'',gallery:[],video:'',
+    specs:[['Daya / Kapasitas',''],['Material',''],['Dimensi',''],['Berat Produk',''],['Garansi','']],
+    tkdn:'',certNo:'',nib:'',sni:'',docName:'',warehouse:'Jakarta',weight:'',length:'',width:'',height:'',couriers:{cargo:true,regular:true,pickup:false}
+  };
+  function load(){ try{return Object.assign({},defaultDraft,JSON.parse(localStorage.getItem(DRAFT)||'{}'));}catch(e){return {...defaultDraft};} }
+  function save(d){ localStorage.setItem(DRAFT,JSON.stringify(d)); }
+  function q(s){ return document.querySelector(s); }
+  function toast(msg){ if(window.BHX&&BHX.toast)return BHX.toast(msg); if(window.bhAddonNotify)return window.bhAddonNotify(msg); alert(msg); }
+  function rupiah(v){ const n=Number(String(v||0).replace(/[^0-9]/g,'')); return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n); }
+  function findBuyerContent(){ const view=document.getElementById('view-buyer'); if(!view)return null; return document.getElementById('bhx-buyer-content')||view.querySelector(':scope > .flex-1')||view.querySelector('.flex-1')||view.children[1]||view; }
+  function field(id,label,type='text',placeholder='',extra=''){ const d=load(); return `<div class="bhx-v9-field ${extra}"><label>${label}</label><input id="bhxv9-${id}" type="${type}" value="${(d[id]||'').toString().replace(/"/g,'&quot;')}" placeholder="${placeholder}" oninput="BHUserProductV9.update('${id}',this.value)"></div>`; }
+  function select(id,label,opts,extra=''){ const d=load(); return `<div class="bhx-v9-field ${extra}"><label>${label}</label><select id="bhxv9-${id}" onchange="BHUserProductV9.update('${id}',this.value)">${opts.map(o=>`<option ${d[id]===o?'selected':''}>${o}</option>`).join('')}</select></div>`; }
+  function textarea(id,label,placeholder='',extra=''){ const d=load(); return `<div class="bhx-v9-field ${extra}"><label>${label}</label><textarea id="bhxv9-${id}" placeholder="${placeholder}" oninput="BHUserProductV9.update('${id}',this.value)">${d[id]||''}</textarea></div>`; }
+  function panel(title,desc,body){ return `<div class="bhx-v9-product-panel"><div class="bhx-v9-product-panel-head"><h2>${title}</h2><p>${desc}</p></div><div class="bhx-v9-product-body">${body}</div></div>`; }
+  function actions(){ return `<div class="bhx-v9-actions"><button class="bhx-v9-btn green" onclick="BHUserProductV9.saveDraft()"><i class="fa-solid fa-floppy-disk mr-2"></i>Simpan Draft</button><button class="bhx-v9-btn amber" onclick="BHUserProductV9.openSub('preview')"><i class="fa-solid fa-eye mr-2"></i>Preview</button><button class="bhx-v9-btn dark" onclick="BHUserProductV9.submitProduct()"><i class="fa-solid fa-paper-plane mr-2"></i>Ajukan ke Admin</button><button class="bhx-v9-btn red" onclick="BHUserProductV9.resetDraft()"><i class="fa-solid fa-trash mr-2"></i>Reset</button></div>`; }
+  function renderSubNav(active){ return `<aside class="bhx-v9-product-sub"><div class="bhx-v9-product-sub-head"><b><i class="fa-solid fa-cloud-arrow-up mr-2"></i>Upload Produk</b><small>Semua item upload produk ditampilkan di kanan, lengkap untuk buyer yang mau buka toko.</small></div>${SUBS.map(s=>`<button class="${active===s[0]?'active':''}" onclick="BHUserProductV9.openSub('${s[0]}')"><i class="fa-solid ${s[1]}"></i><span><b>${s[2]}</b><small>${s[3]}</small></span></button>`).join('')}</aside>`; }
+  function basic(){ return panel('Info Produk Lengkap','Isi identitas produk agar mudah dicari di marketplace.',`<div class="bhx-v9-grid">${field('name','Nama Produk','text','Contoh: Mesin Las Inverter 900W Heavy Duty','bhx-v9-span-2')}${select('category','Kategori',['Perkakas & Tools','Pertanian & Kehutanan','Kelistrikan & Genset','Pompa & Kompresor','Pabrikasi & CNC','Mesin Manufaktur','Alat Berat & Konstruksi','Material Handling','Otomasi & Robotika','Alat Ukur & Uji','Keamanan Kerja K3','Bahan Logam','HVAC & Pendingin','Water Treatment','Software Industri','Hydrolik & Mesin Hydrolik'])}${field('brand','Merek / Brand','text','Contoh: Teknik Jaya')}${field('sku','SKU / Kode Produk','text','Contoh: ML-900-HD')}${select('condition','Kondisi',['Baru','Bekas Layak Pakai','Refurbished','Pre Order'])}${field('short','Deskripsi Singkat','text','Kalimat singkat untuk kartu produk','bhx-v9-span-2')}${textarea('description','Deskripsi Produk Lengkap','Fungsi produk, keunggulan, kelengkapan paket, garansi, dan syarat pembelian.','bhx-v9-span-2')}</div>${actions()}`); }
+  function price(){ return panel('Harga, Stok, MOQ & Varian','Lengkapi harga ecer/grosir, minimal order, stok, dan varian produk.',`<div class="bhx-v9-grid-3">${field('priceRetail','Harga Satuan / Retail','number','850000')}${field('priceWholesale','Harga Grosir / B2B','number','800000')}${field('moq','MOQ Minimal Order','number','5')}${field('stock','Stok Tersedia','number','100')}${select('unit','Satuan',['Unit','Pcs','Set','Box','Kg','Meter','Lot','Paket'])}${field('variant1','Varian 1','text','Contoh: 900W / 1200W')}${field('variant2','Varian 2','text','Contoh: Merah / Biru','bhx-v9-span-2')}</div><div class="bhx-v9-note mt-4">Untuk marketplace B2B, harga grosir dan MOQ penting agar pembeli proyek bisa langsung menghitung kebutuhan partai besar.</div>${actions()}`); }
+  function media(){ const d=load(); return panel('Upload Gambar, Galeri & Video','Tambahkan foto utama, foto detail, dan link video produk.',`<div class="bhx-v9-grid"><div class="bhx-v9-field"><label>Gambar Utama Produk</label><div class="bhx-v9-upload-box" onclick="document.getElementById('bhxv9-mainImageFile').click()">${d.mainImage?`<img src="${d.mainImage}">`:`<div><i class="fa-solid fa-cloud-arrow-up text-4xl text-indigo-500 mb-3"></i><b class="block">Klik upload gambar utama</b><small class="text-slate-500">JPG/PNG, disarankan landscape atau square</small></div>`}</div><input id="bhxv9-mainImageFile" type="file" accept="image/*" class="hidden" onchange="BHUserProductV9.readImage(this,'mainImage')"></div><div class="bhx-v9-field"><label>Link Video / YouTube</label><input value="${d.video||''}" placeholder="https://youtube.com/..." oninput="BHUserProductV9.update('video',this.value)"><div class="bhx-v9-note mt-3">Video demo produk akan membantu pembeli industri lebih yakin sebelum membeli.</div></div><div class="bhx-v9-span-2"><label class="text-xs font-black uppercase text-slate-600">Galeri Produk</label><div class="bhx-v9-gallery">${[0,1,2,3].map(i=>`<div class="slot" onclick="document.getElementById('bhxv9-gallery-${i}').click()">${d.gallery&&d.gallery[i]?`<img src="${d.gallery[i]}">`:`<span><i class="fa-solid fa-image block text-2xl mb-1"></i>Foto ${i+1}</span>`}<input id="bhxv9-gallery-${i}" type="file" accept="image/*" class="hidden" onchange="BHUserProductV9.readGallery(this,${i})"></div>`).join('')}</div></div></div>${actions()}`); }
+  function spec(){ const d=load(); const rows=(d.specs||defaultDraft.specs).map((r,i)=>`<div class="bhx-v9-spec-row"><input value="${r[0]||''}" placeholder="Nama spesifikasi" oninput="BHUserProductV9.updateSpec(${i},0,this.value)"><input value="${r[1]||''}" placeholder="Isi spesifikasi" oninput="BHUserProductV9.updateSpec(${i},1,this.value)"><button class="bhx-v9-btn red" onclick="BHUserProductV9.removeSpec(${i})">Hapus</button></div>`).join(''); return panel('Spesifikasi Teknis Produk','Tambahkan spesifikasi supaya pembeli proyek bisa evaluasi cepat.',`<div id="bhxv9-specs">${rows}</div><button class="bhx-v9-btn light" onclick="BHUserProductV9.addSpec()"><i class="fa-solid fa-plus mr-2"></i>Tambah Baris Spesifikasi</button>${actions()}`); }
+  function tkdn(){ return panel('Dokumen Legal, TKDN, SNI & Brosur','Upload data legal agar produk siap untuk B2B dan tender.',`<div class="bhx-v9-grid">${field('tkdn','Nilai TKDN (%)','number','45.50')}${field('certNo','Nomor Sertifikat TKDN','text','1234/SJ/TKDN')}${field('nib','Nomor NIB Seller','text','Nomor Induk Berusaha')}${field('sni','Nomor SNI / Standard','text','Opsional')}${field('docName','Nama File Dokumen','text','Contoh: sertifikat-tkdn.pdf','bhx-v9-span-2')}<div class="bhx-v9-field bhx-v9-span-2"><label>Upload Dokumen</label><input type="file" accept="application/pdf,image/*" onchange="BHUserProductV9.fakeDoc(this)"></div></div><div class="bhx-v9-note mt-4">Mode frontend: nama file disimpan sebagai draft. Untuk produksi, bagian ini nanti disambungkan ke Firebase Storage atau server upload.</div>${actions()}`); }
+  function shipping(){ return panel('Pengiriman, Gudang & Dimensi','Lengkapi asal gudang dan ukuran agar ongkir bisa dihitung.',`<div class="bhx-v9-grid-3">${select('warehouse','Asal Gudang',['Jakarta','Tangerang','Bandung','Surabaya','Semarang','Medan','Makassar','Balikpapan'])}${field('weight','Berat Produk (Kg)','number','12')}${field('length','Panjang (cm)','number','60')}${field('width','Lebar (cm)','number','40')}${field('height','Tinggi (cm)','number','35')}</div><div class="grid md:grid-cols-3 gap-4 mt-4"><label class="border rounded-2xl p-4 font-bold"><input type="checkbox" checked onchange="BHUserProductV9.updateCourier('cargo',this.checked)"> Kargo B2B</label><label class="border rounded-2xl p-4 font-bold"><input type="checkbox" checked onchange="BHUserProductV9.updateCourier('regular',this.checked)"> Reguler</label><label class="border rounded-2xl p-4 font-bold"><input type="checkbox" onchange="BHUserProductV9.updateCourier('pickup',this.checked)"> Ambil di Gudang</label></div>${actions()}`); }
+  function preview(){ const d=load(); return panel('Preview Produk Sebelum Diajukan','Cek ulang tampilan produk sebelum dikirim ke admin untuk review.',`<div class="grid lg:grid-cols-2 gap-5"><div class="bhx-v9-preview"><div class="bhx-v9-preview-img">${d.mainImage?`<img src="${d.mainImage}">`:`<div><i class="fa-solid fa-image text-5xl mb-2"></i><p>Belum ada gambar utama</p></div>`}</div><div class="bhx-v9-preview-content"><span class="bhx-v9-pill">${d.category}</span><span class="bhx-v9-pill">TKDN ${d.tkdn||0}%</span><h3 class="text-xl font-black mt-3">${d.name||'Nama produk belum diisi'}</h3><p class="text-sm text-slate-500 mt-2">${d.short||'Deskripsi singkat belum diisi.'}</p><div class="text-2xl font-black text-amber-600 mt-3">${rupiah(d.priceWholesale||d.priceRetail||0)}</div><p class="text-xs text-slate-500 mt-1">MOQ: ${d.moq||1} ${d.unit||'Unit'} • Stok: ${d.stock||0}</p></div></div><div class="space-y-3"><div class="bhx-v9-note">Status setelah submit: <b>Review Admin</b>. Produk bisa dicek di menu Admin → Produk → Review Produk.</div><div class="border rounded-2xl p-4"><b>Kelengkapan</b><ul class="text-sm text-slate-600 mt-2 space-y-1"><li>Nama Produk: ${d.name?'✅':'❌'}</li><li>Harga: ${(d.priceRetail||d.priceWholesale)?'✅':'❌'}</li><li>Gambar Utama: ${d.mainImage?'✅':'❌'}</li><li>TKDN / Legal: ${d.tkdn||d.certNo?'✅':'⚠️ Opsional'}</li><li>Berat & Gudang: ${d.weight?'✅':'❌'}</li></ul></div></div></div>${actions()}`); }
+  function body(sub){ return ({basic,price,media,spec,tkdn,shipping,preview}[sub]||basic)(); }
+  function render(sub){
+    const content=findBuyerContent(); if(!content)return;
+    const active=sub||localStorage.getItem(MAIN)||'basic'; localStorage.setItem(MAIN,active);
+    content.innerHTML=`<div class="mb-5"><h1 class="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3"><i class="fa-solid fa-cloud-arrow-up text-indigo-600"></i>Tambah Produk Lengkap</h1><p class="text-sm text-slate-500 mt-1">Form upload produk lengkap ditampilkan full di frame kanan. Coding utama dan kalkulator tetap aman.</p></div><div class="bhx-v9-product-upload-wrap">${renderSubNav(active)}<section>${body(active)}</section></div>`;
+  }
+  function patchLeftMenu(){
+    const nav=document.querySelector('#view-buyer nav'); if(!nav)return;
+    let btn=document.getElementById('bhx-v9-user-add-product-btn');
+    if(!btn){
+      btn=document.createElement('button'); btn.type='button'; btn.id='bhx-v9-user-add-product-btn'; btn.className='bhx-v6-user-main bhx-v9-menu-added';
+      btn.innerHTML='<i class="fa-solid fa-cloud-arrow-up w-5 text-center"></i><span class="text-sm">Tambah Produk</span>';
+      btn.onclick=function(e){ e.preventDefault(); openSub(localStorage.getItem(MAIN)||'basic'); };
+      nav.appendChild(btn);
+    }
+  }
+  function openSub(sub){ patchLeftMenu(); document.querySelectorAll('#view-buyer nav button').forEach(b=>b.classList.remove('active')); const b=document.getElementById('bhx-v9-user-add-product-btn'); if(b)b.classList.add('active'); render(sub); }
+  function update(k,v){ const d=load(); d[k]=v; save(d); }
+  function readFile(input,cb){ const f=input.files&&input.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>cb(e.target.result,f); r.readAsDataURL(f); }
+  window.BHUserProductV9={
+    openSub, update,
+    saveDraft(){ save(load()); toast('Draft produk tersimpan'); },
+    resetDraft(){ if(confirm('Reset semua draft produk?')){ localStorage.removeItem(DRAFT); render(localStorage.getItem(MAIN)||'basic'); toast('Draft direset'); } },
+    submitProduct(){ const d=load(); if(!d.name||!(d.priceRetail||d.priceWholesale)||!d.mainImage){ toast('Lengkapi minimal: nama produk, harga, dan gambar utama.'); return; } toast('Produk diajukan ke admin untuk review'); },
+    readImage(input,key){ readFile(input,(src)=>{ const d=load(); d[key]=src; save(d); render('media'); }); },
+    readGallery(input,i){ readFile(input,(src)=>{ const d=load(); d.gallery=d.gallery||[]; d.gallery[i]=src; save(d); render('media'); }); },
+    updateSpec(i,col,v){ const d=load(); d.specs=d.specs||[]; d.specs[i]=d.specs[i]||['','']; d.specs[i][col]=v; save(d); },
+    addSpec(){ const d=load(); d.specs=d.specs||[]; d.specs.push(['','']); save(d); render('spec'); },
+    removeSpec(i){ const d=load(); d.specs=(d.specs||[]).filter((_,idx)=>idx!==i); save(d); render('spec'); },
+    fakeDoc(input){ const f=input.files&&input.files[0]; if(!f)return; const d=load(); d.docName=f.name; save(d); render('tkdn'); toast('Nama dokumen disimpan di draft'); },
+    updateCourier(k,v){ const d=load(); d.couriers=d.couriers||{}; d.couriers[k]=v; save(d); }
+  };
+  function boot(){ patchLeftMenu(); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  setTimeout(boot,300); setTimeout(boot,1000); setTimeout(boot,2000);
+  document.addEventListener('click',e=>{ if(e.target.closest('#tab-buyer,#view-buyer nav button')) setTimeout(patchLeftMenu,80); });
 })();
 </script>
