@@ -4733,6 +4733,126 @@
 })();
 </script>
 
+
+
+<!-- ========================================================= -->
+<!-- PATCH FINAL V14: HAPUS DOUBLE MENU KELOLA TOKO DI USER     -->
+<!-- Sidebar kiri user disisakan 1 tombol Kelola Toko saja.     -->
+<!-- Tidak mengubah kalkulator, admin, marketplace, dan logic.  -->
+<!-- ========================================================= -->
+<style id="bhx-v14-user-store-single-style">
+  /* Tombol lama dari patch V11 dipaksa tidak tampil supaya tidak dobel. */
+  #view-buyer nav #bhx-v11-user-store-main,
+  #view-buyer nav button#bhx-v11-user-store-main,
+  #view-buyer nav [data-bhx-left-store-hidden],
+  #view-buyer nav .bhx-v10-hide-left-store,
+  #view-buyer nav .bhx-v11-hide-store-sub{
+    display:none !important;
+    height:0 !important;
+    max-height:0 !important;
+    overflow:hidden !important;
+    padding:0 !important;
+    margin:0 !important;
+    border:0 !important;
+  }
+
+  /* Tombol final V13 tetap tampil sebagai satu-satunya Kelola Toko. */
+  #view-buyer nav button[data-bhx-v13-main="1"][data-key="store_setting"]{
+    display:flex !important;
+  }
+</style>
+<script id="bhx-v14-user-store-single-script">
+(function(){
+  let busy=false;
+  const STORE_TEXT=/kelola toko|setting toko|pengaturan toko/i;
+
+  function nav(){ return document.querySelector('#view-buyer nav'); }
+
+  function forceSingleKelolaToko(){
+    if(busy) return;
+    const n=nav();
+    if(!n) return;
+    busy=true;
+
+    // Prioritas: pakai sidebar final V13 kalau tersedia karena submenu sudah tampil di kanan.
+    if(window.BHUserStoreV13 && typeof window.BHUserStoreV13.rebuild === 'function'){
+      try{ window.BHUserStoreV13.rebuild(localStorage.getItem('bhx_v13_user_main') || 'overview'); }catch(e){}
+    }
+
+    // Ambil ulang setelah rebuild.
+    const navNow=nav();
+    if(!navNow){ busy=false; return; }
+
+    const buttons=[...navNow.querySelectorAll('button')];
+    const canonical=buttons.find(b=>b.matches('button[data-bhx-v13-main="1"][data-key="store_setting"]'));
+
+    buttons.forEach(btn=>{
+      const txt=(btn.textContent||'').replace(/\s+/g,' ').trim();
+      const isStore=STORE_TEXT.test(txt) || btn.id==='bhx-v11-user-store-main';
+      if(!isStore) return;
+
+      // Selain tombol final canonical, hapus/sembunyikan supaya tidak dobel lagi.
+      if(btn!==canonical){
+        btn.setAttribute('data-bhx-v14-removed-store-duplicate','1');
+        btn.style.setProperty('display','none','important');
+        btn.style.setProperty('height','0','important');
+        btn.style.setProperty('padding','0','important');
+        btn.style.setProperty('margin','0','important');
+        btn.style.setProperty('border','0','important');
+        btn.onclick=null;
+      }
+    });
+
+    // Pastikan tombol final bisa diklik dan membuka frame kanan.
+    if(canonical){
+      canonical.style.removeProperty('height');
+      canonical.style.removeProperty('padding');
+      canonical.style.removeProperty('margin');
+      canonical.style.removeProperty('border');
+      canonical.style.setProperty('display','flex','important');
+      canonical.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(window.BHUserStoreV13 && typeof window.BHUserStoreV13.open === 'function'){
+          window.BHUserStoreV13.open(localStorage.getItem('bhx_v13_store_active') || 'profile');
+        }
+        return false;
+      };
+    }
+
+    busy=false;
+  }
+
+  function boot(){
+    forceSingleKelolaToko();
+    setTimeout(forceSingleKelolaToko,80);
+    setTimeout(forceSingleKelolaToko,250);
+  }
+
+  window.BHXFixSingleKelolaTokoUser = { clean: forceSingleKelolaToko, boot };
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  [300,800,1500,3000,5000].forEach(ms=>setTimeout(boot,ms));
+
+  document.addEventListener('click',function(e){
+    if(e.target.closest('#tab-buyer,#view-buyer nav,#view-buyer')){
+      setTimeout(forceSingleKelolaToko,30);
+      setTimeout(forceSingleKelolaToko,150);
+    }
+  },true);
+
+  setTimeout(()=>{
+    const view=document.getElementById('view-buyer');
+    if(!view) return;
+    const obs=new MutationObserver(()=>{
+      clearTimeout(window.__bhx_v14_single_store_timer);
+      window.__bhx_v14_single_store_timer=setTimeout(forceSingleKelolaToko,35);
+    });
+    obs.observe(view,{childList:true,subtree:true});
+  },700);
+})();
+</script>
+
 </body>
 </html>
 
