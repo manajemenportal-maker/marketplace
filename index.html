@@ -5083,3 +5083,207 @@
   document.addEventListener('click',e=>{ if(e.target.closest('#tab-buyer,#view-buyer nav button')) setTimeout(patchLeftMenu,80); });
 })();
 </script>
+
+<!-- ========================================================= -->
+<!-- ADDON V11 FINAL: USER SETTING TOKO SUBMENU FULL DI KANAN  -->
+<!-- Membersihkan submenu setting toko dari sidebar kiri user   -->
+<!-- dan memaksa submenu tampil hanya di frame kanan.           -->
+<!-- ========================================================= -->
+<style id="bhx-user-store-v11-final-style">
+  /* Submenu/anak menu Setting Toko yang nyasar di sidebar kiri user dipaksa hilang */
+  #view-buyer nav .bhx-v10-store-shell,
+  #view-buyer nav .bhx-v10-store-sub,
+  #view-buyer nav .bhx-v10-store-list,
+  #view-buyer nav .bhx-v10-store-btn,
+  #view-buyer nav .bhx-v11-hide-store-sub,
+  #view-buyer nav [data-bhx-v11-store-sub="1"],
+  #view-buyer nav [class*="store-sub"],
+  #view-buyer nav [class*="store-list"],
+  #view-buyer nav [class*="store-shell"]{
+    display:none !important;
+    height:0 !important;
+    max-height:0 !important;
+    overflow:hidden !important;
+    padding:0 !important;
+    margin:0 !important;
+    border:0 !important;
+  }
+
+  /* Tombol akses utama Kelola Toko tetap tampil sebagai menu utama, tanpa submenu di kiri */
+  #view-buyer nav #bhx-v11-user-store-main{
+    display:flex !important;
+    width:100% !important;
+    align-items:center !important;
+    gap:.75rem !important;
+    border-radius:1rem !important;
+    padding:.9rem 1rem !important;
+    color:#475569 !important;
+    font-weight:900 !important;
+    text-align:left !important;
+    background:transparent !important;
+    border:0 !important;
+    position:relative !important;
+  }
+  #view-buyer nav #bhx-v11-user-store-main:hover{
+    background:#f1f5f9 !important;
+    color:#4f46e5 !important;
+  }
+  #view-buyer nav #bhx-v11-user-store-main.active{
+    background:#eef2ff !important;
+    color:#4338ca !important;
+    box-shadow:inset 0 0 0 1px #c7d2fe !important;
+  }
+  #view-buyer nav #bhx-v11-user-store-main.active::after{
+    content:'';
+    position:absolute;
+    right:-10px;
+    top:50%;
+    transform:translateY(-50%);
+    width:0;height:0;
+    border-top:10px solid transparent;
+    border-bottom:10px solid transparent;
+    border-left:10px solid #eef2ff;
+  }
+</style>
+<script id="bhx-user-store-v11-final-script">
+(function(){
+  const SUB_WORDS = [
+    'profil toko','legalitas','rekening','pencairan','kurir','gudang','jam operasional',
+    'kebijakan toko','preview toko','payment','bank','operasional toko','dokumen toko'
+  ];
+
+  function toast(msg){
+    if(window.BHX && BHX.toast) return BHX.toast(msg);
+    if(window.bhAddonNotify) return window.bhAddonNotify(msg);
+    console.log(msg);
+  }
+
+  function nav(){ return document.querySelector('#view-buyer nav'); }
+
+  function markActive(){
+    const n = nav(); if(!n) return;
+    n.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+    const btn = document.getElementById('bhx-v11-user-store-main');
+    if(btn) btn.classList.add('active');
+  }
+
+  function hideLeftStoreSubmenus(){
+    const n = nav(); if(!n) return;
+
+    // Sembunyikan semua elemen non-button yang mungkin berisi submenu.
+    [...n.children].forEach(el=>{
+      if(el.id === 'bhx-v11-user-store-main') return;
+      const txt=(el.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
+      const cls=(el.className||'').toString().toLowerCase();
+      const isStoreSub = SUB_WORDS.some(w=>txt.includes(w)) || cls.includes('store-sub') || cls.includes('store-list') || cls.includes('store-shell');
+      if(isStoreSub && !txt.includes('kelola toko')){
+        el.classList.add('bhx-v11-hide-store-sub');
+        el.dataset.bhxV11StoreSub='1';
+        el.style.setProperty('display','none','important');
+      }
+    });
+
+    // Kalau submenu dibuat sebagai button terpisah di sidebar kiri, sembunyikan juga.
+    [...n.querySelectorAll('button')].forEach(btn=>{
+      if(btn.id === 'bhx-v11-user-store-main') return;
+      const txt=(btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
+      const isSub = SUB_WORDS.some(w=>txt.includes(w));
+      const isOldSetting = txt.includes('setting toko') || txt.includes('pengaturan toko');
+      if(isSub || isOldSetting){
+        btn.classList.add('bhx-v11-hide-store-sub');
+        btn.dataset.bhxV11StoreSub='1';
+        btn.style.setProperty('display','none','important');
+      }
+    });
+  }
+
+  function ensureMainStoreButton(){
+    const n = nav(); if(!n) return;
+    hideLeftStoreSubmenus();
+
+    let btn = document.getElementById('bhx-v11-user-store-main');
+    if(!btn){
+      btn = document.createElement('button');
+      btn.type = 'button';
+      btn.id = 'bhx-v11-user-store-main';
+      btn.className = 'bhx-v6-user-main';
+      btn.innerHTML = '<i class="fa-solid fa-store w-5 text-center"></i><span class="text-sm">Kelola Toko</span>';
+      const addProduct = document.getElementById('bhx-v9-user-add-product-btn');
+      if(addProduct && addProduct.parentNode === n) addProduct.insertAdjacentElement('afterend', btn);
+      else n.appendChild(btn);
+    }
+
+    // Hilangkan jejak class dari patch lama yang suka menyembunyikan tombol toko.
+    btn.classList.remove('bhx-v10-hide-left-store','bhx-v11-hide-store-sub');
+    btn.removeAttribute('data-bhx-left-store-hidden');
+    btn.removeAttribute('data-bhx-v11-store-sub');
+    btn.style.removeProperty('display');
+    btn.onclick = function(e){
+      e.preventDefault();
+      openStoreRight('profile');
+    };
+  }
+
+  function openStoreRight(tab){
+    ensureMainStoreButton();
+    if(window.BHUserStoreRightV10 && typeof BHUserStoreRightV10.open === 'function'){
+      BHUserStoreRightV10.open(tab || localStorage.getItem('bhx_v10_user_store_active') || 'profile');
+    } else {
+      toast('Setting toko dibuka di frame kanan');
+    }
+    setTimeout(()=>{
+      hideLeftStoreSubmenus();
+      ensureMainStoreButton();
+      markActive();
+    },40);
+    setTimeout(()=>{
+      hideLeftStoreSubmenus();
+      ensureMainStoreButton();
+      markActive();
+    },180);
+  }
+
+  function interceptClicks(){
+    const n=nav(); if(!n || n.dataset.bhxV11StoreClick) return;
+    n.dataset.bhxV11StoreClick='1';
+    n.addEventListener('click',function(e){
+      const btn=e.target.closest('button');
+      if(!btn || btn.id === 'bhx-v11-user-store-main') return;
+      const txt=(btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
+      if(txt.includes('setting toko') || txt.includes('pengaturan toko')){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        openStoreRight('profile');
+      }
+    },true);
+  }
+
+  function boot(){
+    const view=document.getElementById('view-buyer');
+    if(!view) return;
+    ensureMainStoreButton();
+    hideLeftStoreSubmenus();
+    interceptClicks();
+  }
+
+  window.BHUserStoreRightV11 = { boot, open:openStoreRight, clean:hideLeftStoreSubmenus };
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  setTimeout(boot,200); setTimeout(boot,700); setTimeout(boot,1500); setTimeout(boot,2500);
+
+  document.addEventListener('click',function(e){
+    if(e.target.closest('#tab-buyer,#view-buyer nav button,#bhx-v9-user-add-product-btn')){
+      setTimeout(boot,60);
+      setTimeout(hideLeftStoreSubmenus,120);
+      setTimeout(ensureMainStoreButton,180);
+    }
+  },true);
+
+  setTimeout(()=>{
+    const view=document.getElementById('view-buyer');
+    if(!view) return;
+    const obs=new MutationObserver(()=>{ boot(); });
+    obs.observe(view,{childList:true,subtree:true});
+  },600);
+})();
+</script>
