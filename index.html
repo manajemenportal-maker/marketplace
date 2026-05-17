@@ -4563,6 +4563,176 @@
 })();
 </script>
 
+
+
+<!-- ========================================================= -->
+<!-- PATCH V14: RESET TETAP DI HALAMAN & TIDAK KELUAR AKUN     -->
+<!-- ========================================================= -->
+<script id="bhx-v14-reset-stay-session-patch">
+(function(){
+  const SAFE_ROLE='bhx_safe_last_role_v14';
+  const SAFE_VIEW='bhx_safe_last_view_v14';
+  const SUPER_VIEW='superapp_current_view';
+  const ROLE_KEY='bhx_v12_role';
+
+  function toast(msg){
+    if(window.BHX && typeof BHX.toast==='function') return BHX.toast(msg);
+    if(window.bhAddonNotify) return window.bhAddonNotify(msg);
+    let t=document.getElementById('bhx-toast')||document.getElementById('toast');
+    if(!t){t=document.createElement('div');t.id='bhx-toast';t.className='fixed bottom-5 right-5 z-[999] bg-slate-950 text-white rounded-2xl px-5 py-3 shadow-xl text-sm font-bold hidden';document.body.appendChild(t);}
+    t.textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2200);
+  }
+  function visibleView(){
+    const list=['buyer','admin','seller','marketplace','tkdn','forum','kalkulator'];
+    for(const v of list){const el=document.getElementById('view-'+v); if(el && !el.classList.contains('hidden') && getComputedStyle(el).display!=='none') return v;}
+    return localStorage.getItem(SUPER_VIEW)||'marketplace';
+  }
+  function roleFromDomOrStorage(){
+    if(document.body.classList.contains('bhx-role-admin')) return 'admin';
+    if(document.body.classList.contains('bhx-role-user')) return 'user';
+    const r=localStorage.getItem(ROLE_KEY)||localStorage.getItem(SAFE_ROLE)||'guest';
+    return r || 'guest';
+  }
+  function persistSession(){
+    const role=roleFromDomOrStorage();
+    const view=visibleView();
+    if(role && role!=='guest') localStorage.setItem(SAFE_ROLE,role);
+    if(view) { localStorage.setItem(SAFE_VIEW,view); localStorage.setItem(SUPER_VIEW,view); }
+  }
+  function restoreSession(snap){
+    const role=(snap&&snap.role)||localStorage.getItem(SAFE_ROLE)||localStorage.getItem(ROLE_KEY)||'guest';
+    const view=(snap&&snap.view)||localStorage.getItem(SAFE_VIEW)||localStorage.getItem(SUPER_VIEW)||'marketplace';
+    if(role && role!=='guest'){
+      localStorage.setItem(ROLE_KEY,role);
+      localStorage.setItem(SAFE_ROLE,role);
+      document.body.classList.remove('bhx-role-admin','bhx-role-user','bhx-role-guest');
+      document.body.classList.add('bhx-role-'+role);
+      const admin=document.getElementById('tab-admin'), buyer=document.getElementById('tab-buyer'), seller=document.getElementById('tab-seller');
+      if(role==='admin'){
+        if(admin){admin.classList.remove('hidden'); admin.style.removeProperty('display');}
+        if(buyer){buyer.classList.add('hidden'); buyer.style.setProperty('display','none','important');}
+        if(seller){seller.classList.add('hidden'); seller.style.setProperty('display','none','important');}
+      }else if(role==='user'){
+        if(buyer){buyer.classList.remove('hidden'); buyer.style.removeProperty('display');}
+        if(admin){admin.classList.add('hidden'); admin.style.setProperty('display','none','important');}
+        if(seller){seller.classList.add('hidden'); seller.style.setProperty('display','none','important');}
+      }
+    }
+    localStorage.setItem(SUPER_VIEW,view);
+  }
+  function snap(){
+    persistSession();
+    return {
+      role: roleFromDomOrStorage(),
+      view: visibleView(),
+      userMain: localStorage.getItem('bhx_v13_user_main') || localStorage.getItem('bhx_v12_user_main') || 'overview',
+      storeTab: localStorage.getItem('bhx_v13_store_active') || localStorage.getItem('bhx_v10_user_store_active') || 'profile',
+      productTab: localStorage.getItem('bhx_v9_user_product_active') || 'basic',
+      adminSetting: (()=>{try{return JSON.parse(localStorage.getItem('bhx_admin_setting_frame_v3')||'{}').active||'platform'}catch(e){return 'platform'}})()
+    };
+  }
+  function afterRestore(s, cb){
+    restoreSession(s);
+    if(window.switchAppView && s.view) setTimeout(()=>{try{window.switchAppView(s.view)}catch(e){}},20);
+    setTimeout(()=>{restoreSession(s); if(cb) cb();},90);
+    setTimeout(()=>{restoreSession(s); if(window.BHUserSidebarV12&&BHUserSidebarV12.clean) try{BHUserSidebarV12.clean()}catch(e){}},220);
+  }
+  function patchStoreReset(){
+    if(window.BHUserStoreV13 && !window.BHUserStoreV13.__resetStayV14){
+      window.BHUserStoreV13.reset=function(){
+        const s=snap();
+        const active=s.storeTab || 'profile';
+        if(!confirm('Reset setting toko pada halaman ini? Akun tetap login dan posisi halaman tidak berubah.')) return;
+        localStorage.removeItem('bhx_v13_store_data');
+        localStorage.removeItem('bhx_v10_user_store_data');
+        localStorage.setItem('bhx_v13_user_main','store_setting');
+        localStorage.setItem('bhx_v12_user_main','store_setting');
+        localStorage.setItem('bhx_v13_store_active',active);
+        localStorage.setItem('bhx_v10_user_store_active',active);
+        afterRestore({...s,view:'buyer',userMain:'store_setting',storeTab:active},()=>{
+          if(window.BHUserStoreV13 && BHUserStoreV13.open) BHUserStoreV13.open(active);
+          toast('Setting toko direset, tetap di halaman ini');
+        });
+      };
+      window.BHUserStoreV13.__resetStayV14=true;
+    }
+    if(window.BHUserStoreRightV10 && !window.BHUserStoreRightV10.__resetStayV14){
+      window.BHUserStoreRightV10.reset=function(){
+        const s=snap();
+        const active=localStorage.getItem('bhx_v10_user_store_active')||s.storeTab||'profile';
+        if(!confirm('Reset setting toko pada halaman ini? Akun tetap login dan posisi halaman tidak berubah.')) return;
+        localStorage.removeItem('bhx_v10_user_store_data');
+        localStorage.setItem('bhx_v10_user_store_active',active);
+        afterRestore({...s,view:'buyer',userMain:'store_setting',storeTab:active},()=>{
+          if(window.BHUserStoreRightV10 && BHUserStoreRightV10.open) BHUserStoreRightV10.open(active);
+          toast('Setting toko direset, tetap di halaman ini');
+        });
+      };
+      window.BHUserStoreRightV10.__resetStayV14=true;
+    }
+  }
+  function patchProductReset(){
+    if(window.BHUserProductV9 && !window.BHUserProductV9.__resetStayV14){
+      window.BHUserProductV9.resetDraft=function(){
+        const s=snap();
+        const active=s.productTab || 'basic';
+        if(!confirm('Reset draft produk pada halaman ini? Akun tetap login dan posisi halaman tidak berubah.')) return;
+        localStorage.removeItem('bhx_v9_user_add_product_draft');
+        localStorage.setItem('bhx_v13_user_main','add_product');
+        localStorage.setItem('bhx_v12_user_main','add_product');
+        localStorage.setItem('bhx_v9_user_product_active',active);
+        afterRestore({...s,view:'buyer',userMain:'add_product',productTab:active},()=>{
+          if(window.BHUserProductV9 && BHUserProductV9.openSub) BHUserProductV9.openSub(active);
+          toast('Draft produk direset, tetap di halaman ini');
+        });
+      };
+      window.BHUserProductV9.__resetStayV14=true;
+    }
+  }
+  function patchAdminSettingReset(){
+    if(window.BHAdminSettingFrame && !window.BHAdminSettingFrame.__resetStayV14){
+      const oldOpen=window.BHAdminSettingFrame.open;
+      window.BHAdminSettingFrame.resetSetting=function(){
+        const s=snap();
+        const active=s.adminSetting || 'platform';
+        if(!confirm('Reset setting admin pada menu ini? Akun tetap login dan posisi halaman tidak berubah.')) return;
+        localStorage.removeItem('bhx_admin_setting_frame_v3');
+        afterRestore({...s,view:'admin',adminSetting:active},()=>{
+          if(window.BHAdminSettingFrame && typeof oldOpen==='function') oldOpen.call(BHAdminSettingFrame,active);
+          else if(window.BHAdminSettingFrame && BHAdminSettingFrame.open) BHAdminSettingFrame.open(active);
+          toast('Setting admin direset, tetap di menu ini');
+        });
+      };
+      window.BHAdminSettingFrame.__resetStayV14=true;
+    }
+  }
+  function patchLogoutSafe(){
+    document.addEventListener('click',function(e){
+      if(e.target.closest('#btn-logout')){
+        localStorage.setItem(SAFE_ROLE,'guest');
+        localStorage.setItem(ROLE_KEY,'guest');
+        localStorage.setItem(SAFE_VIEW,'marketplace');
+      }else{
+        setTimeout(persistSession,30);
+      }
+    },true);
+  }
+  function boot(){
+    restoreSession();
+    patchStoreReset();
+    patchProductReset();
+    patchAdminSettingReset();
+    persistSession();
+  }
+  window.BHResetStayPatchV14={boot,persist:persistSession,restore:restoreSession,snap};
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,250)); else setTimeout(boot,250);
+  [300,700,1200,2200,4000,6500].forEach(ms=>setTimeout(boot,ms));
+  setInterval(boot,1800);
+  window.addEventListener('beforeunload',persistSession);
+  patchLogoutSafe();
+})();
+</script>
+
 </body>
 </html>
 
