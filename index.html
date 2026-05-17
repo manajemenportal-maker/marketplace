@@ -3419,6 +3419,227 @@
 })();
 </script>
 
+
+
+<!-- ========================================================= -->
+<!-- PATCH FINAL V6: ADMIN MENU UTAMA PASTI MUNCUL             -->
+<!-- Sidebar kiri = menu utama saja. Submenu + detail = kanan. -->
+<!-- Patch ini tidak menyentuh kalkulator ekspedisi/logika lama.-->
+<!-- ========================================================= -->
+<style id="bhx-admin-v6-final-visible-style">
+  #view-admin { align-items:stretch !important; }
+  #view-admin > div:first-child {
+    display:flex !important;
+    flex-direction:column !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    min-width:260px !important;
+  }
+  #view-admin > div:first-child nav {
+    display:flex !important;
+    flex-direction:column !important;
+    gap:8px !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    height:auto !important;
+    overflow:visible !important;
+  }
+  #view-admin > div:first-child nav .bhx-v6-admin-main {
+    display:flex !important;
+    width:100% !important;
+    align-items:center !important;
+    gap:12px !important;
+    padding:13px 14px !important;
+    border-radius:16px !important;
+    font-size:13px !important;
+    font-weight:900 !important;
+    text-align:left !important;
+    color:#a7f3d0 !important;
+    background:transparent !important;
+    border:1px solid transparent !important;
+    opacity:1 !important;
+    visibility:visible !important;
+    height:auto !important;
+    min-height:46px !important;
+    position:relative !important;
+  }
+  #view-admin > div:first-child nav .bhx-v6-admin-main:hover {
+    background:#1e293b !important;
+    color:#fff !important;
+  }
+  #view-admin > div:first-child nav .bhx-v6-admin-main.active {
+    background:#4f46e5 !important;
+    color:#fff !important;
+    box-shadow:0 12px 25px rgba(79,70,229,.25) !important;
+  }
+  #view-admin > div:first-child nav .bhx-v6-admin-main.active::after {
+    content:'';
+    position:absolute;
+    right:-10px;
+    top:50%;
+    transform:translateY(-50%);
+    width:0;height:0;
+    border-top:10px solid transparent;
+    border-bottom:10px solid transparent;
+    border-left:10px solid #4f46e5;
+  }
+  #bhx-v6-admin-shell {
+    display:grid;
+    grid-template-columns:310px minmax(0,1fr);
+    gap:18px;
+    align-items:start;
+    width:100%;
+  }
+  .bhx-v6-sub-panel,.bhx-v6-detail-panel{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:24px;
+    overflow:hidden;
+    box-shadow:0 1px 2px rgba(15,23,42,.04);
+  }
+  .bhx-v6-sub-head{
+    background:linear-gradient(135deg,#0f172a,#312e81);
+    color:#fff;
+    padding:18px;
+  }
+  .bhx-v6-sub-head b{display:block;font-size:16px;font-weight:900;}
+  .bhx-v6-sub-head small{display:block;margin-top:4px;color:#c7d2fe;font-size:12px;line-height:1.35;}
+  .bhx-v6-sub-list{padding:12px;display:grid;gap:8px;max-height:calc(100vh - 260px);overflow:auto;}
+  .bhx-v6-sub-btn{
+    width:100%;display:flex;gap:12px;align-items:flex-start;text-align:left;
+    border:1px solid #e2e8f0;border-radius:16px;background:#fff;padding:13px;
+    transition:.18s;color:#334155;
+  }
+  .bhx-v6-sub-btn:hover{background:#f8fafc;border-color:#c7d2fe;}
+  .bhx-v6-sub-btn.active{background:#eef2ff;border-color:#818cf8;color:#3730a3;}
+  .bhx-v6-sub-btn i{width:22px;text-align:center;margin-top:2px;}
+  .bhx-v6-sub-btn b{display:block;font-size:13px;font-weight:900;}
+  .bhx-v6-sub-btn small{display:block;font-size:11px;color:#64748b;margin-top:2px;line-height:1.3;}
+  .bhx-v6-detail-head{padding:20px;border-bottom:1px solid #e2e8f0;background:#f8fafc;}
+  .bhx-v6-detail-head h2{font-size:22px;font-weight:900;color:#0f172a;margin:0;}
+  .bhx-v6-detail-head p{font-size:13px;color:#64748b;margin-top:6px;}
+  .bhx-v6-detail-body{padding:20px;}
+  .bhx-v6-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px;}
+  .bhx-v6-card{border:1px solid #e2e8f0;border-radius:18px;padding:16px;background:#fff;}
+  .bhx-v6-card small{color:#64748b;font-size:11px;font-weight:900;text-transform:uppercase;}
+  .bhx-v6-card b{display:block;font-size:20px;font-weight:900;margin-top:6px;color:#0f172a;}
+  .bhx-v6-table-wrap{overflow:auto;border:1px solid #e2e8f0;border-radius:18px;}
+  .bhx-v6-table{width:100%;border-collapse:collapse;background:#fff;font-size:13px;}
+  .bhx-v6-table th{background:#f8fafc;color:#64748b;text-align:left;text-transform:uppercase;font-size:11px;font-weight:900;padding:13px;white-space:nowrap;}
+  .bhx-v6-table td{padding:13px;border-top:1px solid #e2e8f0;white-space:nowrap;}
+  .bhx-v6-pill{display:inline-flex;align-items:center;border-radius:999px;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;padding:4px 9px;font-size:11px;font-weight:900;}
+  .bhx-v6-btn{display:inline-flex;margin:2px;border:0;border-radius:11px;background:#4f46e5;color:#fff;padding:8px 10px;font-size:11px;font-weight:900;cursor:pointer;}
+  .bhx-v6-btn.green{background:#059669}.bhx-v6-btn.red{background:#e11d48}.bhx-v6-btn.amber{background:#f59e0b;color:#111827}.bhx-v6-btn.dark{background:#0f172a}
+  .bhx-v6-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+  .bhx-v6-form input,.bhx-v6-form select,.bhx-v6-form textarea{border:1px solid #cbd5e1;border-radius:14px;padding:12px;font-size:14px;outline:none;}
+  .bhx-v6-form textarea{grid-column:1/-1;min-height:110px;}
+  @media(max-width:980px){
+    #view-admin{flex-direction:column!important;}
+    #view-admin > div:first-child{width:100%!important;min-width:0!important;}
+    #view-admin > div:first-child nav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+    #view-admin > div:first-child nav .bhx-v6-admin-main.active::after{display:none!important;}
+    #bhx-v6-admin-shell{grid-template-columns:1fr;}
+    .bhx-v6-sub-list{max-height:none;}
+    .bhx-v6-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .bhx-v6-form{grid-template-columns:1fr;}
+  }
+</style>
+<script id="bhx-admin-v6-final-visible-script">
+(function(){
+  const MAIN_KEY='bhx_admin_v6_main';
+  const SUB_KEY='bhx_admin_v6_subs';
+  const menus={
+    overview:{title:'Overview',icon:'fa-gauge-high',desc:'Ringkasan pusat kontrol admin',subs:[['summary','fa-chart-line','Ringkasan Platform','GMV, user, seller, escrow'],['activity','fa-clock-rotate-left','Aktivitas Terbaru','Log aktivitas admin'],['alerts','fa-triangle-exclamation','Peringatan Sistem','Masalah penting platform'],['quick','fa-bolt','Aksi Cepat','Shortcut admin']]},
+    users:{title:'User & Role',icon:'fa-users',desc:'Kelola user, role dan akses',subs:[['list','fa-list','Daftar User','Semua akun user'],['role','fa-user-shield','Role & Akses','Hak akses akun'],['verify','fa-id-card','Verifikasi User','KYC dan data akun'],['segment','fa-layer-group','Segmentasi','Buyer, seller, admin']]},
+    sellers:{title:'Seller / Vendor',icon:'fa-store',desc:'Kelola vendor dan legalitas seller',subs:[['vendor','fa-store','Daftar Vendor','Semua toko seller'],['legal','fa-file-shield','Legalitas','NIB, NPWP, akta'],['tkdn','fa-certificate','Dokumen TKDN','Sertifikat produk'],['ranking','fa-ranking-star','Ranking Seller','Performa toko']]},
+    products:{title:'Produk',icon:'fa-boxes-stacked',desc:'Moderasi dan pengaturan produk',subs:[['review','fa-magnifying-glass','Review Produk','Produk menunggu approve'],['active','fa-circle-check','Produk Aktif','Etalase aktif'],['category','fa-tags','Kategori','Struktur kategori'],['stock','fa-warehouse','Stok & Harga','Kontrol stok harga'],['tkdn','fa-file-circle-check','Dokumen TKDN','Dokumen produk']]},
+    orders:{title:'Order & Refund',icon:'fa-receipt',desc:'Kelola transaksi, dispute dan refund',subs:[['all','fa-list-check','Semua Order','Daftar invoice'],['shipping','fa-truck-fast','Pengiriman','Tracking dan resi'],['refund','fa-rotate-left','Refund','Pengembalian dana'],['dispute','fa-scale-balanced','Dispute','Sengketa order']]},
+    tenders:{title:'Tender',icon:'fa-briefcase',desc:'Kelola proyek dan bidding',subs:[['open','fa-folder-open','Tender Open','Proyek aktif'],['review','fa-magnifying-glass-chart','Review Bid','Penawaran masuk'],['posting','fa-pen-to-square','Posting Tender','Tambah proyek'],['winner','fa-trophy','Pemenang','Penetapan vendor']]},
+    support:{title:'Support',icon:'fa-headset',desc:'Pusat bantuan dan tiket',subs:[['tickets','fa-ticket','Semua Tiket','Tiket user dan seller'],['priority','fa-fire','Prioritas Tinggi','Butuh respon cepat'],['chat','fa-comments','Live Chat','Percakapan masuk'],['faq','fa-circle-question','FAQ','Pusat bantuan']]},
+    cms:{title:'CMS Tampilan',icon:'fa-palette',desc:'Kontrol tampilan marketplace',subs:[['banner','fa-image','Banner Homepage','Hero dan promosi'],['category','fa-table-cells-large','Kategori Depan','Urutan kategori'],['promo','fa-bullhorn','Promo','Label dan kampanye'],['seo','fa-globe','SEO','Judul dan deskripsi']]},
+    finance:{title:'Keuangan & Escrow',icon:'fa-vault',desc:'Dana rekber, komisi dan payout',subs:[['escrow','fa-vault','Radar Escrow','Dana tertahan'],['payout','fa-money-bill-transfer','Payout Seller','Tarik dana seller'],['commission','fa-percent','Komisi Platform','Fee transaksi'],['bank','fa-building-columns','Rekening','Bank penampung']]},
+    settings:{title:'Setting Sistem',icon:'fa-gear',desc:'Pengaturan global aplikasi',subs:[['platform','fa-power-off','Status Platform','Online dan maintenance'],['approval','fa-check-double','Approval','Aturan verifikasi'],['payment','fa-credit-card','Payment','Gateway dan rekening'],['security','fa-lock','Keamanan Login','OTP dan session'],['api','fa-plug','Integrasi API','Webhook dan endpoint'],['backup','fa-database','Backup & Log','Data dan audit']]}
+  };
+  const order=['overview','users','sellers','products','orders','tenders','support','cms','finance','settings'];
+  function rupiah(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));}
+  function toast(msg){ if(window.BHX&&BHX.toast) BHX.toast(msg); else alert(msg); }
+  function getMain(){ const m=localStorage.getItem(MAIN_KEY)||'overview'; return menus[m]?m:'overview'; }
+  function setMain(m){ localStorage.setItem(MAIN_KEY,m); }
+  function getSubs(){ try{return JSON.parse(localStorage.getItem(SUB_KEY)||'{}')}catch(e){return{}} }
+  function getSub(m){ const s=getSubs(); return (s[m]&&menus[m].subs.find(x=>x[0]===s[m]))?s[m]:menus[m].subs[0][0]; }
+  function setSub(m,sub){ const s=getSubs(); s[m]=sub; localStorage.setItem(SUB_KEY,JSON.stringify(s)); }
+  function adminView(){ return document.getElementById('view-admin'); }
+  function adminNav(){ const v=adminView(); return v ? v.querySelector('nav') : null; }
+  function adminContent(){ const v=adminView(); if(!v) return null; return v.querySelector(':scope > .flex-1') || v.children[1] || v; }
+
+  function rebuildLeft(active){
+    const nav=adminNav(); if(!nav) return;
+    nav.innerHTML='';
+    order.forEach(key=>{
+      const m=menus[key];
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='bhx-v6-admin-main'+(key===active?' active':'');
+      b.innerHTML=`<i class="fa-solid ${m.icon} w-5 text-center"></i><span>${m.title}</span>`;
+      b.addEventListener('click',function(e){
+        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+        openMain(key);
+      });
+      nav.appendChild(b);
+    });
+  }
+  function pill(t){ return `<span class="bhx-v6-pill">${t}</span>`; }
+  function action(t,c=''){ return `<button type="button" class="bhx-v6-btn ${c}" onclick="BHAdminV6.action('${String(t).replace(/'/g,'')}')">${t}</button>`; }
+  function cards(items){ return `<div class="bhx-v6-grid">${items.map(x=>`<div class="bhx-v6-card"><small>${x[0]}</small><b>${x[1]}</b><p class="text-xs text-slate-500 mt-1">${x[2]||''}</p></div>`).join('')}</div>`; }
+  function table(head,rows){ return `<div class="bhx-v6-table-wrap"><table class="bhx-v6-table"><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`; }
+  function detail(m,sub){
+    const meta=menus[m], sm=meta.subs.find(x=>x[0]===sub)||meta.subs[0];
+    let body='';
+    if(m==='overview') body=cards([['GMV Platform',rupiah(1450800000),'Transaksi bulan ini'],['User Aktif','1.284','Buyer + seller'],['Vendor','342','Seller terdaftar'],['Escrow',rupiah(145080000),'Dana aman']])+table(['Aktivitas','User','Waktu','Status'],[['Produk baru diajukan','Toko Teknik Jaya','Baru saja',pill('Review')],['Tender diposting','Dinas Pertanian','10 menit lalu',pill('Open')],['Withdraw seller','PT Bintang Pompa','25 menit lalu',pill('Audit')]]);
+    else if(m==='users') body=sub==='role'?`<div class="bhx-v6-form"><input value="Admin Pusat"><select><option>Full Access</option></select><input value="Seller"><select><option>Produk, Order, Tender</option></select><input value="Buyer"><select><option>Order, Wishlist, Tiket</option></select></div><div class="mt-4">${action('Simpan Role','green')}</div>`:table(['ID','Nama','Email','Role','Status','Aksi'],[['USR-001','Andi Surya','andi@company.id','Buyer',pill('Aktif'),action('Edit')+action('Suspend','red')],['USR-002','Budi Perkasa','budi@vendor.id','Seller',pill('Verifikasi'),action('Approve','green')],['USR-003','Siti Aminah','siti@pabrik.id','Buyer',pill('Aktif'),action('Edit')]]);
+    else if(m==='sellers') body=table(['Vendor','Legalitas','Level','Status','Aksi'],[['PT Bintang Pompa','NIB, NPWP, TKDN','Gold',pill('Verified'),action('Audit')],['CV Baja Mandiri','NIB, NPWP','Silver',pill('Review'),action('Verifikasi','green')],['Toko Teknik Jaya','NIB','Starter',pill('Pending'),action('Cek Dokumen')]]);
+    else if(m==='products') body=table(['Produk','Seller','Harga','TKDN','Status','Aksi'],[['Pompa Sentrifugal','PT Bintang Pompa',rupiah(24500000),'45.5%',pill('Aktif'),action('Edit')],['Traktor Diesel','CV Agro Mandiri',rupiah(15500000),'38.2%',pill('Review'),action('Approve','green')+action('Tolak','red')],['Mesin Press Hidrolik','CV Baja Mandiri',rupiah(45000000),'35.8%',pill('Review'),action('Cek TKDN')]]);
+    else if(m==='orders') body=table(['Invoice','Buyer','Seller','Nilai','Status','Aksi'],[['INV-001','Andi','PT Bintang Pompa',rupiah(24500000),pill('Dikirim'),action('Lacak')],['INV-002','Siti','CV Agro Mandiri',rupiah(15500000),pill('Diproses'),action('Audit')],['INV-003','PT Pabrik Baja','CV Baja Mandiri',rupiah(90000000),pill('Refund'),action('Proses Refund','red')]]);
+    else if(m==='tenders') body=sub==='posting'?`<div class="bhx-v6-form"><input placeholder="Judul Tender"><input placeholder="Owner / Instansi"><input placeholder="Nilai HPS"><input placeholder="Minimum TKDN"><textarea placeholder="Spesifikasi dan syarat tender"></textarea></div><div class="mt-4">${action('Posting Tender','green')}</div>`:table(['Tender','Owner','HPS','Bid','Status','Aksi'],[['Pengadaan Pompa','Dinas Pertanian',rupiah(1250000000),'14',pill('Open'),action('Moderasi')],['Excavator PC200','PT Tambang',rupiah(15000000000),'8',pill('Review'),action('Pilih Pemenang')],['Helm Safety','Kontraktor Nasional',rupiah(350000000),'23',pill('Close'),action('Arsip')]]);
+    else if(m==='support') body=table(['Tiket','User','Topik','Prioritas','Status','Aksi'],[['TKT-001','Andi','Pengiriman terlambat',pill('Tinggi'),pill('Open'),action('Balas')],['TKT-002','Budi','Upload TKDN gagal',pill('Sedang'),pill('Proses'),action('Bantu')],['TKT-003','Siti','Minta invoice pajak',pill('Rendah'),pill('Close'),action('Lihat')]]);
+    else if(m==='cms') body=`<div class="bhx-v6-form"><input value="Belanja Industri & Tender Lebih Mudah"><input placeholder="URL Gambar Banner"><textarea>Produk teknik, mesin, pertanian, alat berat, TKDN, logistik, escrow dan bursa tender.</textarea></div><div class="mt-4">${action('Simpan Tampilan','green')} ${action('Preview','dark')}</div>`;
+    else if(m==='finance') body=cards([['Total Escrow',rupiah(1450800000)],['Tertahan',rupiah(145000000)],['Siap Cair',rupiah(245000000)],['Refund',rupiah(12500000)]])+table(['Seller','Nominal','Bank','Status','Aksi'],[['PT Bintang Pompa',rupiah(24500000),'BCA ****123',pill('Siap Cair'),action('Cairkan','green')],['CV Baja Mandiri',rupiah(12000000),'BRI ****444',pill('Audit'),action('Tahan','red')]]);
+    else if(m==='settings') body=`<div class="grid md:grid-cols-2 gap-4"><label class="flex justify-between border rounded-2xl p-4"><span><b>Website Online</b><small class="block text-slate-500">Platform dapat diakses</small></span><input type="checkbox" checked></label><label class="flex justify-between border rounded-2xl p-4"><span><b>Maintenance Mode</b><small class="block text-slate-500">Perawatan sistem</small></span><input type="checkbox"></label><label class="flex justify-between border rounded-2xl p-4"><span><b>Wajib Verifikasi Seller</b><small class="block text-slate-500">Cek legalitas</small></span><input type="checkbox" checked></label><label class="flex justify-between border rounded-2xl p-4"><span><b>OTP Admin</b><small class="block text-slate-500">Login admin lebih aman</small></span><input type="checkbox" checked></label></div><div class="mt-4">${action('Simpan Setting','green')}</div>`;
+    return `<div class="bhx-v6-detail-panel"><div class="bhx-v6-detail-head"><h2><i class="fa-solid ${sm[1]} text-indigo-600 mr-2"></i>${sm[2]}</h2><p>${sm[3]} — ${meta.desc}</p></div><div class="bhx-v6-detail-body">${body}</div></div>`;
+  }
+  function render(m,sub){
+    m=menus[m]?m:'overview'; sub=sub||getSub(m); setMain(m); setSub(m,sub); rebuildLeft(m);
+    const content=adminContent(); if(!content) return;
+    const meta=menus[m];
+    content.innerHTML=`<div class="mb-5"><h1 class="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3"><i class="fa-solid ${meta.icon} text-indigo-600"></i>${meta.title}</h1><p class="text-sm text-slate-500 mt-1">Menu utama admin selalu tampil di kiri. Semua submenu tampil penuh di frame sebelah kanan.</p></div><div id="bhx-v6-admin-shell"><aside class="bhx-v6-sub-panel"><div class="bhx-v6-sub-head"><b><i class="fa-solid ${meta.icon} mr-2"></i>Submenu ${meta.title}</b><small>${meta.desc}</small></div><div class="bhx-v6-sub-list">${meta.subs.map(s=>`<button type="button" class="bhx-v6-sub-btn ${sub===s[0]?'active':''}" onclick="BHAdminV6.openSub('${m}','${s[0]}')"><i class="fa-solid ${s[1]}"></i><span><b>${s[2]}</b><small>${s[3]}</small></span></button>`).join('')}</div></aside><section>${detail(m,sub)}</section></div>`;
+  }
+  function openMain(m){ render(m,getSub(m)); }
+  function openSub(m,sub){ render(m,sub); }
+  function patchSwitch(){
+    if(window.__bhx_v6_switch_patched) return; window.__bhx_v6_switch_patched=true;
+    const old=window.switchAppView;
+    if(typeof old==='function'){
+      window.switchAppView=function(view){ const r=old.apply(this,arguments); if(view==='admin') setTimeout(()=>render(getMain(),getSub(getMain())),80); return r; };
+    }
+    if(window.BHX && typeof BHX.setMenu==='function' && !window.__bhx_v6_bhx_patched){
+      const oldSet=BHX.setMenu; window.__bhx_v6_bhx_patched=true;
+      BHX.setMenu=function(kind,key){ if(kind==='admin'){ setTimeout(()=>render(menus[key]?key:getMain(),getSub(menus[key]?key:getMain())),0); return; } return oldSet.apply(this,arguments); };
+    }
+  }
+  function boot(){
+    // Matikan style lama yang paling sering menyembunyikan menu admin.
+    ['bhx-admin-right-submenu-style','bhx-admin-v5-force-right-style'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=true; });
+    patchSwitch(); rebuildLeft(getMain()); if(adminView() && !adminView().classList.contains('hidden')) render(getMain(),getSub(getMain()));
+  }
+  window.BHAdminV6={openMain,openSub,render,action(label){toast(label+' diproses');}};
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  setTimeout(boot,200); setTimeout(boot,800); setTimeout(boot,1800);
+  document.addEventListener('click',function(e){
+    if(e.target.closest('#tab-admin')) setTimeout(()=>render(getMain(),getSub(getMain())),120);
+  },true);
+})();
+</script>
+
 </body>
 </html>
 
