@@ -6328,3 +6328,287 @@
   },500);
 })();
 </script>
+
+
+<!-- =========================================================
+  BHX MOBILE SHOPPEE-LIKE UI PATCH V14
+  Tujuan: tampilan HP lebih prima, icon menarik, bottom navigation,
+  quick icon grid, dan setting tampilan mobile tanpa mengganggu logic utama.
+========================================================= -->
+<style id="bhx-mobile-v14-style">
+  :root{
+    --bhx-mob-accent:#f97316;
+    --bhx-mob-accent-2:#fb923c;
+    --bhx-mob-text:#0f172a;
+    --bhx-mob-soft:#fff7ed;
+    --bhx-mob-radius:18px;
+  }
+  .bhx-mobile-only{display:none!important;}
+  #bhx-mobile-bottom-nav,
+  #bhx-mobile-settings-fab,
+  #bhx-mobile-settings-sheet,
+  #bhx-mobile-overlay{display:none;}
+
+  @media(max-width:768px){
+    body{padding-bottom:92px!important;background:#f8fafc!important;}
+    .bhx-mobile-only{display:block!important;}
+
+    /* Header dibuat lebih compact seperti aplikasi marketplace mobile */
+    header.sticky, header.bg-gradient-to-r{box-shadow:0 8px 28px rgba(15,23,42,.16)!important;}
+    header .max-w-7xl:first-child{padding-top:10px!important;padding-bottom:10px!important;gap:10px!important;}
+    header .max-w-7xl:first-child h1{font-size:20px!important;line-height:1.05!important;}
+    header .max-w-7xl:first-child p{font-size:10px!important;max-width:260px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    header .w-12.h-12{width:42px!important;height:42px!important;border-radius:16px!important;}
+
+    /* Top tab horizontal tetap rapi */
+    .app-tab, header button.app-tab{font-size:11px!important;padding:10px 8px!important;}
+    header .bg-indigo-800\/50 .max-w-7xl{gap:14px!important;}
+
+    /* Sub header marketplace lebih compact */
+    #view-marketplace .sticky{top:102px!important;}
+    #view-marketplace input[type="text"],
+    #view-marketplace select,
+    #view-kalkulator select,
+    #view-kalkulator input{
+      min-height:44px!important;border-radius:14px!important;font-size:13px!important;
+    }
+    #view-marketplace .rounded-l-xl{border-radius:14px 0 0 14px!important;}
+    #view-marketplace .rounded-r-xl{border-radius:0 14px 14px 0!important;}
+
+    /* Hero marketplace agar tidak terlalu tinggi di HP */
+    #view-marketplace section{padding-left:12px!important;padding-right:12px!important;}
+    #view-marketplace .h-\[200px\],
+    #view-marketplace .sm\:h-\[350px\],
+    #view-marketplace .md\:h-\[450px\]{height:230px!important;}
+    #view-marketplace h1{font-size:26px!important;line-height:1.05!important;}
+    #view-marketplace p{font-size:12px!important;}
+
+    /* Produk tampil seperti kartu marketplace mobile */
+    #view-marketplace .grid.grid-cols-2{gap:10px!important;}
+    #view-marketplace .rounded-2xl{border-radius:16px!important;}
+    #view-marketplace .h-40, #view-marketplace .md\:h-52{height:138px!important;}
+    #view-marketplace .p-4, #view-marketplace .md\:p-5{padding:12px!important;}
+    #view-marketplace .text-base.md\:text-xl,
+    #view-marketplace .text-base,
+    #view-marketplace .text-xl{font-size:15px!important;}
+
+    /* Dashboard kanan/kiri: di HP sidebar menjadi horizontal icon bar, konten tetap di bawahnya */
+    #view-buyer,
+    #view-seller,
+    #view-admin{display:block!important;padding-left:10px!important;padding-right:10px!important;}
+    #view-buyer.hidden,#view-seller.hidden,#view-admin.hidden{display:none!important;}
+    #view-buyer > div,
+    #view-seller > div,
+    #view-admin > div,
+    #view-buyer main,
+    #view-seller main,
+    #view-admin main{max-width:100%!important;}
+    #view-buyer .md\:w-64,
+    #view-seller .md\:w-64,
+    #view-admin .md\:w-64,
+    #view-buyer aside,
+    #view-seller aside,
+    #view-admin aside,
+    #view-buyer nav,
+    #view-seller nav,
+    #view-admin nav{
+      width:100%!important;min-height:0!important;position:relative!important;top:auto!important;border-radius:22px!important;
+    }
+    #view-buyer nav,
+    #view-seller nav,
+    #view-admin nav{
+      display:flex!important;overflow-x:auto!important;gap:9px!important;padding:10px!important;background:#fff!important;box-shadow:0 8px 24px rgba(15,23,42,.08)!important;
+    }
+    #view-buyer nav button,
+    #view-seller nav button,
+    #view-admin nav button{
+      min-width:86px!important;max-width:96px!important;min-height:74px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:7px!important;border-radius:18px!important;padding:10px 8px!important;text-align:center!important;font-size:11px!important;line-height:1.15!important;
+    }
+    #view-buyer nav button i,
+    #view-seller nav button i,
+    #view-admin nav button i{font-size:20px!important;width:auto!important;color:var(--bhx-mob-accent)!important;}
+    #view-buyer nav button.active,
+    #view-seller nav button.active,
+    #view-admin nav button.active,
+    #view-buyer nav button.bg-indigo-50,
+    #view-seller nav button.bg-indigo-50,
+    #view-admin nav button.bg-indigo-600{
+      background:linear-gradient(135deg,var(--bhx-mob-accent),var(--bhx-mob-accent-2))!important;color:white!important;border-color:transparent!important;box-shadow:0 10px 18px rgba(249,115,22,.28)!important;
+    }
+    #view-buyer nav button.active i,
+    #view-seller nav button.active i,
+    #view-admin nav button.active i{color:white!important;}
+
+    #view-buyer .flex-1,
+    #view-seller .flex-1,
+    #view-admin .flex-1,
+    #bhx-buyer-content,
+    #bhx-user-content,
+    #adminContent,
+    #sellerContent,
+    #userContent{padding:12px 0 0 0!important;max-width:100%!important;overflow:visible!important;}
+
+    /* Panel kanan di mobile */
+    .bhx-v13-panel,.bhx-v10-panel,.bhx-v9-product-panel,.bhx-v6-user-panel,.bhx-v6-panel,
+    #bhx-v13-user-right-frame section,
+    #bhx-v10-user-right-frame section{
+      border-radius:22px!important;box-shadow:0 10px 28px rgba(15,23,42,.08)!important;
+    }
+    #bhx-v13-user-right-frame,
+    #bhx-v10-user-right-frame,
+    #bhx-v9-user-product-frame,
+    #bhx-v6-user-right-frame,
+    #bhx-v6-admin-right-frame{
+      display:block!important;grid-template-columns:1fr!important;gap:12px!important;
+    }
+    .bhx-v13-submenu,.bhx-v10-store-sub,.bhx-v9-product-sub,.bhx-v6-user-submenu,.bhx-v6-submenu{
+      display:grid!important;grid-auto-flow:column!important;grid-auto-columns:132px!important;overflow-x:auto!important;gap:10px!important;margin-bottom:12px!important;border-radius:22px!important;padding:10px!important;background:#fff!important;
+    }
+    .bhx-v13-subhead,.bhx-v10-store-head,.bhx-v9-product-subhead,.bhx-v6-user-subhead,.bhx-v6-subhead{display:none!important;}
+    .bhx-v13-subbtn,.bhx-v10-store-sub button,.bhx-v9-product-sub button,.bhx-v6-user-subbtn,.bhx-v6-subbtn{
+      border-radius:18px!important;border:1px solid #fed7aa!important;background:#fff7ed!important;min-height:78px!important;text-align:center!important;justify-content:center!important;align-items:center!important;flex-direction:column!important;padding:10px!important;
+    }
+    .bhx-v13-subbtn i,.bhx-v10-store-sub button i,.bhx-v9-product-sub button i,.bhx-v6-user-subbtn i,.bhx-v6-subbtn i{font-size:20px!important;color:var(--bhx-mob-accent)!important;}
+    .bhx-v13-subbtn.active,.bhx-v10-store-sub button.active,.bhx-v9-product-sub button.active,.bhx-v6-user-subbtn.active,.bhx-v6-subbtn.active{
+      background:linear-gradient(135deg,var(--bhx-mob-accent),var(--bhx-mob-accent-2))!important;color:#fff!important;box-shadow:0 10px 18px rgba(249,115,22,.22)!important;
+    }
+    .bhx-v13-subbtn.active i,.bhx-v10-store-sub button.active i,.bhx-v9-product-sub button.active i,.bhx-v6-user-subbtn.active i,.bhx-v6-subbtn.active i{color:#fff!important;}
+    .bhx-v13-subbtn small,.bhx-v10-store-sub button small,.bhx-v9-product-sub button small,.bhx-v6-user-subbtn small,.bhx-v6-subbtn small{display:none!important;}
+
+    .bhx-v13-grid,.bhx-v10-grid,.bhx-v9-grid,.bhx-v9-grid-3,.bhx-v6-user-grid,.bhx-v6-grid{grid-template-columns:1fr!important;gap:12px!important;}
+    .bhx-v9-gallery{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+
+    /* Quick icon menu ala Shopee */
+    #bhx-mobile-quick-icons{
+      display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:0 12px 12px;padding:14px;background:#fff;border:1px solid #ffedd5;border-radius:24px;box-shadow:0 8px 24px rgba(15,23,42,.06);
+    }
+    #bhx-mobile-quick-icons button{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:6px;color:#334155;font-size:10px;font-weight:900;line-height:1.15;padding:0;}
+    #bhx-mobile-quick-icons .ico{width:44px;height:44px;border-radius:17px;background:linear-gradient(135deg,var(--bhx-mob-accent),var(--bhx-mob-accent-2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 10px 16px rgba(249,115,22,.24);}
+
+    /* Bottom navigation mobile */
+    #bhx-mobile-bottom-nav{
+      display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;left:10px;right:10px;bottom:10px;z-index:9999;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border:1px solid #fed7aa;border-radius:26px;box-shadow:0 12px 38px rgba(15,23,42,.22);padding:8px 6px;
+    }
+    #bhx-mobile-bottom-nav button{border:0;background:transparent;color:#64748b;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:900;line-height:1;padding:7px 3px;border-radius:18px;}
+    #bhx-mobile-bottom-nav button i{font-size:20px;}
+    #bhx-mobile-bottom-nav button.active{background:var(--bhx-mob-soft);color:var(--bhx-mob-accent);}
+
+    #bhx-mobile-settings-fab{display:flex;position:fixed;right:14px;bottom:96px;z-index:9999;width:48px;height:48px;border-radius:18px;border:0;background:linear-gradient(135deg,#0f172a,#334155);color:#fff;align-items:center;justify-content:center;font-size:20px;box-shadow:0 12px 26px rgba(15,23,42,.25);}
+    #bhx-mobile-overlay.show{display:block;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:10000;backdrop-filter:blur(4px);}
+    #bhx-mobile-settings-sheet.show{display:block;position:fixed;left:12px;right:12px;bottom:12px;z-index:10001;background:#fff;border-radius:28px;border:1px solid #fed7aa;box-shadow:0 20px 60px rgba(15,23,42,.32);overflow:hidden;}
+    .bhx-mob-sheet-head{padding:18px 18px 14px;background:linear-gradient(135deg,#fff7ed,#ffffff);border-bottom:1px solid #ffedd5;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .bhx-mob-sheet-head h3{font-size:18px;font-weight:900;color:#0f172a;margin:0;}
+    .bhx-mob-sheet-head p{font-size:12px;color:#64748b;margin:3px 0 0;}
+    .bhx-mob-sheet-body{padding:16px;display:grid;gap:14px;}
+    .bhx-mob-setting-row{border:1px solid #fed7aa;border-radius:20px;padding:13px;background:#fffaf5;}
+    .bhx-mob-setting-row b{display:block;font-size:13px;color:#0f172a;margin-bottom:8px;}
+    .bhx-mob-palette{display:flex;gap:9px;flex-wrap:wrap;}
+    .bhx-mob-palette button{width:38px;height:38px;border-radius:14px;border:3px solid #fff;box-shadow:0 0 0 1px #e2e8f0;}
+    .bhx-mob-palette button.active{box-shadow:0 0 0 3px #0f172a;}
+    .bhx-mob-toggle{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;font-weight:800;color:#475569;}
+    .bhx-mob-toggle input{width:20px;height:20px;accent-color:var(--bhx-mob-accent);}
+
+    body.bhx-mobile-compact #view-marketplace .h-40,
+    body.bhx-mobile-compact #view-marketplace .md\:h-52{height:118px!important;}
+    body.bhx-mobile-compact #view-marketplace .p-4{padding:9px!important;}
+    body.bhx-mobile-round-icons #bhx-mobile-quick-icons .ico,
+    body.bhx-mobile-round-icons #bhx-mobile-settings-fab{border-radius:999px!important;}
+  }
+</style>
+
+<div id="bhx-mobile-overlay" onclick="BHMobileV14.closeSettings()"></div>
+<div id="bhx-mobile-settings-sheet" role="dialog" aria-label="Setting tampilan mobile"></div>
+<button id="bhx-mobile-settings-fab" type="button" onclick="BHMobileV14.openSettings()" aria-label="Setting tampilan mobile"><i class="fa-solid fa-gear"></i></button>
+<nav id="bhx-mobile-bottom-nav" aria-label="Navigasi mobile BisnisHub"></nav>
+
+<script id="bhx-mobile-v14-script">
+(function(){
+  if(window.BHMobileV14) return;
+  const KEY='bhx_mobile_v14_settings';
+  const defaults={accent:'orange',round:false,compact:false};
+  const palettes={
+    orange:['#f97316','#fb923c','#fff7ed'],
+    indigo:['#4f46e5','#8b5cf6','#eef2ff'],
+    emerald:['#059669','#10b981','#ecfdf5'],
+    rose:['#e11d48','#fb7185','#fff1f2'],
+    slate:['#0f172a','#334155','#f1f5f9']
+  };
+  const navItems=[
+    ['marketplace','fa-house','Home'],
+    ['tkdn','fa-chart-pie','TKDN'],
+    ['forum','fa-briefcase','Tender'],
+    ['kalkulator','fa-calculator','Ongkir'],
+    ['buyer','fa-user','Akun']
+  ];
+  const quickItems=[
+    ['Kategori','fa-list-ul',()=>{const m=document.getElementById('category-dropdown'); if(window.toggleCategoryMenu) toggleCategoryMenu(); else if(m) m.classList.toggle('hidden');}],
+    ['Produk','fa-boxes-stacked',()=>scrollToEl('#view-marketplace section:nth-of-type(2), #productsSection')],
+    ['Tender','fa-briefcase',()=>go('forum')],
+    ['TKDN','fa-chart-pie',()=>go('tkdn')],
+    ['Ongkir','fa-truck-fast',()=>go('kalkulator')],
+    ['Akun','fa-user-gear',()=>go('buyer')],
+    ['Admin','fa-shield-halved',()=>go('admin')],
+    ['Toko','fa-store',()=>{go('buyer'); setTimeout(()=>{try{ if(window.BHUserStoreV13) BHUserStoreV13.open('profile'); }catch(e){}},200)}],
+    ['Tambah','fa-circle-plus',()=>{go('buyer'); setTimeout(()=>{try{ if(window.BHUserProductV9) BHUserProductV9.openSub('basic'); }catch(e){}},200)}],
+    ['Setting','fa-gear',()=>openSettings()]
+  ];
+  function load(){try{return {...defaults,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){return {...defaults}}}
+  function save(s){localStorage.setItem(KEY,JSON.stringify(s));apply();}
+  function currentView(){
+    const views=['marketplace','tkdn','forum','kalkulator','buyer','seller','admin'];
+    for(const v of views){ const el=document.getElementById('view-'+v); if(el && !el.classList.contains('hidden')) return v; }
+    return localStorage.getItem('superapp_current_view')||'marketplace';
+  }
+  function go(view){
+    try{
+      if(typeof window.switchAppView==='function') window.switchAppView(view);
+      else document.getElementById('tab-'+view)?.click();
+    }catch(e){document.getElementById('tab-'+view)?.click();}
+    setTimeout(renderNav,80);
+  }
+  function scrollToEl(sel){
+    const el=document.querySelector(sel); if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function renderNav(){
+    const nav=document.getElementById('bhx-mobile-bottom-nav'); if(!nav) return;
+    const active=currentView();
+    nav.innerHTML=navItems.map(([view,icon,label])=>`<button type="button" class="${active===view?'active':''}" onclick="BHMobileV14.go('${view}')"><i class="fa-solid ${icon}"></i><span>${label}</span></button>`).join('');
+  }
+  function insertQuickIcons(){
+    if(document.getElementById('bhx-mobile-quick-icons')) return;
+    const mp=document.getElementById('view-marketplace'); if(!mp) return;
+    const box=document.createElement('section');
+    box.id='bhx-mobile-quick-icons';
+    box.className='bhx-mobile-only';
+    box.innerHTML=quickItems.map((it,i)=>`<button type="button" data-bhx-q="${i}"><span class="ico"><i class="fa-solid ${it[1]}"></i></span><span>${it[0]}</span></button>`).join('');
+    const target=mp.querySelector('section') || mp.firstElementChild;
+    if(target && target.parentNode) target.parentNode.insertBefore(box,target.nextSibling); else mp.prepend(box);
+    box.querySelectorAll('button[data-bhx-q]').forEach(btn=>{btn.onclick=quickItems[Number(btn.dataset.bhxQ)][2];});
+  }
+  function apply(){
+    const s=load(); const p=palettes[s.accent]||palettes.orange;
+    document.documentElement.style.setProperty('--bhx-mob-accent',p[0]);
+    document.documentElement.style.setProperty('--bhx-mob-accent-2',p[1]);
+    document.documentElement.style.setProperty('--bhx-mob-soft',p[2]);
+    document.body.classList.toggle('bhx-mobile-round-icons',!!s.round);
+    document.body.classList.toggle('bhx-mobile-compact',!!s.compact);
+    renderNav();
+  }
+  function openSettings(){
+    const s=load(); const sheet=document.getElementById('bhx-mobile-settings-sheet'); const overlay=document.getElementById('bhx-mobile-overlay');
+    if(!sheet||!overlay) return;
+    sheet.innerHTML=`<div class="bhx-mob-sheet-head"><div><h3><i class="fa-solid fa-mobile-screen-button mr-2" style="color:var(--bhx-mob-accent)"></i>Setting Tampilan HP</h3><p>Atur icon dan layout mobile ala marketplace.</p></div><button onclick="BHMobileV14.closeSettings()" style="border:0;background:#f1f5f9;border-radius:14px;width:38px;height:38px"><i class="fa-solid fa-xmark"></i></button></div><div class="bhx-mob-sheet-body"><div class="bhx-mob-setting-row"><b>Warna icon utama</b><div class="bhx-mob-palette">${Object.entries(palettes).map(([k,v])=>`<button class="${s.accent===k?'active':''}" style="background:linear-gradient(135deg,${v[0]},${v[1]})" onclick="BHMobileV14.setAccent('${k}')" aria-label="${k}"></button>`).join('')}</div></div><div class="bhx-mob-setting-row"><label class="bhx-mob-toggle"><span><b>Icon bulat</b>Tampilan icon lebih lembut seperti aplikasi mobile.</span><input type="checkbox" ${s.round?'checked':''} onchange="BHMobileV14.setOption('round',this.checked)"></label></div><div class="bhx-mob-setting-row"><label class="bhx-mob-toggle"><span><b>Mode compact</b>Kartu produk lebih padat untuk layar kecil.</span><input type="checkbox" ${s.compact?'checked':''} onchange="BHMobileV14.setOption('compact',this.checked)"></label></div><button onclick="BHMobileV14.reset()" style="border:0;border-radius:18px;background:#0f172a;color:#fff;padding:13px;font-weight:900">Reset Tampilan Mobile</button></div>`;
+    overlay.classList.add('show'); sheet.classList.add('show');
+  }
+  function closeSettings(){document.getElementById('bhx-mobile-overlay')?.classList.remove('show');document.getElementById('bhx-mobile-settings-sheet')?.classList.remove('show');}
+  function setAccent(accent){const s=load();s.accent=accent;save(s);openSettings();}
+  function setOption(k,v){const s=load();s[k]=v;save(s);}
+  function reset(){localStorage.removeItem(KEY);apply();openSettings();}
+  function boot(){insertQuickIcons();apply();renderNav();}
+  window.BHMobileV14={go,openSettings,closeSettings,setAccent,setOption,reset,renderNav,boot};
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  [250,700,1500,3000].forEach(ms=>setTimeout(boot,ms));
+  document.addEventListener('click',()=>setTimeout(renderNav,90),true);
+  window.addEventListener('resize',renderNav);
+})();
+</script>
