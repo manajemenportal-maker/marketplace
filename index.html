@@ -3640,6 +3640,244 @@
 })();
 </script>
 
+
+
+<!-- ========================================================= -->
+<!-- ADDON V6 USER: MENU UTAMA KIRI, SUBMENU FULL DI KANAN     -->
+<!-- Aman: hanya menyentuh #view-buyer. Admin/kalkulator tetap. -->
+<!-- ========================================================= -->
+<style id="bhx-user-v6-force-right-style">
+  #view-buyer nav > :not(button) { display:none !important; }
+  #view-buyer nav button .submenu,
+  #view-buyer nav button ul,
+  #view-buyer nav button ol,
+  #view-buyer nav button .collapse,
+  #view-buyer nav button .dropdown,
+  #view-buyer nav button .dropdown-menu,
+  #view-buyer nav .submenu,
+  #view-buyer nav .dropdown,
+  #view-buyer nav .dropdown-menu,
+  #view-buyer nav .children,
+  #view-buyer nav .sub-menu,
+  #view-buyer nav [class*="submenu"],
+  #view-buyer nav [class*="dropdown"],
+  #view-buyer nav [class*="collapse"] {
+    display:none !important;
+    height:0 !important;
+    overflow:hidden !important;
+    padding:0 !important;
+    margin:0 !important;
+  }
+
+  #view-buyer nav {
+    display:flex !important;
+    flex-direction:column !important;
+    gap:.5rem !important;
+    overflow-x:visible !important;
+  }
+
+  #view-buyer nav button.bhx-v6-user-main {
+    width:100% !important;
+    display:flex !important;
+    align-items:center !important;
+    gap:.75rem !important;
+    border-radius:1rem !important;
+    padding:.9rem 1rem !important;
+    color:#475569 !important;
+    font-weight:800 !important;
+    text-align:left !important;
+    transition:.2s !important;
+    position:relative !important;
+    background:transparent !important;
+  }
+
+  #view-buyer nav button.bhx-v6-user-main:hover {
+    background:#f1f5f9 !important;
+    color:#4f46e5 !important;
+  }
+
+  #view-buyer nav button.bhx-v6-user-main.active {
+    background:#eef2ff !important;
+    color:#4338ca !important;
+    box-shadow:inset 0 0 0 1px #c7d2fe !important;
+  }
+
+  #view-buyer nav button.bhx-v6-user-main.active::after {
+    content:'';
+    position:absolute;
+    right:-10px;
+    top:50%;
+    transform:translateY(-50%);
+    width:0;height:0;
+    border-top:10px solid transparent;
+    border-bottom:10px solid transparent;
+    border-left:10px solid #eef2ff;
+  }
+
+  #bhx-v6-user-frame {
+    display:grid;
+    grid-template-columns:300px minmax(0,1fr);
+    gap:18px;
+    align-items:start;
+    width:100%;
+  }
+  .bhx-v6-user-submenu-panel,
+  .bhx-v6-user-detail-panel {
+    background:white;
+    border:1px solid #e2e8f0;
+    border-radius:24px;
+    box-shadow:0 1px 2px rgba(15,23,42,.04);
+    overflow:hidden;
+  }
+  .bhx-v6-user-submenu-head {
+    padding:18px 18px 14px;
+    background:linear-gradient(135deg,#312e81,#2563eb);
+    color:white;
+  }
+  .bhx-v6-user-submenu-head b { display:block; font-size:16px; }
+  .bhx-v6-user-submenu-head small { color:#dbeafe; display:block; margin-top:4px; line-height:1.35; }
+  .bhx-v6-user-submenu-list { padding:12px; display:grid; gap:8px; max-height:calc(100vh - 260px); overflow:auto; }
+  .bhx-v6-user-sub-btn {
+    width:100%; text-align:left; border:1px solid #e2e8f0; border-radius:16px;
+    padding:13px; display:flex; gap:12px; align-items:flex-start; background:#fff;
+    transition:.18s;
+  }
+  .bhx-v6-user-sub-btn:hover { background:#f8fafc; border-color:#bfdbfe; }
+  .bhx-v6-user-sub-btn.active { background:#eff6ff; border-color:#60a5fa; color:#1d4ed8; }
+  .bhx-v6-user-sub-btn i { width:22px; text-align:center; margin-top:2px; }
+  .bhx-v6-user-sub-btn b { display:block; font-size:13px; }
+  .bhx-v6-user-sub-btn small { display:block; font-size:11px; color:#64748b; margin-top:2px; line-height:1.3; }
+  .bhx-v6-user-detail-head { padding:20px; border-bottom:1px solid #e2e8f0; background:#f8fafc; }
+  .bhx-v6-user-detail-head h2 { font-size:22px; font-weight:900; color:#0f172a; margin:0; }
+  .bhx-v6-user-detail-head p { font-size:13px; color:#64748b; margin-top:6px; }
+  .bhx-v6-user-detail-body { padding:20px; }
+  .bhx-v6-user-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:18px; }
+  .bhx-v6-user-card { border:1px solid #e2e8f0; border-radius:18px; padding:16px; background:#fff; }
+  .bhx-v6-user-card small { color:#64748b; font-size:11px; font-weight:800; text-transform:uppercase; }
+  .bhx-v6-user-card b { display:block; margin-top:8px; font-size:21px; color:#0f172a; }
+  .bhx-v6-user-table-wrap { overflow:auto; border:1px solid #e2e8f0; border-radius:18px; }
+  .bhx-v6-user-table { width:100%; border-collapse:collapse; background:white; font-size:13px; }
+  .bhx-v6-user-table th { text-align:left; background:#f8fafc; color:#64748b; font-size:11px; text-transform:uppercase; padding:12px; white-space:nowrap; }
+  .bhx-v6-user-table td { padding:12px; border-top:1px solid #f1f5f9; white-space:nowrap; }
+  .bhx-v6-user-pill { display:inline-flex; padding:5px 9px; border-radius:10px; font-size:11px; font-weight:900; background:#eef2ff; color:#3730a3; border:1px solid #c7d2fe; }
+  .bhx-v6-user-btn { border:0; border-radius:12px; padding:9px 12px; background:#4f46e5; color:white; font-size:12px; font-weight:900; margin:2px; }
+  .bhx-v6-user-btn.green { background:#059669; }
+  .bhx-v6-user-btn.red { background:#e11d48; }
+  .bhx-v6-user-btn.dark { background:#0f172a; }
+  .bhx-v6-user-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+  .bhx-v6-user-form input,.bhx-v6-user-form textarea,.bhx-v6-user-form select { border:1px solid #cbd5e1; border-radius:14px; padding:12px; outline:0; width:100%; }
+  .bhx-v6-user-form textarea { grid-column:1/-1; min-height:110px; }
+  @media(max-width:980px){ #bhx-v6-user-frame{grid-template-columns:1fr}.bhx-v6-user-submenu-list{max-height:none}.bhx-v6-user-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bhx-v6-user-form{grid-template-columns:1fr} }
+</style>
+<script id="bhx-user-v6-force-right-script">
+(function(){
+  const LS_MAIN='bhx_v6_user_main';
+  const LS_SUB='bhx_v6_user_subs';
+  const userMenus={
+    overview:{icon:'fa-gauge',title:'Ringkasan User',desc:'Pusat kontrol pembeli untuk pesanan, wishlist, alamat, tiket, dan profil.',subs:[['summary','fa-chart-line','Ringkasan Utama','Total belanja, pesanan, wishlist, tiket'],['activity','fa-clock-rotate-left','Aktivitas Terbaru','Riwayat klik dan transaksi'],['quick','fa-bolt','Quick Action','Aksi cepat pembeli'],['benefit','fa-gift','Benefit Member','Voucher dan fasilitas akun']]},
+    orders:{icon:'fa-box-open',title:'Pesanan Saya',desc:'Kelola order, tracking, invoice, komplain, dan pembelian ulang.',subs:[['active','fa-truck-fast','Pesanan Aktif','Order yang sedang berjalan'],['history','fa-clock','Riwayat Pesanan','Order selesai dan arsip'],['tracking','fa-map-location-dot','Tracking Paket','Status pengiriman dan resi'],['invoice','fa-file-invoice','Invoice & Pajak','Dokumen pembayaran'],['complaint','fa-triangle-exclamation','Komplain Order','Kendala barang/pengiriman'],['repeat','fa-rotate-right','Beli Lagi','Repeat order produk favorit']]},
+    wishlist:{icon:'fa-heart',title:'Wishlist',desc:'Produk tersimpan, perbandingan harga, dan alert harga.',subs:[['saved','fa-heart','Produk Disimpan','Wishlist produk B2B'],['compare','fa-code-compare','Bandingkan Produk','Perbandingan harga/TKDN'],['price','fa-bell','Alert Harga','Notifikasi harga turun'],['cart','fa-cart-plus','Masukkan Keranjang','Aksi cepat checkout']]},
+    addresses:{icon:'fa-location-dot',title:'Alamat Proyek',desc:'Kelola alamat kantor, gudang, proyek, dan alamat utama.',subs:[['list','fa-list','Daftar Alamat','Semua alamat pengiriman'],['add','fa-plus','Tambah Alamat','Buat alamat baru'],['project','fa-helmet-safety','Alamat Proyek','PIC dan lokasi proyek'],['default','fa-star','Alamat Utama','Alamat default checkout']]},
+    support:{icon:'fa-headset',title:'Bantuan / Tiket',desc:'Komplain, chat admin, FAQ, dan status bantuan.',subs:[['tickets','fa-ticket','Tiket Saya','Semua tiket bantuan'],['create','fa-pen-to-square','Buat Tiket','Buka komplain baru'],['chat','fa-comments','Chat Admin','Percakapan bantuan'],['faq','fa-circle-question','FAQ','Pertanyaan umum']]},
+    notifications:{icon:'fa-bell',title:'Notifikasi',desc:'Pusat pesan order, promo, tender cocok, dan sistem.',subs:[['all','fa-inbox','Semua Notifikasi','Seluruh pesan akun'],['order','fa-box','Order','Update transaksi'],['promo','fa-bullhorn','Promo','Voucher dan campaign'],['tender','fa-briefcase','Tender Cocok','Rekomendasi pengadaan'],['system','fa-gear','Sistem','Keamanan dan akun']]},
+    security:{icon:'fa-lock',title:'Keamanan Akun',desc:'Password, OTP, perangkat login, dan aktivitas session.',subs:[['password','fa-key','Password','Ubah sandi akun'],['otp','fa-mobile-screen-button','OTP / 2FA','Pengamanan dua langkah'],['devices','fa-laptop','Perangkat Login','Daftar perangkat aktif'],['sessions','fa-shield-halved','Session Aktif','Kelola sesi login']]},
+    profile:{icon:'fa-user-gear',title:'Profil User',desc:'Biodata pembeli, data perusahaan, NPWP, dan preferensi akun.',subs:[['biodata','fa-id-card','Biodata','Nama, email, WhatsApp'],['company','fa-building','Data Perusahaan','PT/CV, jabatan, bidang'],['tax','fa-file-invoice-dollar','NPWP & Pajak','Data invoice pajak'],['preferences','fa-sliders','Preferensi','Kategori, bahasa, notifikasi']]}
+  };
+  const mainOrder=Object.keys(userMenus);
+
+  function rupiah(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));}
+  function toast(msg){ if(window.BHX && BHX.toast) return BHX.toast(msg); if(window.bhAddonNotify) return window.bhAddonNotify(msg); alert(msg); }
+  function saveSub(main,sub){ const s=JSON.parse(localStorage.getItem(LS_SUB)||'{}'); s[main]=sub; localStorage.setItem(LS_SUB,JSON.stringify(s)); }
+  function getMain(){ return localStorage.getItem(LS_MAIN)||'overview'; }
+  function getSub(main){ const s=JSON.parse(localStorage.getItem(LS_SUB)||'{}'); return s[main] || userMenus[main].subs[0][0]; }
+  function setMain(main){ localStorage.setItem(LS_MAIN,main); }
+
+  function findBuyerContent(){
+    const view=document.getElementById('view-buyer');
+    if(!view) return null;
+    return document.getElementById('bhx-buyer-content') || view.querySelector(':scope > .flex-1') || view.querySelector('.flex-1') || view.children[1] || view;
+  }
+
+  function rebuildLeft(main){
+    const nav=document.querySelector('#view-buyer nav');
+    if(!nav) return;
+    nav.innerHTML='';
+    mainOrder.forEach(key=>{
+      const m=userMenus[key];
+      const b=document.createElement('button');
+      b.type='button'; b.id='bhx-v6-left-'+key; b.className='bhx-v6-user-main'+(key===main?' active':'');
+      b.innerHTML=`<i class="fa-solid ${m.icon} w-5 text-center"></i><span class="text-sm">${m.title}</span>`;
+      b.onclick=function(e){ e.preventDefault(); openMain(key); };
+      nav.appendChild(b);
+    });
+  }
+
+  function detailHeader(meta, subMeta){
+    return `<div class="bhx-v6-user-detail-head"><h2><i class="fa-solid ${subMeta[1]} text-indigo-600 mr-2"></i>${subMeta[2]}</h2><p>${subMeta[3]} — ${meta.desc}</p></div>`;
+  }
+  function cards(items){ return `<div class="bhx-v6-user-grid">${items.map(i=>`<div class="bhx-v6-user-card"><small>${i[0]}</small><b>${i[1]}</b><p class="text-xs text-slate-500 mt-1">${i[2]||''}</p></div>`).join('')}</div>`; }
+  function table(head,rows){ return `<div class="bhx-v6-user-table-wrap"><table class="bhx-v6-user-table"><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`; }
+  function pill(t){ return `<span class="bhx-v6-user-pill">${t}</span>`; }
+  function action(t,c=''){ return `<button class="bhx-v6-user-btn ${c}" onclick="BHUserV6.action('${t.replace(/'/g,'')}')">${t}</button>`; }
+
+  function detail(main,sub){
+    const meta=userMenus[main];
+    const subMeta=meta.subs.find(x=>x[0]===sub)||meta.subs[0];
+    let body='';
+    if(main==='overview') body = cards([['Total Belanja',rupiah(155000000),'Akumulasi transaksi'],['Pesanan Aktif','3','Menunggu/dikirim'],['Wishlist','12','Produk disimpan'],['Tiket Open','1','Butuh respon admin']]) + `<div class="grid md:grid-cols-3 gap-4"><button onclick="BHUserV6.openMain('orders')" class="border rounded-2xl p-5 text-left bg-indigo-50"><i class="fa-solid fa-box-open text-indigo-600 text-2xl mb-3"></i><b>Cek Pesanan</b><p class="text-xs text-slate-500 mt-1">Lacak order dan invoice.</p></button><button onclick="BHUserV6.openMain('addresses')" class="border rounded-2xl p-5 text-left bg-amber-50"><i class="fa-solid fa-location-dot text-amber-600 text-2xl mb-3"></i><b>Alamat Proyek</b><p class="text-xs text-slate-500 mt-1">Atur kantor/gudang.</p></button><button onclick="BHUserV6.openMain('support')" class="border rounded-2xl p-5 text-left bg-rose-50"><i class="fa-solid fa-headset text-rose-600 text-2xl mb-3"></i><b>Buat Tiket</b><p class="text-xs text-slate-500 mt-1">Komplain atau bantuan.</p></button></div>`;
+    else if(main==='orders') body = table(['Invoice','Produk','Total','Status','Aksi'],[['INV/2026/001','Pompa Sentrifugal 30kW',rupiah(24500000),pill('Dikirim'),action('Detail')+action('Lacak','green')+action('Komplain','red')],['INV/2026/002','Traktor Tangan Diesel',rupiah(15500000),pill('Diproses'),action('Invoice')+action('Chat Seller','dark')],['INV/2026/003','Helm Safety SNI 500 pcs',rupiah(22500000),pill('Selesai'),action('Beli Lagi','green')+action('Ulasan')]]);
+    else if(main==='wishlist') body = `<div class="grid md:grid-cols-3 gap-4">${[['Pompa Sentrifugal Industri',24500000,'TKDN 45.5%'],['Traktor Quick Diesel',15500000,'TKDN 38.2%'],['Panel Surya 450Wp',2100000,'TKDN 62%']].map(p=>`<div class="border rounded-2xl p-4"><div class="h-28 bg-slate-100 rounded-xl flex items-center justify-center mb-3"><i class="fa-solid fa-box text-4xl text-slate-300"></i></div><b>${p[0]}</b><p class="text-amber-600 font-black mt-2">${rupiah(p[1])}</p><p class="text-xs text-slate-500 mt-1">${p[2]}</p><div class="mt-3">${action('Keranjang','green')} ${action('Hapus','red')}</div></div>`).join('')}</div>`;
+    else if(main==='addresses') body = sub==='add' ? `<div class="bhx-v6-user-form"><input placeholder="Nama Alamat / Proyek"><input placeholder="PIC / WhatsApp"><input placeholder="Kota / Kabupaten"><input placeholder="Kode Pos"><textarea placeholder="Alamat lengkap"></textarea></div><div class="mt-4">${action('Simpan Alamat','green')}</div>` : `<div class="grid lg:grid-cols-2 gap-4">${[['Kantor Pusat - Jakarta Selatan','Jl. Industri Raya No. 12','Utama'],['Gudang Proyek - Karawang','Kawasan Industri KIIC','Proyek'],['Workshop - Tangerang','Jl. Tekno Park No. 8','Cadangan']].map(a=>`<div class="border rounded-2xl p-4"><div class="flex justify-between gap-3"><b>${a[0]}</b>${pill(a[2])}</div><p class="text-sm text-slate-500 mt-2">${a[1]}</p><p class="text-xs text-slate-400 mt-1">PIC: 08xxxxxxxx</p><div class="mt-3">${action('Edit')} ${action('Utamakan','green')} ${action('Hapus','red')}</div></div>`).join('')}</div>`;
+    else if(main==='support') body = sub==='create' ? `<div class="bhx-v6-user-form"><input placeholder="Judul Tiket"><select><option>Prioritas Normal</option><option>Prioritas Tinggi</option></select><textarea placeholder="Jelaskan kendala Anda"></textarea></div><div class="mt-4">${action('Kirim Tiket','green')}</div>` : table(['Tiket','Topik','Prioritas','Status','Aksi'],[['TKT-001','Pengiriman terlambat',pill('Tinggi'),pill('Open'),action('Balas')],['TKT-002','Minta invoice pajak',pill('Sedang'),pill('Proses'),action('Detail')],['TKT-003','Produk belum diterima',pill('Tinggi'),pill('Close'),action('Arsip')]]);
+    else if(main==='notifications') body = `<div class="space-y-3">${['Pesanan INV/2026/001 sedang dikirim','Promo gratis biaya admin minggu ini','Tender pompa irigasi cocok dengan wishlist Anda','Invoice pajak sudah tersedia','Login baru terdeteksi dari perangkat Windows'].map((n,i)=>`<div class="p-4 rounded-2xl bg-slate-50 border flex gap-3"><i class="fa-solid fa-bell text-indigo-600 mt-1"></i><div><b>${n}</b><p class="text-xs text-slate-500 mt-1">${i+1} jam lalu</p></div><button onclick="BHUserV6.action('Notifikasi dibaca')" class="ml-auto text-xs font-black text-indigo-600">Tandai</button></div>`).join('')}</div>`;
+    else if(main==='security') body = `<div class="grid md:grid-cols-2 gap-4"><div class="border rounded-2xl p-5"><b>Password</b><p class="text-sm text-slate-500 mt-1">Terakhir diubah 30 hari lalu</p><div class="mt-3">${action('Ubah Password')}</div></div><div class="border rounded-2xl p-5"><b>OTP / 2FA</b><p class="text-sm text-slate-500 mt-1">Status belum aktif</p><div class="mt-3">${action('Aktifkan OTP','green')}</div></div><div class="border rounded-2xl p-5"><b>Perangkat Login</b><p class="text-sm text-slate-500 mt-1">Windows Chrome, Jakarta</p><div class="mt-3">${action('Cabut Akses','red')}</div></div><div class="border rounded-2xl p-5"><b>Session Aktif</b><p class="text-sm text-slate-500 mt-1">2 session aktif</p><div class="mt-3">${action('Logout Semua','dark')}</div></div></div>`;
+    else if(main==='profile') body = `<div class="bhx-v6-user-form"><input value="User Demo" placeholder="Nama Lengkap"><input value="user@demo.id" placeholder="Email"><input value="08xxxxxxxx" placeholder="WhatsApp"><input value="PT Demo Bisnis" placeholder="Perusahaan"><input placeholder="NPWP"><select><option>Pembeli Perusahaan</option><option>Pembeli Perorangan</option></select><textarea placeholder="Catatan profil / alamat invoice"></textarea></div><div class="mt-4">${action('Simpan Profil','green')}</div>`;
+    return `<div class="bhx-v6-user-detail-panel">${detailHeader(meta,subMeta)}<div class="bhx-v6-user-detail-body">${body}</div></div>`;
+  }
+
+  function render(main,sub){
+    const meta=userMenus[main]||userMenus.overview;
+    const activeSub=sub||getSub(main);
+    rebuildLeft(main);
+    const content=findBuyerContent();
+    if(!content) return;
+    content.innerHTML=`<div class="mb-5"><h1 class="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3"><i class="fa-solid ${meta.icon} text-indigo-600"></i>${meta.title}</h1><p class="text-sm text-slate-500 mt-1">Semua submenu user tampil penuh di frame sebelah kanan. Sidebar kiri hanya menu utama user.</p></div><div id="bhx-v6-user-frame"><aside class="bhx-v6-user-submenu-panel"><div class="bhx-v6-user-submenu-head"><b><i class="fa-solid ${meta.icon} mr-2"></i>Submenu ${meta.title}</b><small>${meta.desc}</small></div><div class="bhx-v6-user-submenu-list">${meta.subs.map(s=>`<button class="bhx-v6-user-sub-btn ${activeSub===s[0]?'active':''}" onclick="BHUserV6.openSub('${main}','${s[0]}')"><i class="fa-solid ${s[1]}"></i><span><b>${s[2]}</b><small>${s[3]}</small></span></button>`).join('')}</div></aside><section>${detail(main,activeSub)}</section></div>`;
+  }
+
+  function openMain(main){ setMain(main); saveSub(main,getSub(main)); render(main,getSub(main)); }
+  function openSub(main,sub){ setMain(main); saveSub(main,sub); render(main,sub); }
+
+  function patchBHX(){
+    if(!window.BHX || window.BHX.__v6UserForceRight) return;
+    const old=window.BHX.setMenu;
+    window.BHX.setMenu=function(kind,key){
+      if(kind==='user'){
+        const map={ringkasan:'overview',pesanan:'orders',setting:'profile',alamat:'addresses',bantuan:'support',notif:'notifications',keamanan:'security'};
+        const main=map[key]||key;
+        if(userMenus[main]){ setMain(main); setTimeout(()=>render(main,getSub(main)),0); return; }
+      }
+      return old.apply(this,arguments);
+    };
+    window.BHX.__v6UserForceRight=true;
+  }
+
+  function boot(){
+    patchBHX();
+    const buyer=document.getElementById('view-buyer');
+    if(buyer){ rebuildLeft(getMain()); if(!buyer.classList.contains('hidden')) render(getMain(),getSub(getMain())); }
+    window.toggleBuyerMenu=function(menu){
+      const map={ringkasan:'overview',pesanan:'orders',setting:'profile',wishlist:'wishlist',alamat:'addresses',bantuan:'support',notif:'notifications',keamanan:'security'};
+      const main=map[menu]||menu;
+      if(userMenus[main]) openMain(main);
+    };
+  }
+  window.BHUserV6={ openMain, openSub, action(label){ toast(label+' diproses'); } };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  setTimeout(boot,200); setTimeout(boot,800); setTimeout(boot,1600);
+  document.addEventListener('click',e=>{ if(e.target.closest('#tab-buyer,#view-buyer nav button')) setTimeout(boot,60); });
+})();
+</script>
+
 </body>
 </html>
 
