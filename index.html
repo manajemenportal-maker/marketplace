@@ -4853,6 +4853,181 @@
 })();
 </script>
 
+
+
+<!-- ========================================================= -->
+<!-- PATCH V16: RESET DI DASHBOARD USER TETAP AKUN USER         -->
+<!-- Catatan: hanya mengunci reset di view-buyer/user.           -->
+<!-- ========================================================= -->
+<style id="bhx-v16-user-reset-role-lock-style">
+  body.bhx-role-user #tab-admin,
+  body.bhx-role-user #tab-seller{display:none!important;}
+  body.bhx-role-user #tab-buyer{display:flex!important;}
+</style>
+<script id="bhx-v16-user-reset-role-lock-script">
+(function(){
+  if(window.__BHX_USER_RESET_ROLE_LOCK_V16__) return;
+  window.__BHX_USER_RESET_ROLE_LOCK_V16__=true;
+
+  const ROLE_KEYS=['bhx_v12_role','bhx_safe_last_role_v14','bhx_safe_last_role_v16'];
+  const VIEW_KEYS=['superapp_current_view','bhx_safe_last_view_v14','bhx_safe_last_view_v16'];
+  let userResetGuardUntil=0;
+
+  function isUserViewVisible(){
+    const v=document.getElementById('view-buyer');
+    return !!(v && !v.classList.contains('hidden') && getComputedStyle(v).display!=='none');
+  }
+  function toast(msg){
+    if(window.BHX && typeof BHX.toast==='function') return BHX.toast(msg);
+    if(window.bhAddonNotify) return window.bhAddonNotify(msg);
+    let t=document.getElementById('bhx-toast')||document.getElementById('toast');
+    if(!t){
+      t=document.createElement('div');
+      t.id='bhx-toast';
+      t.className='fixed bottom-5 right-5 z-[999] bg-slate-950 text-white rounded-2xl px-5 py-3 shadow-xl text-sm font-bold hidden';
+      document.body.appendChild(t);
+    }
+    t.textContent=msg;
+    t.classList.remove('hidden');
+    setTimeout(()=>t.classList.add('hidden'),2300);
+  }
+  function forceUserSession(view='buyer'){
+    ROLE_KEYS.forEach(k=>localStorage.setItem(k,'user'));
+    VIEW_KEYS.forEach(k=>localStorage.setItem(k,view));
+    document.body.classList.remove('bhx-role-admin','bhx-role-guest');
+    document.body.classList.add('bhx-role-user');
+
+    const buyer=document.getElementById('tab-buyer');
+    const admin=document.getElementById('tab-admin');
+    const seller=document.getElementById('tab-seller');
+    if(buyer){buyer.classList.remove('hidden'); buyer.style.removeProperty('display');}
+    if(admin){admin.classList.add('hidden'); admin.style.setProperty('display','none','important');}
+    if(seller){seller.classList.add('hidden'); seller.style.setProperty('display','none','important');}
+  }
+  function openBuyerStay(cb){
+    forceUserSession('buyer');
+    if(typeof window.switchAppView==='function'){
+      try{window.switchAppView('buyer');}catch(e){}
+    }
+    setTimeout(()=>{forceUserSession('buyer'); if(cb)cb();},60);
+    setTimeout(()=>{forceUserSession('buyer'); if(window.BHUserSidebarV12&&BHUserSidebarV12.clean)try{BHUserSidebarV12.clean()}catch(e){};},180);
+    setTimeout(()=>{forceUserSession('buyer');},450);
+  }
+  function currentStoreTab(){
+    return localStorage.getItem('bhx_v13_store_active') || localStorage.getItem('bhx_v10_user_store_active') || 'profile';
+  }
+  function currentProductTab(){
+    return localStorage.getItem('bhx_v9_user_product_active') || 'basic';
+  }
+
+  // Lindungi sesi user ketika tombol reset sedang dieksekusi.
+  const _removeItem=Storage.prototype.removeItem;
+  Storage.prototype.removeItem=function(key){
+    if(Date.now()<userResetGuardUntil && ROLE_KEYS.concat(VIEW_KEYS).includes(key)) return;
+    return _removeItem.call(this,key);
+  };
+  const _clear=Storage.prototype.clear;
+  Storage.prototype.clear=function(){
+    if(Date.now()<userResetGuardUntil){
+      const keep={};
+      ROLE_KEYS.concat(VIEW_KEYS).forEach(k=>keep[k]=localStorage.getItem(k));
+      _clear.call(this);
+      Object.entries(keep).forEach(([k,v])=>{ if(v!==null) localStorage.setItem(k,v); });
+      forceUserSession('buyer');
+      return;
+    }
+    return _clear.call(this);
+  };
+
+  function armUserResetGuard(){
+    if(!isUserViewVisible()) return;
+    userResetGuardUntil=Date.now()+3500;
+    forceUserSession('buyer');
+  }
+
+  // Tangkap semua klik tombol reset di panel user sebelum handler lama berjalan.
+  document.addEventListener('click',function(e){
+    const btn=e.target.closest('button,a');
+    if(!btn || !isUserViewVisible()) return;
+    const txt=(btn.textContent||'').toLowerCase();
+    const cls=(btn.className||'').toString().toLowerCase();
+    const html=(btn.innerHTML||'').toLowerCase();
+    if(txt.includes('reset') || txt.includes('hapus draft') || html.includes('rotate-left') || html.includes('trash') || cls.includes('reset')){
+      armUserResetGuard();
+      setTimeout(()=>forceUserSession('buyer'),10);
+      setTimeout(()=>forceUserSession('buyer'),120);
+      setTimeout(()=>forceUserSession('buyer'),400);
+    }
+  },true);
+
+  function patchKnownResetFunctions(){
+    // Setting toko user: reset data, tetap di user + tab toko yang aktif.
+    if(window.BHUserStoreV13 && !window.BHUserStoreV13.__userRoleLockV16){
+      window.BHUserStoreV13.reset=function(){
+        const active=currentStoreTab();
+        if(!confirm('Reset setting toko pada halaman ini? Akun tetap sebagai USER dan halaman tidak berpindah.')) return;
+        armUserResetGuard();
+        localStorage.removeItem('bhx_v13_store_data');
+        localStorage.removeItem('bhx_v10_user_store_data');
+        localStorage.setItem('bhx_v13_user_main','store_setting');
+        localStorage.setItem('bhx_v12_user_main','store_setting');
+        localStorage.setItem('bhx_v13_store_active',active);
+        localStorage.setItem('bhx_v10_user_store_active',active);
+        openBuyerStay(()=>{
+          try{BHUserStoreV13.open(active);}catch(e){}
+          toast('Setting toko direset. Akun tetap USER dan tetap di halaman ini.');
+        });
+      };
+      window.BHUserStoreV13.__userRoleLockV16=true;
+    }
+    if(window.BHUserStoreRightV10 && !window.BHUserStoreRightV10.__userRoleLockV16){
+      window.BHUserStoreRightV10.reset=function(){
+        const active=currentStoreTab();
+        if(!confirm('Reset setting toko pada halaman ini? Akun tetap sebagai USER dan halaman tidak berpindah.')) return;
+        armUserResetGuard();
+        localStorage.removeItem('bhx_v10_user_store_data');
+        localStorage.setItem('bhx_v10_user_store_active',active);
+        localStorage.setItem('bhx_v13_user_main','store_setting');
+        localStorage.setItem('bhx_v12_user_main','store_setting');
+        openBuyerStay(()=>{
+          try{BHUserStoreRightV10.open(active);}catch(e){}
+          toast('Setting toko direset. Akun tetap USER dan tetap di halaman ini.');
+        });
+      };
+      window.BHUserStoreRightV10.__userRoleLockV16=true;
+    }
+
+    // Tambah produk user: reset draft, tetap di user + tab produk yang aktif.
+    if(window.BHUserProductV9 && !window.BHUserProductV9.__userRoleLockV16){
+      window.BHUserProductV9.resetDraft=function(){
+        const active=currentProductTab();
+        if(!confirm('Reset draft produk pada halaman ini? Akun tetap sebagai USER dan halaman tidak berpindah.')) return;
+        armUserResetGuard();
+        localStorage.removeItem('bhx_v9_user_add_product_draft');
+        localStorage.setItem('bhx_v13_user_main','add_product');
+        localStorage.setItem('bhx_v12_user_main','add_product');
+        localStorage.setItem('bhx_v9_user_product_active',active);
+        openBuyerStay(()=>{
+          try{BHUserProductV9.openSub(active);}catch(e){}
+          toast('Draft produk direset. Akun tetap USER dan tetap di halaman ini.');
+        });
+      };
+      window.BHUserProductV9.__userRoleLockV16=true;
+    }
+  }
+
+  function boot(){
+    if(isUserViewVisible()) forceUserSession('buyer');
+    patchKnownResetFunctions();
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,250));
+  else setTimeout(boot,250);
+  [500,1000,1800,3000,5000,8000].forEach(ms=>setTimeout(boot,ms));
+  setInterval(boot,1500);
+})();
+</script>
+
 </body>
 </html>
 
