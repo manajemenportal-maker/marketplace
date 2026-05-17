@@ -3263,5 +3263,161 @@
   setTimeout(run, 1000);
 })();
 </script>
+
+
+<!-- =========================================================
+     ADDON: ADMIN SETTING LANJUTAN - MENU KIRI, FRAME KANAN
+     Dipasang aman di akhir file. Tidak mengubah kalkulator/logika utama.
+========================================================= -->
+<style>
+  #bhx-admin-settings-pro .setting-shell { display:grid; grid-template-columns: 290px 1fr; gap:16px; }
+  #bhx-admin-settings-pro .setting-submenu { background:#0f172a; border-radius:22px; padding:12px; position:sticky; top:120px; align-self:start; max-height:calc(100vh - 150px); overflow:auto; }
+  #bhx-admin-settings-pro .setting-subbtn { width:100%; display:flex; align-items:center; gap:12px; padding:13px 14px; border-radius:16px; color:#cbd5e1; font-weight:800; font-size:13px; text-align:left; transition:.2s; }
+  #bhx-admin-settings-pro .setting-subbtn:hover { background:#1e293b; color:white; }
+  #bhx-admin-settings-pro .setting-subbtn.active { background:#4f46e5; color:white; box-shadow:0 10px 25px rgba(79,70,229,.3); }
+  #bhx-admin-settings-pro .setting-frame { min-height:620px; background:white; border:1px solid #e2e8f0; border-radius:24px; overflow:hidden; box-shadow:0 1px 2px rgba(15,23,42,.06); }
+  #bhx-admin-settings-pro .setting-frame-head { padding:22px; background:linear-gradient(135deg,#eef2ff,#f8fafc); border-bottom:1px solid #e2e8f0; }
+  #bhx-admin-settings-pro .setting-frame-body { padding:22px; }
+  #bhx-admin-settings-pro .setting-card { border:1px solid #e2e8f0; border-radius:18px; padding:16px; background:#fff; }
+  #bhx-admin-settings-pro .setting-card.soft { background:#f8fafc; }
+  #bhx-admin-settings-pro .setting-input { width:100%; border:1px solid #cbd5e1; border-radius:14px; padding:12px 14px; outline:none; font-size:14px; background:white; }
+  #bhx-admin-settings-pro .setting-input:focus { box-shadow:0 0 0 3px rgba(79,70,229,.18); border-color:#818cf8; }
+  #bhx-admin-settings-pro .setting-label { display:block; font-size:11px; font-weight:900; color:#475569; text-transform:uppercase; letter-spacing:.04em; margin-bottom:7px; }
+  #bhx-admin-settings-pro .setting-save { background:#4f46e5; color:white; border-radius:14px; padding:12px 18px; font-weight:900; font-size:13px; box-shadow:0 10px 18px rgba(79,70,229,.22); }
+  #bhx-admin-settings-pro .setting-save:hover { background:#4338ca; }
+  #bhx-admin-settings-pro .setting-danger { background:#e11d48; color:white; border-radius:14px; padding:12px 18px; font-weight:900; font-size:13px; }
+  #bhx-admin-settings-pro .toggle-row { display:flex; align-items:center; justify-content:space-between; gap:14px; border:1px solid #e2e8f0; border-radius:18px; padding:16px; background:white; }
+  #bhx-admin-settings-pro .mini-note { font-size:12px; color:#64748b; margin-top:4px; line-height:1.45; }
+  @media (max-width: 900px){
+    #bhx-admin-settings-pro .setting-shell { grid-template-columns:1fr; }
+    #bhx-admin-settings-pro .setting-submenu { position:relative; top:auto; max-height:none; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+    #bhx-admin-settings-pro .setting-frame { min-height:auto; }
+  }
+</style>
+<script>
+(function(){
+  const KEY = 'bhx_admin_setting_frame_v3';
+  const defaults = {
+    active:'platform',
+    data:{
+      siteName:'BisnisHub',
+      siteOnline:true,
+      maintenance:false,
+      maintenanceText:'Mohon maaf, sistem sedang maintenance. Silakan coba beberapa saat lagi.',
+      requireLoginCheckout:true,
+      allowGuestBrowse:true,
+      autoApproveProduct:false,
+      wajibTkdnTender:true,
+      minTkdn:40,
+      sellerManualVerify:true,
+      commission:5,
+      escrowHoldDays:3,
+      minWithdraw:50000,
+      paymentGateway:'Midtrans / Xendit',
+      bankName:'BCA',
+      bankAccount:'8680605956',
+      bankOwner:'SRI DAMAYANTI SE',
+      adminEmail:'admin@kalimaja.com',
+      waAdmin:'6285111033789',
+      smtpSender:'noreply@kalimaja.com',
+      apiRajaOngkir:'',
+      apiPayment:'',
+      webhookUrl:'',
+      backupAuto:true,
+      backupFrequency:'Harian',
+      logRetention:90,
+      maxUploadMb:5,
+      enable2FA:true,
+      passwordMin:8,
+      sessionTimeout:60,
+      blockFailedLogin:true,
+      notifyNewOrder:true,
+      notifyTenderBid:true,
+      notifyTicket:true,
+      notifyWithdrawal:true,
+      bannerText:'Solusi Lengkap Industri & Pertanian',
+      marketplaceTheme:'Indigo Solid',
+      featuredCategory:'Pompa & Kompresor'
+    }
+  };
+  const menus = [
+    ['platform','fa-power-off','Status Platform','Online, maintenance, akses publik'],
+    ['approval','fa-circle-check','Approval & Verifikasi','Produk, seller, TKDN, tender'],
+    ['finance','fa-vault','Komisi & Escrow','Fee, pencairan, rekening'],
+    ['payment','fa-credit-card','Payment & Rekening','Gateway, bank, invoice'],
+    ['notification','fa-bell','Notifikasi','Email, WA, event penting'],
+    ['security','fa-lock','Keamanan Login','2FA, password, session'],
+    ['integration','fa-plug','Integrasi API','Ongkir, payment, webhook'],
+    ['backup','fa-database','Backup & Log','Backup otomatis, audit log'],
+    ['appearance','fa-palette','Tampilan Marketplace','Banner, tema, kategori unggulan']
+  ];
+  function load(){ try{return Object.assign({}, defaults, JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){return JSON.parse(JSON.stringify(defaults));} }
+  function save(st){ localStorage.setItem(KEY, JSON.stringify(st)); }
+  function esc(v){ return String(v ?? '').replace(/[&<>'"]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m])); }
+  function rupiah(v){ return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(v||0)); }
+  function toast(msg){ if(window.BHX && window.BHX.toast) return window.BHX.toast(msg); let t=document.getElementById('bhx-toast'); if(!t){t=document.createElement('div');t.id='bhx-toast';t.className='fixed bottom-5 right-5 z-[300] bg-slate-950 text-white rounded-2xl px-5 py-3 shadow-xl text-sm font-bold hidden';document.body.appendChild(t);} t.textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2200); }
+  function toggle(key,title,sub){ const st=load(); return `<label class="toggle-row"><div><b>${title}</b><p class="mini-note">${sub}</p></div><input data-bhx-setting="${key}" type="checkbox" ${st.data[key]?'checked':''} class="w-5 h-5 accent-indigo-600"></label>`; }
+  function field(key,label,type='text',placeholder=''){ const st=load(); return `<label class="block"><span class="setting-label">${label}</span><input data-bhx-setting="${key}" type="${type}" value="${esc(st.data[key])}" placeholder="${esc(placeholder)}" class="setting-input"></label>`; }
+  function select(key,label,opts){ const st=load(); return `<label class="block"><span class="setting-label">${label}</span><select data-bhx-setting="${key}" class="setting-input">${opts.map(o=>`<option ${String(st.data[key])===String(o)?'selected':''}>${esc(o)}</option>`).join('')}</select></label>`; }
+  function range(key,label,min,max){ const st=load(); return `<div><div class="flex justify-between items-center mb-2"><span class="setting-label mb-0">${label}</span><b id="lbl-${key}" class="text-indigo-700">${st.data[key]}${key==='commission'||key==='minTkdn'?'%':''}</b></div><input data-bhx-setting="${key}" type="range" min="${min}" max="${max}" value="${esc(st.data[key])}" oninput="document.getElementById('lbl-${key}').textContent=this.value+'${key==='commission'||key==='minTkdn'?'%':''}'" class="w-full accent-indigo-600"></div>`; }
+  function frame(title,sub,body,actions=''){ return `<div class="setting-frame"><div class="setting-frame-head"><div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3"><div><h2 class="text-2xl font-black text-slate-900">${title}</h2><p class="text-sm text-slate-500 mt-1">${sub}</p></div>${actions}</div></div><div class="setting-frame-body">${body}</div></div>`; }
+  function content(k){
+    const saveBtn = `<button onclick="BHAdminSettingFrame.saveCurrent()" class="setting-save"><i class="fa-solid fa-floppy-disk mr-2"></i>Simpan Setting Ini</button>`;
+    if(k==='platform') return frame('Status Platform','Kelola online/offline dan akses dasar sistem.', `<div class="grid md:grid-cols-2 gap-4">${toggle('siteOnline','Website Online','Jika dimatikan, platform dianggap suspend sementara.')}${toggle('maintenance','Maintenance Mode','Menampilkan mode perawatan untuk user non-admin.')}${toggle('requireLoginCheckout','Wajib Login Saat Checkout','Pembeli harus masuk sebelum transaksi.')}${toggle('allowGuestBrowse','Tamu Boleh Melihat Marketplace','Pengunjung tetap bisa melihat produk tanpa login.')}</div><div class="mt-5">${field('maintenanceText','Pesan Maintenance')}</div><div class="mt-5 p-4 rounded-2xl bg-indigo-50 border border-indigo-100 text-sm text-indigo-900"><b>Status saat ini:</b> Website ${load().data.siteOnline?'ONLINE':'OFFLINE'} · Maintenance ${load().data.maintenance?'AKTIF':'NONAKTIF'}</div>`, saveBtn);
+    if(k==='approval') return frame('Approval & Verifikasi','Atur aturan moderasi produk, vendor, dan tender TKDN.', `<div class="grid md:grid-cols-2 gap-4">${toggle('autoApproveProduct','Auto Approve Produk','Produk seller langsung tayang tanpa moderasi admin.')}${toggle('wajibTkdnTender','Wajib TKDN untuk Tender','Tender menampilkan syarat TKDN minimum.')}${toggle('sellerManualVerify','Verifikasi Seller Manual','Seller harus dicek admin sebelum badge aktif.')}${range('minTkdn','Minimal TKDN Tender',0,100)}</div><div class="mt-5 grid md:grid-cols-3 gap-4"><div class="setting-card soft"><b>Produk Review</b><p class="text-2xl font-black text-amber-600 mt-2">8</p><p class="mini-note">Menunggu approval admin</p></div><div class="setting-card soft"><b>Seller Pending</b><p class="text-2xl font-black text-indigo-600 mt-2">4</p><p class="mini-note">Perlu verifikasi legalitas</p></div><div class="setting-card soft"><b>Tender Aktif</b><p class="text-2xl font-black text-emerald-600 mt-2">12</p><p class="mini-note">Tayang di bursa tender</p></div></div>`, saveBtn);
+    if(k==='finance') return frame('Komisi & Escrow','Atur komisi platform, dana tertahan, dan batas pencairan.', `<div class="grid md:grid-cols-3 gap-4"><div class="setting-card soft">${range('commission','Komisi Platform',1,15)}</div><div class="setting-card soft">${field('escrowHoldDays','Dana Ditahan Setelah Diterima (Hari)','number')}</div><div class="setting-card soft">${field('minWithdraw','Minimal Tarik Dana (Rp)','number')}</div></div><div class="mt-5 grid md:grid-cols-3 gap-4"><div class="setting-card"><b>Total Escrow</b><p class="text-2xl font-black text-emerald-600 mt-2">${rupiah(1450800000)}</p></div><div class="setting-card"><b>Dana Tertahan</b><p class="text-2xl font-black text-rose-600 mt-2">${rupiah(145000000)}</p></div><div class="setting-card"><b>Siap Cair</b><p class="text-2xl font-black text-blue-600 mt-2">${rupiah(245000000)}</p></div></div>`, saveBtn);
+    if(k==='payment') return frame('Payment & Rekening','Kelola gateway pembayaran, rekening penampung, dan invoice.', `<div class="grid md:grid-cols-2 gap-4">${select('paymentGateway','Payment Gateway',['Midtrans / Xendit','Midtrans','Xendit','Manual Transfer','Tripay'])}${field('bankName','Bank Penampung')}${field('bankAccount','Nomor Rekening')}${field('bankOwner','Nama Pemilik Rekening')}</div><div class="mt-5 p-5 rounded-2xl bg-amber-50 border border-amber-100"><b>Info tampil di paywall / invoice:</b><p class="mt-2 text-sm text-amber-900">${esc(load().data.bankName)} ${esc(load().data.bankAccount)} a.n. ${esc(load().data.bankOwner)}</p></div>`, saveBtn);
+    if(k==='notification') return frame('Notifikasi','Atur event apa saja yang mengirim notifikasi ke admin/user.', `<div class="grid md:grid-cols-2 gap-4">${toggle('notifyNewOrder','Notifikasi Order Baru','Admin dan seller mendapat notifikasi saat order masuk.')}${toggle('notifyTenderBid','Notifikasi Bid Tender','Owner dan admin mendapat notifikasi saat ada penawaran.')}${toggle('notifyTicket','Notifikasi Tiket Support','Admin mendapat notifikasi tiket baru.')}${toggle('notifyWithdrawal','Notifikasi Tarik Dana','Admin finance mendapat notifikasi withdrawal seller.')}</div><div class="mt-5 grid md:grid-cols-3 gap-4">${field('adminEmail','Email Admin','email')}${field('waAdmin','WhatsApp Admin')}${field('smtpSender','Email Sender / SMTP')}</div>`, saveBtn);
+    if(k==='security') return frame('Keamanan Login','Kontrol OTP, password, session, dan proteksi brute force.', `<div class="grid md:grid-cols-2 gap-4">${toggle('enable2FA','Aktifkan 2FA Admin','Admin diminta verifikasi tambahan saat login.')}${toggle('blockFailedLogin','Blokir Login Gagal Berulang','Akun dikunci sementara jika salah password berkali-kali.')}${field('passwordMin','Minimal Karakter Password','number')}${field('sessionTimeout','Session Timeout (Menit)','number')}</div><div class="mt-5 p-4 rounded-2xl bg-rose-50 border border-rose-100 text-sm text-rose-900"><b>Catatan:</b> Untuk produksi, setting ini perlu disambungkan ke Firebase Auth / backend server.</div>`, saveBtn);
+    if(k==='integration') return frame('Integrasi API','Tempat setting API eksternal tanpa mengganggu logika utama.', `<div class="grid gap-4">${field('apiRajaOngkir','API Key Ongkir / Ekspedisi','password','Masukkan API key jika nanti pakai real API')}${field('apiPayment','API Key Payment Gateway','password','Masukkan server key payment')}${field('webhookUrl','Webhook URL','url','https://domain.com/webhook')}</div><div class="mt-5 grid md:grid-cols-3 gap-4"><button onclick="BHAdminSettingFrame.testApi('Ongkir')" class="setting-save">Test Ongkir</button><button onclick="BHAdminSettingFrame.testApi('Payment')" class="setting-save">Test Payment</button><button onclick="BHAdminSettingFrame.testApi('Webhook')" class="setting-save">Test Webhook</button></div>`, saveBtn);
+    if(k==='backup') return frame('Backup & Audit Log','Atur backup otomatis, retensi log, dan batas upload dokumen.', `<div class="grid md:grid-cols-2 gap-4">${toggle('backupAuto','Backup Otomatis','Sistem menyiapkan jadwal backup database.')}${select('backupFrequency','Frekuensi Backup',['Harian','Mingguan','Bulanan'])}${field('logRetention','Retensi Audit Log (Hari)','number')}${field('maxUploadMb','Maksimal Upload File (MB)','number')}</div><div class="mt-5 flex flex-wrap gap-3"><button onclick="BHAdminSettingFrame.exportSetting()" class="setting-save"><i class="fa-solid fa-download mr-2"></i>Export Setting</button><button onclick="BHAdminSettingFrame.resetSetting()" class="setting-danger"><i class="fa-solid fa-rotate-left mr-2"></i>Reset Setting</button></div>`, saveBtn);
+    if(k==='appearance') return frame('Tampilan Marketplace','Kontrol banner, tema warna, dan kategori unggulan marketplace.', `<div class="grid md:grid-cols-2 gap-4">${field('bannerText','Teks Banner Marketplace')}${select('marketplaceTheme','Tema Warna',['Indigo Solid','Biru Terang','Merah Cerah','Emerald Premium','Slate Corporate'])}${select('featuredCategory','Kategori Unggulan',['Pompa & Kompresor','Pertanian & Kehutanan','Kelistrikan & Genset','Perkakas & Tools','Software Industri','Hydrolik & Mesin Hydrolik'])}<div class="setting-card soft"><span class="setting-label">Preview</span><div class="rounded-2xl p-5 text-white bg-gradient-to-r from-indigo-700 to-violet-800"><b>${esc(load().data.bannerText)}</b><p class="text-xs mt-2 text-indigo-100">Tema: ${esc(load().data.marketplaceTheme)}</p></div></div></div>`, saveBtn);
+    return '';
+  }
+  function render(){
+    const area = document.getElementById('bhx-admin-content');
+    if(!area) return false;
+    const st=load();
+    area.innerHTML = `<div id="bhx-admin-settings-pro" class="animate-fade-in max-w-7xl"><div class="mb-5"><h1 class="text-2xl md:text-3xl font-black text-slate-900">Setting Sistem Admin</h1><p class="text-sm text-slate-500 mt-1">Menu lanjutan setting ditampilkan di frame kanan, jadi semua kontrol terlihat rapi tanpa turun ke bawah.</p></div><div class="setting-shell"><aside class="setting-submenu">${menus.map(([key,icon,label,sub])=>`<button type="button" data-admin-setting-tab="${key}" onclick="BHAdminSettingFrame.open('${key}')" class="setting-subbtn ${st.active===key?'active':''}"><i class="fa-solid ${icon} w-5 text-center"></i><span><span class="block">${label}</span><small class="block opacity-70 font-semibold mt-0.5">${sub}</small></span></button>`).join('')}</aside><section id="bhx-admin-setting-detail">${content(st.active)}</section></div></div>`;
+    return true;
+  }
+  function open(key){ const st=load(); st.active=key; save(st); render(); }
+  function saveCurrent(){
+    const st=load();
+    document.querySelectorAll('[data-bhx-setting]').forEach(el=>{
+      const key=el.getAttribute('data-bhx-setting');
+      if(el.type==='checkbox') st.data[key]=el.checked;
+      else if(el.type==='number' || el.type==='range') st.data[key]=Number(el.value);
+      else st.data[key]=el.value;
+    });
+    save(st);
+    try{ localStorage.setItem('addon_banner', st.data.bannerText); }catch(e){}
+    toast('Setting admin disimpan');
+    render();
+  }
+  function shouldEnhance(){
+    const area = document.getElementById('bhx-admin-content');
+    if(!area) return false;
+    const adminView = document.getElementById('view-admin');
+    const visible = adminView && !adminView.classList.contains('hidden');
+    const text = area.textContent || '';
+    return visible && /Setting Sistem|Kontrol global platform|Maintenance/.test(text) && !document.getElementById('bhx-admin-settings-pro');
+  }
+  function watch(){
+    const area=document.getElementById('bhx-admin-content');
+    if(!area) return;
+    if(shouldEnhance()) render();
+    const obs=new MutationObserver(()=>{ if(shouldEnhance()) render(); });
+    obs.observe(area,{childList:true,subtree:true});
+  }
+  window.BHAdminSettingFrame = { render, open, saveCurrent,
+    testApi:name=>toast('Test '+name+' berhasil disimulasikan'),
+    exportSetting:()=>{ const blob=new Blob([JSON.stringify(load(),null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='bisnishub-admin-setting.json'; a.click(); URL.revokeObjectURL(a.href); toast('Setting diexport'); },
+    resetSetting:()=>{ localStorage.removeItem(KEY); toast('Setting direset'); render(); }
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(watch,250)); else setTimeout(watch,250);
+})();
+</script>
+
 </body>
 </html>
