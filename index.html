@@ -4265,6 +4265,304 @@
 })();
 </script>
 
+
+
+<!-- ========================================================= -->
+<!-- ADDON V12 FINAL FIX: USER SIDEBAR BERSIH + ROLE TERPISAH  -->
+<!-- Tujuan:                                                    -->
+<!-- 1. Submenu User tidak pernah tampil di bawah bar kiri.     -->
+<!-- 2. Semua submenu/detail tampil di frame kanan.             -->
+<!-- 3. Admin dan User dipisah setelah login.                   -->
+<!-- 4. Tidak menyentuh kalkulator ekspedisi/logika utama.      -->
+<!-- ========================================================= -->
+<style id="bhx-v12-user-sidebar-role-style">
+  #view-buyer nav{
+    overflow:visible !important;
+    display:flex !important;
+    flex-direction:column !important;
+    gap:.5rem !important;
+  }
+  #view-buyer nav > :not(button){
+    display:none !important;
+    height:0 !important;
+    max-height:0 !important;
+    overflow:hidden !important;
+    padding:0 !important;
+    margin:0 !important;
+    border:0 !important;
+  }
+  #view-buyer nav button.bhx-v12-user-main{
+    display:flex !important;
+    width:100% !important;
+    align-items:center !important;
+    gap:.75rem !important;
+    border-radius:1rem !important;
+    padding:.9rem 1rem !important;
+    color:#475569 !important;
+    background:transparent !important;
+    border:1px solid transparent !important;
+    font-weight:900 !important;
+    text-align:left !important;
+    transition:all .18s ease !important;
+    position:relative !important;
+    flex-shrink:0 !important;
+  }
+  #view-buyer nav button.bhx-v12-user-main:hover{
+    background:#f8fafc !important;
+    color:#4f46e5 !important;
+    border-color:#e2e8f0 !important;
+  }
+  #view-buyer nav button.bhx-v12-user-main.active{
+    background:#eef2ff !important;
+    color:#4338ca !important;
+    border-color:#c7d2fe !important;
+    box-shadow:0 8px 18px rgba(79,70,229,.10) !important;
+  }
+  #view-buyer nav button.bhx-v12-user-main.active::after{
+    content:'';
+    position:absolute;
+    right:-11px;
+    top:50%;
+    transform:translateY(-50%);
+    width:0;height:0;
+    border-top:10px solid transparent;
+    border-bottom:10px solid transparent;
+    border-left:11px solid #eef2ff;
+  }
+  #view-buyer nav button.bhx-v12-user-main i{ width:1.25rem; text-align:center; }
+
+  /* Jaga frame kanan agar submenu Setting Toko/Tambah Produk full di kanan */
+  #view-buyer #bhx-buyer-content,
+  #view-buyer .flex-1 > #bhx-buyer-content{
+    width:100% !important;
+    max-width:100% !important;
+  }
+
+  /* Role separation visual guard */
+  body.bhx-role-admin #tab-buyer,
+  body.bhx-role-admin #tab-seller,
+  body.bhx-role-user #tab-admin,
+  body.bhx-role-user #tab-seller,
+  body.bhx-role-guest #tab-buyer,
+  body.bhx-role-guest #tab-seller,
+  body.bhx-role-guest #tab-admin{
+    display:none !important;
+  }
+</style>
+<script id="bhx-v12-user-sidebar-role-script">
+(function(){
+  const MAIN = [
+    ['overview','fa-gauge','Ringkasan User','BHX'],
+    ['orders','fa-box-open','Pesanan Saya','BHX'],
+    ['wishlist','fa-heart','Wishlist','BHX'],
+    ['addresses','fa-location-dot','Alamat Proyek','BHX'],
+    ['tickets','fa-headset','Bantuan / Tiket','BHX'],
+    ['notifications','fa-bell','Notifikasi','BHX'],
+    ['security','fa-lock','Keamanan Akun','BHX'],
+    ['profile','fa-user-gear','Profil User','BHX'],
+    ['add_product','fa-cloud-arrow-up','Tambah Produk','PRODUCT'],
+    ['store_setting','fa-store','Kelola Toko','STORE']
+  ];
+  const ALLOWED_KEYS = new Set(MAIN.map(x=>x[0]));
+  let currentUserMain = localStorage.getItem('bhx_v12_user_main') || 'overview';
+  let building = false;
+
+  function toast(msg){
+    if(window.BHX && BHX.toast) return BHX.toast(msg);
+    if(window.bhAddonNotify) return window.bhAddonNotify(msg);
+    const t = document.getElementById('bhx-toast') || document.getElementById('toast');
+    if(t){ t.textContent = msg; t.classList.remove('hidden'); setTimeout(()=>t.classList.add('hidden'),2200); }
+    else console.log(msg);
+  }
+  function buyerNav(){ return document.querySelector('#view-buyer nav'); }
+  function buyerContent(){
+    const view = document.getElementById('view-buyer');
+    if(!view) return null;
+    return document.getElementById('bhx-buyer-content') || view.querySelector('.flex-1') || view;
+  }
+  function setActive(key){
+    currentUserMain = key;
+    localStorage.setItem('bhx_v12_user_main', key);
+    const nav = buyerNav(); if(!nav) return;
+    nav.querySelectorAll('button.bhx-v12-user-main').forEach(b=>b.classList.toggle('active', b.dataset.key===key));
+  }
+  function buttonHtml(key, icon, label){
+    return `<button type="button" class="bhx-v12-user-main" data-key="${key}" id="bhx-v12-user-${key}"><i class="fa-solid ${icon}"></i><span class="text-sm">${label}</span></button>`;
+  }
+  function rebuildUserSidebar(){
+    const nav = buyerNav(); if(!nav || building) return;
+    building = true;
+    nav.innerHTML = MAIN.map(m=>buttonHtml(m[0],m[1],m[2])).join('');
+    nav.querySelectorAll('button.bhx-v12-user-main').forEach(btn=>{
+      btn.addEventListener('click', function(e){
+        e.preventDefault(); e.stopPropagation();
+        openUserMain(this.dataset.key);
+      }, true);
+    });
+    setActive(currentUserMain);
+    building = false;
+  }
+  function needsRebuild(){
+    const nav = buyerNav(); if(!nav) return false;
+    const buttons = [...nav.querySelectorAll(':scope > button')];
+    if(buttons.length !== MAIN.length) return true;
+    return buttons.some(b=>!b.classList.contains('bhx-v12-user-main') || !ALLOWED_KEYS.has(b.dataset.key));
+  }
+  function enforceUserSidebar(){
+    const nav = buyerNav(); if(!nav) return;
+    if(needsRebuild()) rebuildUserSidebar();
+    // Last guard: kalau script lama menyisipkan elemen tambahan, hapus lagi.
+    [...nav.children].forEach(ch=>{
+      if(ch.tagName !== 'BUTTON' || !ch.classList.contains('bhx-v12-user-main') || !ALLOWED_KEYS.has(ch.dataset.key)) ch.remove();
+    });
+    setActive(currentUserMain);
+  }
+  function openUserMain(key){
+    if(!ALLOWED_KEYS.has(key)) key='overview';
+    setActive(key);
+    if(key === 'add_product'){
+      if(window.BHUserProductV9 && typeof BHUserProductV9.openSub === 'function') BHUserProductV9.openSub(localStorage.getItem('bhx_v9_user_product_active') || 'basic');
+      else if(window.BHX && typeof BHX.setMenu === 'function') BHX.setMenu('user','overview');
+      setTimeout(()=>setActive('add_product'),80);
+      setTimeout(enforceUserSidebar,140);
+      return;
+    }
+    if(key === 'store_setting'){
+      if(window.BHUserStoreRightV10 && typeof BHUserStoreRightV10.open === 'function') BHUserStoreRightV10.open(localStorage.getItem('bhx_v10_user_store_active') || 'profile');
+      else if(window.BHUserStoreRightV11 && typeof BHUserStoreRightV11.open === 'function') BHUserStoreRightV11.open('profile');
+      else if(window.BHX && typeof BHX.setMenu === 'function') BHX.setMenu('user','overview');
+      setTimeout(()=>setActive('store_setting'),80);
+      setTimeout(enforceUserSidebar,140);
+      return;
+    }
+    if(window.BHX && typeof BHX.setMenu === 'function') BHX.setMenu('user', key);
+    else if(window.toggleBuyerMenu){
+      const map = {overview:'ringkasan', orders:'pesanan', profile:'setting'};
+      window.toggleBuyerMenu(map[key] || key);
+    }
+    setTimeout(()=>setActive(key),80);
+    setTimeout(enforceUserSidebar,140);
+  }
+
+  // Memisahkan akses setelah login: admin tidak melihat user/seller, user tidak melihat admin/seller.
+  function isHidden(el){ return !el || el.classList.contains('hidden') || getComputedStyle(el).display === 'none'; }
+  function detectRole(){
+    const emailText = (document.getElementById('current-user-email')?.textContent || '').trim().toLowerCase();
+    const adminTab = document.getElementById('tab-admin');
+    const buyerTab = document.getElementById('tab-buyer');
+    if(!emailText || emailText.includes('login') || emailText.includes('daftar')) return 'guest';
+    if(adminTab && !adminTab.classList.contains('hidden')) return 'admin';
+    if(buyerTab && !buyerTab.classList.contains('hidden')) return 'user';
+    return localStorage.getItem('bhx_v12_role') || 'guest';
+  }
+  function applyRoleClass(role){
+    document.body.classList.remove('bhx-role-admin','bhx-role-user','bhx-role-guest');
+    document.body.classList.add('bhx-role-'+role);
+    localStorage.setItem('bhx_v12_role', role);
+  }
+  function hardHide(id){ const el=document.getElementById(id); if(el){ el.classList.add('hidden'); el.style.setProperty('display','none','important'); } }
+  function hardShow(id){ const el=document.getElementById(id); if(el){ el.classList.remove('hidden'); el.style.removeProperty('display'); } }
+  function currentViewName(){
+    const views = ['buyer','seller','admin','marketplace','tkdn','forum','kalkulator'];
+    for(const v of views){ const el=document.getElementById('view-'+v); if(el && !el.classList.contains('hidden')) return v; }
+    return 'marketplace';
+  }
+  function enforceRoleAccess(){
+    const role = detectRole();
+    applyRoleClass(role);
+    if(role === 'admin'){
+      hardHide('tab-buyer'); hardHide('tab-seller'); hardShow('tab-admin');
+      const cv = currentViewName();
+      if(cv==='buyer' || cv==='seller') safeSwitch('admin');
+    } else if(role === 'user'){
+      hardShow('tab-buyer'); hardHide('tab-seller'); hardHide('tab-admin');
+      const cv = currentViewName();
+      if(cv==='admin' || cv==='seller') safeSwitch('buyer');
+      enforceUserSidebar();
+    } else {
+      hardHide('tab-buyer'); hardHide('tab-seller'); hardHide('tab-admin');
+      const cv = currentViewName();
+      if(cv==='admin' || cv==='seller' || cv==='buyer') safeSwitch('marketplace');
+    }
+  }
+  function safeSwitch(view){
+    if(window.__bhx_v12_switching) return;
+    window.__bhx_v12_switching = true;
+    try { if(window.switchAppView) window.switchAppView(view); }
+    finally { window.__bhx_v12_switching = false; }
+  }
+  function patchSwitchAppView(){
+    if(!window.switchAppView || window.switchAppView.__bhxV12RolePatched) return;
+    const old = window.switchAppView;
+    window.switchAppView = function(viewName){
+      const role = detectRole();
+      if(role === 'admin' && (viewName === 'buyer' || viewName === 'seller')){
+        toast('Akses admin dipisah. Admin hanya masuk Panel Admin.');
+        viewName = 'admin';
+      }
+      if(role === 'user' && (viewName === 'admin' || viewName === 'seller')){
+        toast('Akses user dipisah. User hanya masuk Dashboard User.');
+        viewName = 'buyer';
+      }
+      if(role === 'guest' && (viewName === 'admin' || viewName === 'seller' || viewName === 'buyer')){
+        const modal = document.getElementById('auth-modal');
+        if(modal) modal.classList.remove('hidden');
+        viewName = 'marketplace';
+      }
+      const result = old.apply(this, arguments.length ? [viewName] : arguments);
+      setTimeout(()=>{ enforceRoleAccess(); if(viewName==='buyer') enforceUserSidebar(); },70);
+      return result;
+    };
+    window.switchAppView.__bhxV12RolePatched = true;
+  }
+  function patchOpenSellerButton(){
+    const btns = [...document.querySelectorAll('#view-buyer button')].filter(b=>(b.textContent||'').toLowerCase().includes('buka toko'));
+    btns.forEach(b=>{
+      b.onclick = function(e){
+        e.preventDefault();
+        if(window.switchAppView) window.switchAppView('buyer');
+        openUserMain('store_setting');
+        toast('Setting toko dibuka di frame kanan Dashboard User.');
+      };
+    });
+  }
+  function boot(){
+    patchSwitchAppView();
+    rebuildUserSidebar();
+    enforceUserSidebar();
+    patchOpenSellerButton();
+    enforceRoleAccess();
+  }
+
+  window.BHUserSidebarV12 = { boot, rebuild:rebuildUserSidebar, clean:enforceUserSidebar, open:openUserMain, role:enforceRoleAccess };
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  [150,400,900,1600,2600,4200].forEach(ms=>setTimeout(boot,ms));
+
+  document.addEventListener('click', function(e){
+    if(e.target.closest('#tab-buyer,#tab-admin,#tab-seller,#btn-auth-trigger,#btn-logout,#auth-form,#view-buyer')){
+      setTimeout(boot,80); setTimeout(enforceRoleAccess,220); setTimeout(enforceUserSidebar,260);
+    }
+  }, true);
+
+  // Observer khusus buyer: jika script lama menyisipkan submenu di kiri, langsung bersihkan.
+  setTimeout(()=>{
+    const view = document.getElementById('view-buyer');
+    if(view){
+      const obs = new MutationObserver(()=>{
+        if(building) return;
+        clearTimeout(window.__bhx_v12_user_clean_timer);
+        window.__bhx_v12_user_clean_timer = setTimeout(()=>{ enforceUserSidebar(); patchOpenSellerButton(); },35);
+      });
+      obs.observe(view,{childList:true,subtree:true});
+    }
+  },500);
+
+  // Poll ringan untuk menangkap perubahan Firebase Auth async dari script utama.
+  setInterval(()=>{ enforceRoleAccess(); if(currentViewName()==='buyer') enforceUserSidebar(); },1200);
+})();
+</script>
+
 </body>
 </html>
 
