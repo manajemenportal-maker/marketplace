@@ -1730,7 +1730,7 @@
         </div>
     </div>
 
-    <div id="paywall-modal" class="fixed inset-0 bg-slate-900/80 z-[90] hidden flex items-center justify-center px-4 backdrop-blur-sm transition-opacity">
+    <div id="paywall-modal" class="hidden" style="display:none!important">
         <div class="bg-white p-6 rounded-2xl shadow-2xl border-2 border-amber-200 max-w-md w-full ring-4 ring-amber-50 text-center relative overflow-hidden">
             <div class="w-16 h-16 bg-gradient-to-br from-yellow-300 to-amber-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg border-2 border-white"><i data-lucide="lock" class="w-8 h-8"></i></div>
             <h4 class="text-2xl font-extrabold text-amber-900 mb-2">Akses Cetak Terkunci</h4>
@@ -2285,7 +2285,7 @@
             document.getElementById('btn-download-pdf').addEventListener('click', function() {
                 const dataSet = generateRecapDataset();
                 if(dataSet) {
-                    if (currentUserRole !== 'admin') { document.getElementById('paywall-modal').classList.remove('hidden'); return; }
+                    /* REKAP GRATIS: paywall admin-only dinonaktifkan */
                     executePdfExport(dataSet);
                 }
             });
@@ -2295,7 +2295,7 @@
             document.getElementById('btn-download-excel').addEventListener('click', function() {
                 const dataSet = generateRecapDataset();
                 if(dataSet) {
-                    if (currentUserRole !== 'admin') { document.getElementById('paywall-modal').classList.remove('hidden'); return; }
+                    /* REKAP GRATIS: paywall admin-only dinonaktifkan */
                     executeExcelExport(dataSet);
                 }
             });
@@ -5028,6 +5028,125 @@
 })();
 </script>
 
+
+
+<!-- =========================================================
+     FINAL PATCH: HILANGKAN ZONA TKDN + REKAP EKSPEDISI GRATIS
+     - Tidak mengubah logika kalkulator ekspedisi utama.
+     - Hanya menyembunyikan menu/halaman TKDN dan mematikan paywall rekap.
+========================================================== -->
+<style id="bhx-no-tkdn-free-recap-style">
+  #tab-tkdn,
+  #view-tkdn,
+  [data-view="tkdn"],
+  [onclick*="switchAppView('tkdn')"],
+  [onclick*='switchAppView("tkdn")'],
+  [onclick*="go('tkdn')"],
+  [onclick*='go("tkdn")'],
+  [onclick*="switchView('tkdn')"],
+  [onclick*='switchView("tkdn")'] {
+    display: none !important;
+  }
+  #paywall-modal { display:none !important; visibility:hidden !important; pointer-events:none !important; }
+  .bhx-free-recap-badge {
+    display:inline-flex; align-items:center; gap:.4rem;
+    background:#dcfce7; color:#166534; border:1px solid #bbf7d0;
+    font-weight:900; font-size:11px; border-radius:999px; padding:6px 10px;
+  }
+</style>
+<script id="bhx-no-tkdn-free-recap-script">
+(function(){
+  const log = (...args)=>console.log('[BisnisHub Patch TKDN/FreeRecap]', ...args);
+
+  function hideTKDNZone(){
+    const selectors = [
+      '#tab-tkdn', '#view-tkdn',
+      '[data-view="tkdn"]',
+      '[onclick*="tkdn"]'
+    ];
+    selectors.forEach(sel=>document.querySelectorAll(sel).forEach(el=>{
+      const text = (el.textContent || '').toLowerCase();
+      const id = (el.id || '').toLowerCase();
+      const oc = (el.getAttribute('onclick') || '').toLowerCase();
+      const dv = (el.getAttribute('data-view') || '').toLowerCase();
+      if(id.includes('tkdn') || oc.includes('tkdn') || dv === 'tkdn' || text.includes('dashboard tkdn') || text.trim()==='tkdn'){
+        el.style.setProperty('display','none','important');
+        el.setAttribute('aria-hidden','true');
+      }
+    }));
+
+    // Kalau user terakhir berada di TKDN, arahkan ke marketplace agar layar tidak kosong.
+    const tkdnView = document.getElementById('view-tkdn');
+    if(tkdnView && !tkdnView.classList.contains('hidden')){
+      try { if(typeof window.switchAppView === 'function') window.switchAppView('marketplace'); } catch(e) {}
+    }
+  }
+
+  function makeRecapFreeVisual(){
+    const recapBtn = document.getElementById('btn-open-modal');
+    if(recapBtn && !recapBtn.dataset.freeRecapTagged){
+      recapBtn.dataset.freeRecapTagged = '1';
+      const span = document.createElement('span');
+      span.className = 'bhx-free-recap-badge ml-2';
+      span.innerHTML = '<i class="fa-solid fa-unlock"></i> GRATIS';
+      try { recapBtn.appendChild(span); } catch(e) {}
+    }
+    ['btn-download-pdf','btn-download-excel'].forEach(id=>{
+      const btn = document.getElementById(id);
+      if(btn){
+        btn.title = 'Rekap gratis - tidak perlu akun premium';
+        btn.classList.remove('bg-rose-600','hover:bg-rose-700');
+        if(id === 'btn-download-pdf') btn.classList.add('bg-indigo-600','hover:bg-indigo-700');
+      }
+    });
+  }
+
+  // Cegah modal paywall tampil dari sisa script lama apa pun.
+  function killPaywall(){
+    const p = document.getElementById('paywall-modal');
+    if(p){
+      p.classList.add('hidden');
+      p.style.setProperty('display','none','important');
+      p.style.setProperty('visibility','hidden','important');
+    }
+  }
+
+  function patchSwitchers(){
+    // Bungkus switchAppView agar TKDN tidak bisa dibuka meskipun ada tombol lama.
+    if(typeof window.switchAppView === 'function' && !window.switchAppView.__noTkdnPatch){
+      const old = window.switchAppView;
+      window.switchAppView = function(view){
+        if(view === 'tkdn') view = 'marketplace';
+        return old.apply(this, arguments.length ? [view] : arguments);
+      };
+      window.switchAppView.__noTkdnPatch = true;
+    }
+    if(typeof window.switchView === 'function' && !window.switchView.__noTkdnPatch){
+      const old2 = window.switchView;
+      window.switchView = function(view){
+        if(view === 'tkdn') view = 'marketplace';
+        return old2.apply(this, arguments.length ? [view] : arguments);
+      };
+      window.switchView.__noTkdnPatch = true;
+    }
+  }
+
+  function boot(){
+    hideTKDNZone();
+    makeRecapFreeVisual();
+    killPaywall();
+    patchSwitchers();
+  }
+
+  document.addEventListener('DOMContentLoaded', boot);
+  window.addEventListener('load', boot);
+  setTimeout(boot, 300);
+  setTimeout(boot, 1200);
+  setInterval(()=>{ hideTKDNZone(); killPaywall(); }, 1500);
+  log('zona TKDN disembunyikan, rekap ekspedisi gratis aktif');
+})();
+</script>
+
 </body>
 </html>
 
@@ -6610,5 +6729,226 @@
   [250,700,1500,3000].forEach(ms=>setTimeout(boot,ms));
   document.addEventListener('click',()=>setTimeout(renderNav,90),true);
   window.addEventListener('resize',renderNav);
+})();
+</script>
+
+<!-- ========================================================= -->
+<!-- PATCH V17 FINAL: RESET USER DIKUNCI, TIDAK PINDAH ADMIN   -->
+<!-- Reset dari view-buyer dicegat sebelum handler lama jalan.  -->
+<!-- Tidak mengubah kalkulator ekspedisi / logic utama.         -->
+<!-- ========================================================= -->
+<style id="bhx-v17-user-reset-hard-lock-style">
+  body.bhx-v17-user-locked #tab-admin,
+  body.bhx-v17-user-locked #tab-seller,
+  body.bhx-role-user #tab-admin,
+  body.bhx-role-user #tab-seller { display:none!important; }
+  body.bhx-v17-user-locked #tab-buyer,
+  body.bhx-role-user #tab-buyer { display:flex!important; }
+</style>
+<script id="bhx-v17-user-reset-hard-lock-script">
+(function(){
+  if(window.__BHX_V17_USER_RESET_HARD_LOCK__) return;
+  window.__BHX_V17_USER_RESET_HARD_LOCK__ = true;
+
+  const ROLE_KEYS = ['bhx_v12_role','bhx_safe_last_role_v14','bhx_safe_last_role_v16','bhx_safe_last_role_v17'];
+  const VIEW_KEYS = ['superapp_current_view','bhx_safe_last_view_v14','bhx_safe_last_view_v16','bhx_safe_last_view_v17'];
+  const USER_MAIN_KEYS = ['bhx_v13_user_main','bhx_v12_user_main','bhx_v6_user_main'];
+  let lockUntil = 0;
+  let internalSwitch = false;
+
+  function q(sel){ return document.querySelector(sel); }
+  function buyerVisible(){
+    const v = document.getElementById('view-buyer');
+    return !!(v && !v.classList.contains('hidden') && getComputedStyle(v).display !== 'none');
+  }
+  function toast(msg){
+    if(window.BHX && typeof window.BHX.toast === 'function') return window.BHX.toast(msg);
+    if(window.bhAddonNotify) return window.bhAddonNotify(msg);
+    let t = document.getElementById('bhx-toast') || document.getElementById('toast');
+    if(!t){
+      t = document.createElement('div');
+      t.id = 'bhx-toast';
+      t.className = 'fixed bottom-5 right-5 z-[9999] bg-slate-950 text-white rounded-2xl px-5 py-3 shadow-xl text-sm font-bold hidden';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.remove('hidden');
+    setTimeout(()=>t.classList.add('hidden'),2400);
+  }
+  function setRoleUser(){
+    ROLE_KEYS.forEach(k=>localStorage.setItem(k,'user'));
+    VIEW_KEYS.forEach(k=>localStorage.setItem(k,'buyer'));
+    document.body.classList.remove('bhx-role-admin','bhx-role-guest');
+    document.body.classList.add('bhx-role-user','bhx-v17-user-locked');
+
+    const buyer = document.getElementById('tab-buyer');
+    const admin = document.getElementById('tab-admin');
+    const seller = document.getElementById('tab-seller');
+    if(buyer){ buyer.classList.remove('hidden'); buyer.style.removeProperty('display'); }
+    if(admin){ admin.classList.add('hidden'); admin.style.setProperty('display','none','important'); }
+    if(seller){ seller.classList.add('hidden'); seller.style.setProperty('display','none','important'); }
+  }
+  function userMain(){
+    return localStorage.getItem('bhx_v13_user_main') || localStorage.getItem('bhx_v12_user_main') || localStorage.getItem('bhx_v6_user_main') || 'overview';
+  }
+  function storeTab(){ return localStorage.getItem('bhx_v13_store_active') || localStorage.getItem('bhx_v10_user_store_active') || 'profile'; }
+  function productTab(){ return localStorage.getItem('bhx_v9_user_product_active') || 'basic'; }
+  function setUserMain(main){ USER_MAIN_KEYS.forEach(k=>localStorage.setItem(k,main)); }
+  function openBuyer(cb){
+    setRoleUser();
+    if(typeof window.switchAppView === 'function'){
+      internalSwitch = true;
+      try { window.switchAppView('buyer'); } catch(e) {}
+      internalSwitch = false;
+    }
+    [30,120,300,700,1300].forEach(ms=>setTimeout(()=>{ setRoleUser(); if(cb && ms===120) cb(); },ms));
+  }
+  function hardLock(ms=5000){
+    lockUntil = Date.now() + ms;
+    setRoleUser();
+  }
+
+  // Kunci switchAppView: ketika lock user aktif, view admin/seller dibelokkan ke buyer.
+  function patchSwitch(){
+    if(!window.switchAppView || window.switchAppView.__bhxV17UserHardLock) return;
+    const old = window.switchAppView;
+    window.switchAppView = function(viewName){
+      if(!internalSwitch && (Date.now() < lockUntil || document.body.classList.contains('bhx-role-user') || document.body.classList.contains('bhx-v17-user-locked'))){
+        if(viewName === 'admin' || viewName === 'seller') viewName = 'buyer';
+      }
+      const r = old.apply(this, [viewName]);
+      if(viewName === 'buyer' || Date.now() < lockUntil) setTimeout(setRoleUser, 40);
+      return r;
+    };
+    window.switchAppView.__bhxV17UserHardLock = true;
+  }
+
+  // Lindungi localStorage ketika proses reset user sedang berjalan.
+  const oldSetItem = Storage.prototype.setItem;
+  Storage.prototype.setItem = function(key,val){
+    if(Date.now() < lockUntil){
+      if(ROLE_KEYS.includes(key)) return oldSetItem.call(this,key,'user');
+      if(VIEW_KEYS.includes(key)) return oldSetItem.call(this,key,'buyer');
+    }
+    return oldSetItem.call(this,key,val);
+  };
+  const oldRemoveItem = Storage.prototype.removeItem;
+  Storage.prototype.removeItem = function(key){
+    if(Date.now() < lockUntil && (ROLE_KEYS.includes(key) || VIEW_KEYS.includes(key))) return;
+    return oldRemoveItem.call(this,key);
+  };
+  const oldClear = Storage.prototype.clear;
+  Storage.prototype.clear = function(){
+    if(Date.now() < lockUntil){
+      const keep = {};
+      ROLE_KEYS.concat(VIEW_KEYS, USER_MAIN_KEYS).forEach(k=>keep[k]=localStorage.getItem(k));
+      oldClear.call(this);
+      Object.entries(keep).forEach(([k,v])=>{ if(v!==null) oldSetItem.call(localStorage,k,v); });
+      setRoleUser();
+      return;
+    }
+    return oldClear.call(this);
+  };
+
+  function resetStore(){
+    const active = storeTab();
+    hardLock();
+    oldRemoveItem.call(localStorage,'bhx_v13_store_data');
+    oldRemoveItem.call(localStorage,'bhx_v10_user_store_data');
+    setUserMain('store_setting');
+    oldSetItem.call(localStorage,'bhx_v13_store_active',active);
+    oldSetItem.call(localStorage,'bhx_v10_user_store_active',active);
+    openBuyer(()=>{
+      if(window.BHUserStoreV13 && typeof BHUserStoreV13.open === 'function') BHUserStoreV13.open(active);
+      else if(window.BHUserStoreRightV10 && typeof BHUserStoreRightV10.open === 'function') BHUserStoreRightV10.open(active);
+      toast('Reset berhasil. Tetap di akun USER dan tetap di Kelola Toko.');
+    });
+  }
+  function resetProduct(){
+    const active = productTab();
+    hardLock();
+    oldRemoveItem.call(localStorage,'bhx_v9_user_add_product_draft');
+    setUserMain('add_product');
+    oldSetItem.call(localStorage,'bhx_v9_user_product_active',active);
+    openBuyer(()=>{
+      if(window.BHUserProductV9 && typeof BHUserProductV9.openSub === 'function') BHUserProductV9.openSub(active);
+      toast('Draft produk direset. Tetap di akun USER dan tetap di Tambah Produk.');
+    });
+  }
+  function resetMobileOnly(){
+    hardLock();
+    oldRemoveItem.call(localStorage,'bhx_mobile_v14_settings');
+    openBuyer(()=>{
+      if(window.BHMobileV14 && typeof BHMobileV14.openSettings === 'function') BHMobileV14.openSettings();
+      toast('Tampilan mobile direset. Akun tetap USER.');
+    });
+  }
+  function resetGenericUser(){
+    const main = userMain();
+    hardLock();
+    setUserMain(main);
+    openBuyer(()=>{
+      if(main === 'store_setting'){
+        const active = storeTab();
+        if(window.BHUserStoreV13 && typeof BHUserStoreV13.open === 'function') BHUserStoreV13.open(active);
+      } else if(main === 'add_product'){
+        const active = productTab();
+        if(window.BHUserProductV9 && typeof BHUserProductV9.openSub === 'function') BHUserProductV9.openSub(active);
+      } else if(window.BHUserSidebarV12 && typeof BHUserSidebarV12.open === 'function'){
+        BHUserSidebarV12.open(main);
+      }
+      toast('Reset diproses. Tetap di akun USER.');
+    });
+  }
+  function whichReset(btn){
+    const text = ((btn.textContent||'') + ' ' + (btn.getAttribute('onclick')||'') + ' ' + (btn.innerHTML||'')).toLowerCase();
+    const panel = btn.closest('#view-buyer') || document;
+    const visibleText = (panel.textContent||'').toLowerCase();
+    if(text.includes('mobile') || text.includes('tampilan hp') || text.includes('bhmobilev14')) return 'mobile';
+    if(text.includes('draft') || text.includes('produk') || visibleText.includes('preview produk sebelum diajukan') || visibleText.includes('tambah produk')) return 'product';
+    if(text.includes('toko') || visibleText.includes('profil toko') || visibleText.includes('kelola toko') || visibleText.includes('rekening & pencairan')) return 'store';
+    return 'generic';
+  }
+
+  // Cegat klik reset di dashboard user SEBELUM handler lama berjalan.
+  document.addEventListener('click', function(e){
+    if(!buyerVisible()) return;
+    const btn = e.target.closest('button,a');
+    if(!btn) return;
+    const t = ((btn.textContent||'') + ' ' + (btn.innerHTML||'') + ' ' + (btn.className||'') + ' ' + (btn.getAttribute('onclick')||'')).toLowerCase();
+    const isReset = t.includes('reset') || t.includes('rotate-left') || t.includes('trash') || t.includes('hapus draft');
+    if(!isReset) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if(typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+
+    const type = whichReset(btn);
+    const ok = confirm('Reset data pada halaman ini? Akun tetap USER dan tidak akan pindah ke Admin.');
+    if(!ok){ setRoleUser(); return false; }
+    if(type === 'store') resetStore();
+    else if(type === 'product') resetProduct();
+    else if(type === 'mobile') resetMobileOnly();
+    else resetGenericUser();
+    return false;
+  }, true);
+
+  // Override fungsi reset yang diketahui supaya kalau terpanggil manual tetap aman.
+  function patchKnown(){
+    if(window.BHUserStoreV13 && !BHUserStoreV13.__v17HardReset){ BHUserStoreV13.reset = resetStore; BHUserStoreV13.__v17HardReset = true; }
+    if(window.BHUserStoreRightV10 && !BHUserStoreRightV10.__v17HardReset){ BHUserStoreRightV10.reset = resetStore; BHUserStoreRightV10.__v17HardReset = true; }
+    if(window.BHUserProductV9 && !BHUserProductV9.__v17HardReset){ BHUserProductV9.resetDraft = resetProduct; BHUserProductV9.__v17HardReset = true; }
+    if(window.BHMobileV14 && !BHMobileV14.__v17HardReset){ BHMobileV14.reset = resetMobileOnly; BHMobileV14.__v17HardReset = true; }
+  }
+
+  function boot(){
+    patchSwitch();
+    patchKnown();
+    if(buyerVisible()) setRoleUser();
+  }
+  window.BHXUserResetV17 = {boot, lock:setRoleUser, resetStore, resetProduct, resetMobileOnly, resetGenericUser};
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  [200,600,1200,2500,4500,7500].forEach(ms=>setTimeout(boot,ms));
+  setInterval(boot,1200);
 })();
 </script>
