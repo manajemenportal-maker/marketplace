@@ -999,20 +999,214 @@
       `);
     }
 
+
     function userStore() {
-      return panel('Kelola Toko', 'Semua submenu toko tampil di kanan, bukan di sidebar.', `
-        <div class="grid md:grid-cols-2 gap-4">
-          <input class="border rounded-2xl p-3" value="Toko ${state.name}">
-          <input class="border rounded-2xl p-3" placeholder="Slogan toko">
-          <input class="border rounded-2xl p-3" placeholder="NIB">
-          <input class="border rounded-2xl p-3" placeholder="NPWP">
-          <input class="border rounded-2xl p-3" placeholder="Rekening pencairan">
-          <input class="border rounded-2xl p-3" placeholder="Gudang asal">
-          <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Kebijakan toko, retur, garansi, dan operasional"></textarea>
+      const active = state.userSub || 'Profil Toko';
+
+      const tabTitle = `
+        <div class="mb-4 rounded-[24px] bg-emerald-50 border border-emerald-100 p-4">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <p class="text-xs font-black uppercase tracking-widest text-emerald-700">Kelola Toko</p>
+              <h3 class="text-xl font-black text-slate-900 mt-1">${active}</h3>
+              <p class="text-sm text-slate-500 mt-1">Submenu toko sekarang aktif. Klik tab di atas, isi detailnya tampil di frame kanan.</p>
+            </div>
+            <button onclick="showToast('Perubahan toko disimpan')" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl px-5 py-3 text-sm font-black">
+              Simpan Perubahan
+            </button>
+          </div>
         </div>
-        <button onclick="showToast('Setting toko tersimpan')" class="mt-5 bg-emerald-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Toko</button>
-      `);
+      `;
+
+      if (active === 'Profil Toko') {
+        return panel('Kelola Toko', 'Profil toko, branding, dan deskripsi usaha.', `
+          ${tabTitle}
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-black text-slate-500 uppercase">Nama Toko</label>
+              <input class="mt-1 border rounded-2xl p-3 w-full" value="Toko ${state.name}">
+            </div>
+            <div>
+              <label class="text-xs font-black text-slate-500 uppercase">Slug / Link Toko</label>
+              <input class="mt-1 border rounded-2xl p-3 w-full" value="bishub.com/toko-${state.name.toLowerCase().replaceAll(' ', '-')}">
+            </div>
+            <div>
+              <label class="text-xs font-black text-slate-500 uppercase">Slogan Toko</label>
+              <input class="mt-1 border rounded-2xl p-3 w-full" placeholder="Contoh: Pusat alat industri terpercaya">
+            </div>
+            <div>
+              <label class="text-xs font-black text-slate-500 uppercase">Kategori Utama Toko</label>
+              <select class="mt-1 border rounded-2xl p-3 w-full bg-white">
+                <option>Mesin Pertanian</option>
+                <option>Pompa & Kompresor</option>
+                <option>Perkakas & Tools</option>
+                <option>Alat Berat</option>
+                <option>Software Industri</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="text-xs font-black text-slate-500 uppercase">Deskripsi Toko</label>
+              <textarea class="mt-1 border rounded-2xl p-3 w-full" rows="5" placeholder="Jelaskan profil toko, pengalaman, layanan, garansi, dan keunggulan produk."></textarea>
+            </div>
+            <div>
+              <label class="text-xs font-black text-slate-500 uppercase">Upload Logo Toko</label>
+              <input type="file" accept="image/*" class="mt-1 border rounded-2xl p-3 w-full">
+            </div>
+            <div>
+              <label class="text-xs font-black text-slate-500 uppercase">Upload Banner Toko</label>
+              <input type="file" accept="image/*" class="mt-1 border rounded-2xl p-3 w-full">
+            </div>
+          </div>
+        `);
+      }
+
+      if (active === 'Legalitas') {
+        return panel('Kelola Toko', 'Legalitas perusahaan dan dokumen toko.', `
+          ${tabTitle}
+          <div class="grid md:grid-cols-2 gap-4">
+            <input class="border rounded-2xl p-3" placeholder="Nama badan usaha / perusahaan">
+            <input class="border rounded-2xl p-3" placeholder="NIB">
+            <input class="border rounded-2xl p-3" placeholder="NPWP">
+            <input class="border rounded-2xl p-3" placeholder="Nomor akta / SIUP / izin usaha">
+            <input class="border rounded-2xl p-3" placeholder="Nama penanggung jawab">
+            <input class="border rounded-2xl p-3" placeholder="No. WhatsApp penanggung jawab">
+            <div>
+              <label class="text-xs font-black text-slate-500 uppercase">Upload NIB / Legalitas</label>
+              <input type="file" class="mt-1 border rounded-2xl p-3 w-full">
+            </div>
+            <div>
+              <label class="text-xs font-black text-slate-500 uppercase">Upload NPWP</label>
+              <input type="file" class="mt-1 border rounded-2xl p-3 w-full">
+            </div>
+          </div>
+          <div class="mt-4 p-4 rounded-2xl bg-amber-50 border border-amber-100 text-sm text-amber-800 font-bold">
+            Status legalitas: Menunggu verifikasi admin.
+          </div>
+        `);
+      }
+
+      if (active === 'Rekening') {
+        return panel('Kelola Toko', 'Rekening pencairan dan data keuangan seller.', `
+          ${tabTitle}
+          <div class="grid md:grid-cols-2 gap-4">
+            <select class="border rounded-2xl p-3 bg-white">
+              <option>BCA</option>
+              <option>Mandiri</option>
+              <option>BRI</option>
+              <option>BNI</option>
+              <option>BSI</option>
+            </select>
+            <input class="border rounded-2xl p-3" placeholder="Nomor rekening">
+            <input class="border rounded-2xl p-3" placeholder="Nama pemilik rekening">
+            <input class="border rounded-2xl p-3" placeholder="Cabang bank">
+            <input class="border rounded-2xl p-3" placeholder="Email invoice / finance">
+            <input class="border rounded-2xl p-3" placeholder="Minimal pencairan otomatis">
+          </div>
+          <div class="mt-4 grid md:grid-cols-3 gap-4">
+            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
+              <p class="text-xs font-black text-emerald-700 uppercase">Saldo Siap Cair</p>
+              <h4 class="text-2xl font-black mt-1">Rp 24.500.000</h4>
+            </div>
+            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-100">
+              <p class="text-xs font-black text-rose-700 uppercase">Dana Tertahan</p>
+              <h4 class="text-2xl font-black mt-1">Rp 14.500.000</h4>
+            </div>
+            <button onclick="showToast('Permintaan pencairan dikirim')" class="rounded-2xl bg-emerald-600 text-white font-black">Ajukan Pencairan</button>
+          </div>
+        `);
+      }
+
+      if (active === 'Kurir & Gudang') {
+        return panel('Kelola Toko', 'Gudang asal, jasa pengiriman, dan kargo aktif.', `
+          ${tabTitle}
+          <div class="grid md:grid-cols-2 gap-4">
+            <input class="border rounded-2xl p-3" placeholder="Nama gudang / outlet">
+            <input class="border rounded-2xl p-3" placeholder="Kota asal pengiriman">
+            <textarea class="border rounded-2xl p-3 md:col-span-2" rows="3" placeholder="Alamat lengkap gudang"></textarea>
+            <input class="border rounded-2xl p-3" placeholder="PIC gudang">
+            <input class="border rounded-2xl p-3" placeholder="No. WhatsApp gudang">
+          </div>
+          <div class="mt-5">
+            <h4 class="font-black mb-3">Kurir Aktif</h4>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              ${['JNE', 'J&T', 'SiCepat', 'Dakota Cargo', 'Indah Cargo', 'Ambil Sendiri'].map(kurir => `
+                <label class="flex items-center justify-between gap-3 border rounded-2xl p-4 bg-white">
+                  <span class="font-black">${kurir}</span>
+                  <input type="checkbox" checked class="w-5 h-5 accent-emerald-600">
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `);
+      }
+
+      if (active === 'Jam Operasional') {
+        const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        return panel('Kelola Toko', 'Jam kerja toko dan batas proses order.', `
+          ${tabTitle}
+          <div class="grid gap-3">
+            ${days.map((day, index) => `
+              <div class="grid grid-cols-1 md:grid-cols-[140px_1fr_1fr_110px] gap-3 items-center border rounded-2xl p-4">
+                <b>${day}</b>
+                <input type="time" value="${index === 6 ? '00:00' : '08:00'}" class="border rounded-xl p-3">
+                <input type="time" value="${index === 6 ? '00:00' : '17:00'}" class="border rounded-xl p-3">
+                <label class="flex items-center gap-2 font-bold text-sm">
+                  <input type="checkbox" ${index === 6 ? '' : 'checked'} class="accent-emerald-600"> Buka
+                </label>
+              </div>
+            `).join('')}
+          </div>
+          <div class="mt-4 grid md:grid-cols-2 gap-4">
+            <input class="border rounded-2xl p-3" placeholder="Batas proses order harian, contoh: 15:00">
+            <input class="border rounded-2xl p-3" placeholder="Estimasi packing, contoh: 1-2 hari kerja">
+          </div>
+        `);
+      }
+
+      if (active === 'Kebijakan') {
+        return panel('Kelola Toko', 'Atur kebijakan retur, garansi, dan syarat transaksi.', `
+          ${tabTitle}
+          <div class="grid gap-4">
+            <textarea class="border rounded-2xl p-3" rows="4" placeholder="Kebijakan retur barang"></textarea>
+            <textarea class="border rounded-2xl p-3" rows="4" placeholder="Kebijakan garansi produk"></textarea>
+            <textarea class="border rounded-2xl p-3" rows="4" placeholder="Syarat pembayaran / DP / termin"></textarea>
+            <textarea class="border rounded-2xl p-3" rows="4" placeholder="Catatan khusus untuk produk berat, indent, custom, atau proyek tender"></textarea>
+          </div>
+        `);
+      }
+
+      if (active === 'Preview Toko') {
+        return panel('Kelola Toko', 'Preview tampilan toko sebelum dipublikasikan.', `
+          ${tabTitle}
+          <div class="rounded-[28px] overflow-hidden border bg-white">
+            <div class="h-40 bg-gradient-to-r from-indigo-700 to-emerald-600 relative">
+              <div class="absolute left-5 bottom-[-36px] w-20 h-20 rounded-3xl bg-white shadow-lg flex items-center justify-center text-indigo-700 font-black text-2xl">TK</div>
+            </div>
+            <div class="pt-12 p-5">
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                  <h3 class="text-2xl font-black">Toko ${state.name}</h3>
+                  <p class="text-sm text-slate-500 mt-1">Pusat alat industri terpercaya untuk kebutuhan B2B dan proyek.</p>
+                </div>
+                <div class="flex gap-2">
+                  ${badge('Terverifikasi', 'emerald')}
+                  ${badge('Vendor B2B', 'indigo')}
+                </div>
+              </div>
+              <div class="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
+                ${kpiCard('Produk', '24', 'fa-boxes-stacked', 'indigo')}
+                ${kpiCard('Rating', '4.8', 'fa-star', 'amber')}
+                ${kpiCard('Order', '120+', 'fa-receipt', 'emerald')}
+                ${kpiCard('TKDN', 'Ready', 'fa-certificate', 'rose')}
+              </div>
+            </div>
+          </div>
+        `);
+      }
+
+      return panel('Kelola Toko', 'Pilih submenu toko di atas.', `${tabTitle}`);
     }
+
 
     function userWishlist() {
       return panel('Wishlist', 'Produk favorit user.', `
