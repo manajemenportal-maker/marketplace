@@ -3113,6 +3113,182 @@ log('zona TKDN disembunyikan, rekap ekspedisi gratis aktif');
 })();
 </script>
 
+
+
+<!-- =========================================================
+FINAL LOCK PATCH: Dashboard Admin/User rapi + role benar-benar pisah
+Tidak menyentuh kalkulator ekspedisi, marketplace, dan fungsi export lama.
+========================================================= -->
+<style id="bhz-final-lock-style">
+  #view-admin.bhz-final, #view-buyer.bhz-final{max-width:1280px!important;margin:0 auto!important;padding:24px 16px 72px!important;background:#f8fafc!important;display:grid!important;grid-template-columns:280px minmax(0,1fr)!important;gap:22px!important;align-items:start!important;min-height:calc(100vh - 150px)!important;}
+  #view-admin.bhz-final.hidden, #view-buyer.bhz-final.hidden{display:none!important;}
+  .bhz-sidebar{position:sticky;top:130px;background:#fff;border:1px solid #e2e8f0;border-radius:24px;box-shadow:0 12px 30px rgba(15,23,42,.06);overflow:hidden;min-height:560px;}
+  .bhz-admin .bhz-sidebar{background:#0f172a;border-color:#1e293b;color:#e2e8f0;}
+  .bhz-side-head{padding:18px;border-bottom:1px solid rgba(148,163,184,.25);display:flex;gap:12px;align-items:center;}
+  .bhz-side-logo{width:48px;height:48px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 10px 24px rgba(15,23,42,.18);}
+  .bhz-admin .bhz-side-logo{background:#34d399;color:#052e2b;}.bhz-user .bhz-side-logo{background:#4f46e5;color:#fff;}
+  .bhz-side-head h3{font-size:16px;font-weight:900;line-height:1.15;margin:0;}.bhz-side-head p{font-size:11px;margin:3px 0 0;color:#64748b;}.bhz-admin .bhz-side-head p{color:#94a3b8;}
+  .bhz-main-nav{padding:12px;display:grid;gap:8px;}.bhz-main-nav button{width:100%;border:0;display:flex;align-items:center;gap:12px;text-align:left;padding:12px 14px;border-radius:16px;font-size:13px;font-weight:900;transition:.18s ease;cursor:pointer;}
+  .bhz-main-nav button i{width:20px;text-align:center;font-size:15px;}.bhz-user .bhz-main-nav button{background:#fff;color:#475569;border:1px solid transparent;}.bhz-user .bhz-main-nav button:hover{background:#eef2ff;color:#3730a3;}.bhz-user .bhz-main-nav button.active{background:#eef2ff;color:#3730a3;border-color:#c7d2fe;box-shadow:0 8px 20px rgba(79,70,229,.12);}
+  .bhz-admin .bhz-main-nav button{background:#0f172a;color:#cbd5e1;border:1px solid transparent;}.bhz-admin .bhz-main-nav button:hover{background:#1e293b;color:#fff;}.bhz-admin .bhz-main-nav button.active{background:#4f46e5;color:#fff;border-color:#6366f1;box-shadow:0 12px 28px rgba(79,70,229,.28);}
+  .bhz-workspace{min-width:0;display:grid;gap:18px;}.bhz-page-head{background:linear-gradient(135deg,#fff,#f8fafc);border:1px solid #e2e8f0;border-radius:24px;padding:22px;box-shadow:0 12px 30px rgba(15,23,42,.05);display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
+  .bhz-page-head h1{font-size:26px;font-weight:950;color:#0f172a;margin:0;line-height:1.1;display:flex;align-items:center;gap:12px;}.bhz-page-head p{margin:7px 0 0;color:#64748b;font-size:13px;max-width:720px;}.bhz-page-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+  .bhz-btn{border:0;border-radius:14px;padding:10px 14px;font-size:12px;font-weight:900;cursor:pointer;transition:.18s ease;white-space:nowrap;}.bhz-btn-primary{background:#4f46e5;color:#fff;}.bhz-btn-dark{background:#0f172a;color:#fff;}.bhz-btn-green{background:#059669;color:#fff;}.bhz-btn-amber{background:#f59e0b;color:#1e1b4b;}.bhz-btn-rose{background:#e11d48;color:#fff;}.bhz-btn-soft{background:#f1f5f9;color:#334155;border:1px solid #e2e8f0;}
+  .bhz-stat-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important;align-items:stretch!important;}.bhz-stat-card{background:#fff!important;border:1px solid #e2e8f0!important;border-radius:22px!important;padding:18px!important;box-shadow:0 10px 26px rgba(15,23,42,.05)!important;min-height:132px!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;overflow:hidden!important;position:relative!important;}.bhz-stat-card:after{content:"";position:absolute;right:-24px;bottom:-24px;width:90px;height:90px;border-radius:30px;background:rgba(79,70,229,.07);transform:rotate(18deg);}.bhz-stat-top{display:flex;justify-content:space-between;gap:12px;position:relative;z-index:1;}.bhz-stat-title{font-size:11px;font-weight:950;text-transform:uppercase;letter-spacing:.04em;color:#64748b;line-height:1.35;}.bhz-stat-icon{width:44px;height:44px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;}.bhz-stat-value{font-size:22px;font-weight:950;color:#0f172a;letter-spacing:-.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;z-index:1;}.bhz-stat-sub{font-size:11px;color:#64748b;font-weight:700;margin-top:4px;position:relative;z-index:1;}
+  .bhz-panel{background:#fff;border:1px solid #e2e8f0;border-radius:24px;box-shadow:0 12px 30px rgba(15,23,42,.05);overflow:hidden;}.bhz-panel-head{padding:18px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fff;}.bhz-panel-head h2{font-size:18px;font-weight:950;color:#0f172a;margin:0;}.bhz-panel-head p{font-size:12px;color:#64748b;margin:4px 0 0;}.bhz-panel-body{padding:20px;}.bhz-sub-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}.bhz-sub-card{border:1px solid #e2e8f0;border-radius:18px;padding:14px;background:#fff;text-align:left;cursor:pointer;transition:.18s ease;display:flex;gap:12px;align-items:flex-start;min-height:88px;}.bhz-sub-card:hover{background:#eef2ff;border-color:#c7d2fe;transform:translateY(-1px);}.bhz-sub-card.active{background:#eef2ff;border-color:#818cf8;box-shadow:0 8px 22px rgba(79,70,229,.12);}.bhz-sub-card i{width:34px;height:34px;border-radius:12px;background:#eef2ff;color:#4f46e5;display:flex;align-items:center;justify-content:center;flex-shrink:0;}.bhz-sub-card b{font-size:13px;color:#0f172a;display:block;}.bhz-sub-card small{font-size:11px;color:#64748b;line-height:1.25;display:block;margin-top:3px;}.bhz-detail{margin-top:16px;}
+  .bhz-table-wrap{overflow-x:auto;border:1px solid #e2e8f0;border-radius:18px;background:#fff;}.bhz-table{width:100%;border-collapse:collapse;font-size:13px;}.bhz-table thead{background:#f8fafc;color:#64748b;text-transform:uppercase;font-size:11px;}.bhz-table th,.bhz-table td{padding:13px 14px;border-bottom:1px solid #eef2f7;text-align:left;vertical-align:middle;white-space:nowrap;}.bhz-table tr:last-child td{border-bottom:0;}.bhz-pill{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:900;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;}.bhz-pill.green{background:#ecfdf5;color:#047857;border-color:#a7f3d0}.bhz-pill.amber{background:#fffbeb;color:#b45309;border-color:#fde68a}.bhz-pill.rose{background:#fff1f2;color:#be123c;border-color:#fecdd3}.bhz-pill.slate{background:#f1f5f9;color:#334155;border-color:#cbd5e1}.bhz-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}.bhz-form-grid .full{grid-column:1/-1}.bhz-input,.bhz-textarea,.bhz-select{width:100%;border:1px solid #cbd5e1;border-radius:14px;padding:12px 13px;font-size:13px;outline:none;background:#fff;}.bhz-input:focus,.bhz-textarea:focus,.bhz-select:focus{border-color:#818cf8;box-shadow:0 0 0 3px rgba(99,102,241,.12)}.bhz-textarea{min-height:110px;resize:vertical;}.bhz-mobile-role-note{display:none;}
+  #tab-tkdn,[onclick*="switchAppView('tkdn')"],[onclick*='switchAppView("tkdn")']{display:none!important;}
+  @media(max-width:1024px){#view-admin.bhz-final,#view-buyer.bhz-final{grid-template-columns:1fr!important;padding:14px!important}.bhz-sidebar{position:relative;top:0;min-height:auto}.bhz-main-nav{grid-template-columns:repeat(2,minmax(0,1fr));}.bhz-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.bhz-sub-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.bhz-page-head{flex-direction:column}.bhz-page-actions{justify-content:flex-start}}
+  @media(max-width:640px){.bhz-main-nav{display:flex;overflow-x:auto;padding:10px}.bhz-main-nav button{min-width:128px;justify-content:center;flex-direction:column;gap:6px;padding:10px 8px;font-size:11px}.bhz-page-head h1{font-size:21px}.bhz-stat-grid{grid-template-columns:1fr!important}.bhz-sub-grid{grid-template-columns:1fr}.bhz-form-grid{grid-template-columns:1fr}.bhz-stat-card{min-height:112px!important}.bhz-stat-value{font-size:20px}.bhz-mobile-role-note{display:block;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;padding:10px;border-radius:14px;font-size:12px;font-weight:800;margin-bottom:12px}}
+</style>
+<script id="bhz-final-lock-script">
+(function(){
+  if(window.__BHZ_FINAL_LOCK__) return; window.__BHZ_FINAL_LOCK__=true;
+  const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+  const LS={role:'bhz_locked_role',adminMenu:'bhz_admin_menu',adminSub:'bhz_admin_sub',userMenu:'bhz_user_menu',userSub:'bhz_user_sub'};
+  const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+  const toast=msg=>{let t=$('#bhzToast'); if(!t){t=document.createElement('div');t.id='bhzToast';t.style.cssText='position:fixed;right:18px;bottom:18px;z-index:999999;background:#0f172a;color:#fff;padding:12px 16px;border-radius:16px;font:800 13px Inter,Arial;box-shadow:0 16px 40px rgba(15,23,42,.25)';document.body.appendChild(t);}t.textContent=msg;t.style.display='block';clearTimeout(t._to);t._to=setTimeout(()=>t.style.display='none',1800);};
+  const adminMenus={
+    overview:{icon:'fa-gauge-high',title:'Overview Admin',desc:'Ringkasan kendali pusat BisnisHub',subs:[['summary','fa-chart-line','Ringkasan Platform','KPI utama dan kondisi sistem'],['activity','fa-clock-rotate-left','Aktivitas Terbaru','Log transaksi dan perubahan'],['quick','fa-bolt','Aksi Cepat','Shortcut operasional admin']]},
+    users:{icon:'fa-users',title:'User & Role',desc:'Kelola akun pembeli dan akses',subs:[['list','fa-list','Daftar User','Data akun pembeli'],['roles','fa-user-shield','Role & Akses','Pisahkan hak admin dan user'],['verify','fa-id-card','Verifikasi User','Validasi profil dan perusahaan'],['segment','fa-layer-group','Segmentasi','Kelompok pelanggan']]},
+    sellers:{icon:'fa-store',title:'Seller / Vendor',desc:'Kelola vendor, toko, dan legalitas',subs:[['summary','fa-chart-pie','Ringkasan Seller','Statistik vendor dan toko'],['verify','fa-circle-check','Verifikasi Seller','Legalitas dan rekening'],['audit','fa-magnifying-glass-chart','Audit Vendor','Cek performa vendor'],['withdraw','fa-money-bill-transfer','Withdraw Seller','Pencairan dana seller']]},
+    products:{icon:'fa-boxes-stacked',title:'Produk',desc:'Moderasi produk dan kategori',subs:[['review','fa-clipboard-check','Review Produk','Produk menunggu approval'],['active','fa-box-open','Produk Aktif','Etalase yang sudah tayang'],['category','fa-tags','Kategori','Struktur kategori marketplace'],['stock','fa-warehouse','Stok & Harga','Kontrol stok dan harga'],['docs','fa-file-shield','Dokumen TKDN','Dokumen legal produk']]},
+    orders:{icon:'fa-receipt',title:'Order & Refund',desc:'Transaksi, refund, dan dispute',subs:[['all','fa-list-check','Semua Order','Pantau seluruh transaksi'],['shipping','fa-truck-fast','Pengiriman','Resi dan status kirim'],['refund','fa-rotate-left','Refund','Pengembalian dana'],['dispute','fa-scale-balanced','Dispute','Masalah transaksi']]},
+    tenders:{icon:'fa-briefcase',title:'Tender',desc:'Bursa proyek dan bidding',subs:[['open','fa-folder-open','Tender Aktif','Proyek sedang berjalan'],['posting','fa-pen-to-square','Posting Tender','Buat proyek baru'],['bids','fa-hand-holding-dollar','Bid Masuk','Penawaran vendor'],['winner','fa-trophy','Pemenang','Penetapan vendor']]},
+    support:{icon:'fa-headset',title:'Support',desc:'Pusat bantuan dan tiket',subs:[['tickets','fa-ticket','Tiket Masuk','Komplain dan bantuan'],['chat','fa-comments','Live Chat','Percakapan user'],['faq','fa-circle-question','FAQ','Pertanyaan umum']]},
+    cms:{icon:'fa-palette',title:'CMS Tampilan',desc:'Kontrol konten dan tampilan',subs:[['banner','fa-image','Banner','Hero dan promo'],['mobile','fa-mobile-screen','Tampilan HP','Icon mobile ala marketplace'],['copy','fa-pen-nib','Copywriting','Teks halaman utama']]},
+    finance:{icon:'fa-vault',title:'Keuangan & Escrow',desc:'Dana tertahan, cair, dan komisi',subs:[['escrow','fa-vault','Escrow','Dana aman platform'],['withdraw','fa-money-bill-transfer','Withdraw','Pencairan vendor'],['commission','fa-percent','Komisi','Fee platform'],['report','fa-file-invoice-dollar','Laporan','Rekap keuangan']]},
+    settings:{icon:'fa-gear',title:'Setting Sistem',desc:'Konfigurasi global platform',subs:[['platform','fa-toggle-on','Status Platform','Online / maintenance'],['approval','fa-user-check','Approval','Aturan verifikasi'],['payment','fa-credit-card','Payment','Rekening dan gateway'],['security','fa-lock','Keamanan Login','OTP dan role lock'],['api','fa-plug','Integrasi API','Ekspedisi dan payment'],['backup','fa-database','Backup & Log','Data dan audit log']]}
+  };
+  const userMenus={
+    overview:{icon:'fa-gauge',title:'Ringkasan User',desc:'Dashboard pembeli/user BisnisHub',subs:[['summary','fa-chart-simple','Ringkasan Akun','Status pesanan, toko, dan transaksi'],['quick','fa-bolt','Aksi Cepat','Shortcut pekerjaan user'],['recent','fa-clock','Aktivitas Terbaru','Riwayat aktivitas akun']]},
+    orders:{icon:'fa-box-open',title:'Pesanan Saya',desc:'Order, invoice, dan pelacakan',subs:[['active','fa-truck-fast','Pesanan Aktif','Order sedang diproses'],['history','fa-clock-rotate-left','Riwayat Pesanan','Order selesai'],['invoice','fa-file-invoice','Invoice','Dokumen tagihan'],['complaint','fa-triangle-exclamation','Komplain','Bantuan order']]},
+    addProduct:{icon:'fa-square-plus',title:'Tambah Produk',desc:'Upload produk lengkap dari akun user/toko',subs:[['basic','fa-circle-info','Info Produk','Nama, kategori, brand, SKU'],['price','fa-tags','Harga & Stok','Retail, grosir, MOQ, stok'],['media','fa-images','Gambar & Media','Foto utama, galeri, video'],['spec','fa-list-check','Spesifikasi','Detail teknis produk'],['legal','fa-file-shield','Legal / TKDN','NIB, SNI, sertifikat'],['ship','fa-truck','Pengiriman','Gudang, berat, dimensi'],['preview','fa-eye','Preview & Submit','Cek sebelum ajukan']]},
+    store:{icon:'fa-store',title:'Kelola Toko',desc:'Setting toko berada di kanan, bukan sidebar kiri',subs:[['profile','fa-store','Profil Toko','Nama, slogan, deskripsi'],['legal','fa-building-shield','Legalitas','NIB, NPWP, akta'],['bank','fa-building-columns','Rekening & Pencairan','Bank dan withdraw'],['courier','fa-truck-ramp-box','Kurir & Gudang','Alamat gudang dan ekspedisi'],['hours','fa-clock','Jam Operasional','Hari dan jam layanan'],['policy','fa-scroll','Kebijakan Toko','Garansi dan retur'],['preview','fa-eye','Preview Toko','Tampilan toko publik']]},
+    wishlist:{icon:'fa-heart',title:'Wishlist',desc:'Produk yang disimpan',subs:[['products','fa-heart','Produk Favorit','Daftar produk disimpan'],['compare','fa-code-compare','Perbandingan','Bandingkan produk']]},
+    addresses:{icon:'fa-location-dot',title:'Alamat Proyek',desc:'Alamat kantor, gudang, dan proyek',subs:[['list','fa-map-location-dot','Daftar Alamat','Semua alamat pengiriman'],['new','fa-plus','Tambah Alamat','Alamat baru'],['pic','fa-user-tie','PIC Penerima','Kontak penerima barang']]},
+    tickets:{icon:'fa-headset',title:'Bantuan / Tiket',desc:'Support dan komplain',subs:[['open','fa-ticket','Tiket Aktif','Permintaan yang berjalan'],['new','fa-plus','Buat Tiket','Ajukan bantuan baru'],['history','fa-clock','Riwayat Tiket','Tiket selesai']]},
+    notifications:{icon:'fa-bell',title:'Notifikasi',desc:'Pesan sistem dan promo',subs:[['all','fa-bell','Semua Notifikasi','Status order dan sistem'],['promo','fa-bullhorn','Promo','Penawaran marketplace'],['tender','fa-briefcase','Info Tender','Peluang proyek']]},
+    security:{icon:'fa-lock',title:'Keamanan Akun',desc:'Password, OTP, perangkat login',subs:[['password','fa-key','Password','Ubah kata sandi'],['otp','fa-shield-halved','OTP','Verifikasi dua langkah'],['devices','fa-laptop','Perangkat','Login aktif']]},
+    profile:{icon:'fa-user-gear',title:'Profil User',desc:'Biodata user dan perusahaan',subs:[['bio','fa-id-card','Biodata','Nama dan kontak'],['company','fa-building','Perusahaan','Profil bisnis'],['preferences','fa-sliders','Preferensi','Pengaturan akun']]}
+  };
+  function getRole(){
+    const adminTab=$('#tab-admin'), buyerTab=$('#tab-buyer');
+    const email=($('#current-user-email')?.textContent||'').toLowerCase();
+    const looksLogged=email && !email.includes('login') && !email.includes('daftar');
+    if(adminTab && !adminTab.classList.contains('hidden')) return 'admin';
+    if(looksLogged && (email.includes('admin') || email.includes('sridamayanti'))) return 'admin';
+    if(buyerTab && !buyerTab.classList.contains('hidden')) return 'user';
+    return localStorage.getItem(LS.role)||'guest';
+  }
+  function lockRole(role){
+    role=role||getRole(); localStorage.setItem(LS.role,role);
+    const adminTab=$('#tab-admin'), buyerTab=$('#tab-buyer'), sellerTab=$('#tab-seller');
+    if(role==='admin'){
+      adminTab&&adminTab.classList.remove('hidden'); buyerTab&&buyerTab.classList.add('hidden'); sellerTab&&sellerTab.classList.add('hidden');
+      if(!$('#view-admin')?.classList.contains('hidden')) buildAdmin();
+      if(!$('#view-buyer')?.classList.contains('hidden') || !$('#view-seller')?.classList.contains('hidden')) safeSwitch('admin');
+    } else if(role==='user'){
+      adminTab&&adminTab.classList.add('hidden'); sellerTab&&sellerTab.classList.add('hidden'); buyerTab&&buyerTab.classList.remove('hidden');
+      if(!$('#view-buyer')?.classList.contains('hidden')) buildUser();
+      if(!$('#view-admin')?.classList.contains('hidden') || !$('#view-seller')?.classList.contains('hidden')) safeSwitch('buyer');
+    }
+  }
+  function safeSwitch(view){
+    if(typeof window.__bhz_old_switch==='function') window.__bhz_old_switch(view);
+    else if(typeof window.switchAppView==='function') window.switchAppView(view);
+  }
+  function patchSwitch(){
+    if(window.__bhz_switch_patched) return; window.__bhz_switch_patched=true;
+    window.__bhz_old_switch=window.switchAppView;
+    window.switchAppView=function(view){
+      const role=localStorage.getItem(LS.role)||getRole();
+      if(role==='admin' && (view==='buyer'||view==='seller')) view='admin';
+      if(role==='user' && (view==='admin'||view==='seller')) view='buyer';
+      if(view==='tkdn') view='marketplace';
+      const r=window.__bhz_old_switch?window.__bhz_old_switch.apply(this,[view]):undefined;
+      setTimeout(()=>{ lockRole(role); if(view==='admin') buildAdmin(); if(view==='buyer') buildUser(); },60);
+      return r;
+    };
+  }
+  function iconColor(i){return ['#4f46e5','#059669','#f59e0b','#e11d48','#0284c7','#7c3aed'][i%6]}
+  function stats(items){return `<div class="bhz-stat-grid">${items.map((it,i)=>`<div class="bhz-stat-card"><div class="bhz-stat-top"><div class="bhz-stat-title">${it[0]}</div><div class="bhz-stat-icon" style="background:${iconColor(i)}16;color:${iconColor(i)}"><i class="fa-solid ${it[2]}"></i></div></div><div><div class="bhz-stat-value">${it[1]}</div><div class="bhz-stat-sub">${it[3]||'Update sistem'}</div></div></div>`).join('')}</div>`}
+  function btn(label,cls='primary'){return `<button type="button" class="bhz-btn bhz-btn-${cls}" onclick="BHZFinal.action('${label.replace(/'/g,'')}')">${label}</button>`}
+  function pill(t,c=''){return `<span class="bhz-pill ${c}">${t}</span>`}
+  function table(head,rows){return `<div class="bhz-table-wrap"><table class="bhz-table"><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
+  function form(fields){return `<div class="bhz-form-grid">${fields.map(f=>f[0]==='textarea'?`<textarea class="bhz-textarea ${f[2]?'full':''}" placeholder="${f[1]}">${f[3]||''}</textarea>`:f[0]==='select'?`<select class="bhz-select ${f[2]?'full':''}">${f[1].map(x=>`<option>${x}</option>`).join('')}</select>`:`<input class="bhz-input ${f[2]?'full':''}" placeholder="${f[1]}" value="${f[3]||''}">`).join('')}</div>`}
+  function shell(kind,menus,active,sub){
+    const menu=menus[active]||menus.overview; sub=sub||menu.subs[0][0];
+    return `<aside class="bhz-sidebar bhz-${kind}"><div class="bhz-side-head"><div class="bhz-side-logo">${kind==='admin'?'<i class="fa-solid fa-shield-halved"></i>':'US'}</div><div><h3>${kind==='admin'?'Admin Pusat':'Dashboard User'}</h3><p>${kind==='admin'?'Menu utama hanya di kiri':'User tidak melihat menu admin'}</p></div></div><nav class="bhz-main-nav">${Object.entries(menus).map(([k,m])=>`<button type="button" class="${active===k?'active':''}" onclick="BHZFinal.open('${kind}','${k}')"><i class="fa-solid ${m.icon}"></i><span>${m.title}</span></button>`).join('')}</nav></aside><section class="bhz-workspace"><div class="bhz-mobile-role-note">Akses terkunci sebagai ${kind==='admin'?'ADMIN':'USER'}.</div><div class="bhz-page-head"><div><h1><i class="fa-solid ${menu.icon} text-indigo-600"></i>${menu.title}</h1><p>${menu.desc}. Submenu ditampilkan di area kanan, bukan di bawah sidebar kiri.</p></div><div class="bhz-page-actions">${btn('Refresh','soft')}${kind==='admin'?btn('Export','dark'):btn('Simpan','primary')}</div></div><div class="bhz-panel"><div class="bhz-panel-head"><div><h2>Submenu ${menu.title}</h2><p>Pilih salah satu submenu untuk membuka detailnya di bawah panel kanan.</p></div></div><div class="bhz-panel-body"><div class="bhz-sub-grid">${menu.subs.map(s=>`<button type="button" class="bhz-sub-card ${sub===s[0]?'active':''}" onclick="BHZFinal.openSub('${kind}','${active}','${s[0]}')"><i class="fa-solid ${s[1]}"></i><span><b>${s[2]}</b><small>${s[3]}</small></span></button>`).join('')}</div><div class="bhz-detail">${kind==='admin'?adminDetail(active,sub):userDetail(active,sub)}</div></div></div></section>`;
+  }
+  function adminDetail(m,sub){
+    if(m==='overview') return stats([['GMV Platform',money(1450800000),'fa-chart-line','Transaksi berjalan'],['User Aktif','1.248','fa-users','Admin terkunci'],['Seller Terverifikasi','186','fa-store','Vendor aktif'],['Escrow Aktif',money(145080000),'fa-vault','Dana aman']])+`<div class="mt-4">${table(['Aktivitas','User','Waktu','Status'],[['Login admin','admin@bisnishub','Baru saja',pill('Aman','green')],['Produk diapprove','PT Bintang Pompa','10 menit',pill('Selesai','green')],['Refund diajukan','Andi Surya','25 menit',pill('Review','amber')]])}</div>`;
+    if(m==='users') return sub==='roles'?form([['select',['Role: Admin','Role: User','Role: Seller'],false],['text','Email akun'],['text','Hak akses modul'],['textarea','Catatan role',true]]):table(['ID','Nama','Email','Role','Status','Aksi'],[['USR-001','Andi Surya','andi@company.id','User',pill('Aktif','green'),btn('Edit Role')],['USR-002','Budi Vendor','budi@vendor.id','User/Toko',pill('Verifikasi','amber'),btn('Verifikasi','green')],['ADM-001','Admin Pusat','admin@bisnishub.id','Admin',pill('Terkunci','green'),btn('Audit','dark')]]);
+    if(m==='sellers') return stats([['Total Seller','186','fa-store','Semua vendor'],['Terverifikasi','142','fa-circle-check','Legal valid'],['Menunggu Review','31','fa-clock','Perlu cek'],['Withdraw',money(24500000),'fa-money-bill-transfer','Siap cair']])+`<div class="mt-4">${table(['Seller','Legalitas','Produk','Saldo','Aksi'],[['PT Bintang Pompa',pill('Valid','green'),'42',money(24500000),btn('Audit')],['CV Baja Mandiri',pill('Review','amber'),'18',money(12000000),btn('Verifikasi','green')],['Toko Teknik Jaya',pill('Valid','green'),'85',money(8500000),btn('Lihat')]])}</div>`;
+    if(m==='products') return sub==='category'?form([['text','Nama kategori'],['text','Icon kategori FontAwesome'],['textarea','Deskripsi kategori',true]]):table(['Produk','Seller','Harga','TKDN','Status','Aksi'],[['Pompa 30kW','PT Bintang Pompa',money(24500000),'45.5%',pill('Aktif','green'),btn('Moderasi')],['Traktor G1000','CV Agro',money(15500000),'38.2%',pill('Review','amber'),btn('Approve','green')],['Mesin Press 50 Ton','CV Baja',money(45000000),'35.8%',pill('Aktif','green'),btn('Edit')]]);
+    if(m==='orders') return table(['Invoice','Buyer','Seller','Total','Status','Aksi'],[['INV-001','Andi','PT Bintang',money(24500000),pill('Dikirim'),btn('Audit')],['INV-002','Siti','CV Agro',money(15500000),pill('Diproses','amber'),btn('Proses')],['INV-003','PT Pabrik','CV Baja',money(90000000),pill('Selesai','green'),btn('Detail')]]);
+    if(m==='tenders') return sub==='posting'?form([['text','Judul tender'],['text','Owner / instansi'],['text','Nilai HPS'],['text','Minimum TKDN'],['textarea','Spesifikasi dan syarat tender',true]]):table(['Tender','Owner','HPS','Bid','Status','Aksi'],[['Pengadaan Pompa','Dinas Pertanian',money(1250000000),'14',pill('Open','green'),btn('Moderasi')],['Excavator PC200','PT Tambang',money(15000000000),'8',pill('Review','amber'),btn('Pilih')]]);
+    if(m==='support') return table(['Tiket','User','Topik','Prioritas','Status','Aksi'],[['TKT-001','Andi','Pengiriman terlambat',pill('Tinggi','rose'),pill('Open'),btn('Balas')],['TKT-002','Budi','Upload legal gagal',pill('Sedang','amber'),pill('Proses','amber'),btn('Bantu')]]);
+    if(m==='cms') return form([['text','Judul banner utama',false,'Belanja Industri & Tender Lebih Mudah'],['text','URL gambar banner'],['textarea','Deskripsi promosi',true,'Produk teknik, mesin, pertanian, alat berat, logistik, escrow dan tender.']])+`<div class="mt-4">${btn('Simpan Tampilan','green')} ${btn('Preview','dark')}</div>`;
+    if(m==='finance') return stats([['Total Escrow',money(1450800000),'fa-vault'],['Dana Tertahan',money(145000000),'fa-lock'],['Siap Cair',money(245000000),'fa-money-bill-transfer'],['Refund',money(12500000),'fa-rotate-left']])+`<div class="mt-4">${table(['Seller','Nominal','Bank','Status','Aksi'],[['PT Bintang',money(24500000),'BCA ****123',pill('Siap Cair','green'),btn('Cairkan','green')],['CV Baja',money(12000000),'BRI ****444',pill('Audit','amber'),btn('Tahan','rose')]])}</div>`;
+    if(m==='settings') return `<div class="grid md:grid-cols-2 gap-4"><label class="flex justify-between border rounded-2xl p-4"><span><b>Website Online</b><small class="block text-slate-500">Platform dapat diakses</small></span><input type="checkbox" checked></label><label class="flex justify-between border rounded-2xl p-4"><span><b>Maintenance Mode</b><small class="block text-slate-500">Perawatan sistem</small></span><input type="checkbox"></label><label class="flex justify-between border rounded-2xl p-4"><span><b>Role Lock</b><small class="block text-slate-500">Admin dan user terpisah</small></span><input type="checkbox" checked></label><label class="flex justify-between border rounded-2xl p-4"><span><b>OTP Admin</b><small class="block text-slate-500">Login admin lebih aman</small></span><input type="checkbox" checked></label></div><div class="mt-4">${btn('Simpan Setting','green')}</div>`;
+    return table(['Data','Status','Aksi'],[['Item demo',pill('Aktif','green'),btn('Proses')]]);
+  }
+  function userDetail(m,sub){
+    if(m==='overview') return stats([['Pesanan Aktif','4','fa-box-open','Sedang berjalan'],['Wishlist','12','fa-heart','Produk disimpan'],['Produk Draft','3','fa-square-plus','Belum diajukan'],['Toko User',pill('Aktif','green'),'fa-store','Kelola di kanan']])+`<div class="mt-4">${table(['Aktivitas','Tanggal','Status','Aksi'],[['Tambah produk draft','Hari ini',pill('Draft','amber'),btn('Lanjutkan')],['Pesanan pompa','Kemarin',pill('Dikirim'),btn('Lacak')],['Setting toko','2 hari lalu',pill('Tersimpan','green'),btn('Edit')]])}</div>`;
+    if(m==='orders') return table(['Invoice','Produk','Seller','Total','Status','Aksi'],[['INV-001','Pompa 30kW','PT Bintang',money(24500000),pill('Dikirim'),btn('Lacak')],['INV-002','Traktor G1000','CV Agro',money(15500000),pill('Diproses','amber'),btn('Komplain','rose')]]);
+    if(m==='addProduct'){
+      if(sub==='basic') return form([['text','Nama produk lengkap'],['select',['Pilih kategori','Perkakas & Tools','Pompa & Kompresor','Pertanian & Kehutanan','Hydrolik'],false],['text','Merek / brand'],['text','SKU produk'],['select',['Baru','Bekas','Refurbished'],false],['textarea','Deskripsi lengkap produk',true]]);
+      if(sub==='price') return form([['text','Harga retail'],['text','Harga grosir / B2B'],['text','MOQ'],['text','Stok tersedia'],['select',['Unit','Pcs','Set','Kg'],false],['textarea','Varian produk',true]]);
+      if(sub==='media') return form([['text','Upload gambar utama (URL / file path)'],['text','Galeri foto 1'],['text','Galeri foto 2'],['text','Galeri foto 3'],['text','Link video produk',true]]);
+      if(sub==='spec') return form([['textarea','Spesifikasi teknis: ukuran, daya, material, kapasitas, fitur',true]]);
+      if(sub==='legal') return form([['text','Nilai TKDN (%)'],['text','Nomor sertifikat TKDN'],['text','NIB'],['text','SNI'],['text','Upload dokumen legal',true]]);
+      if(sub==='ship') return form([['text','Gudang asal'],['text','Berat kg'],['text','Panjang x Lebar x Tinggi'],['select',['JNE','J&T','Dakota Cargo','Indah Cargo','Ambil Sendiri'],true]]);
+      return `<div class="rounded-2xl border p-5 bg-slate-50"><h3 class="font-black text-lg mb-2">Preview Produk</h3><p class="text-sm text-slate-500">Cek semua data produk sebelum diajukan ke admin.</p><div class="mt-4 flex gap-2 flex-wrap">${btn('Simpan Draft','amber')}${btn('Ajukan ke Admin','green')}${btn('Reset Draft','rose')}</div></div>`;
+    }
+    if(m==='store'){
+      if(sub==='profile') return form([['text','Nama toko'],['text','Slogan toko'],['textarea','Deskripsi toko',true]]);
+      if(sub==='legal') return form([['text','NIB'],['text','NPWP'],['text','Akta perusahaan'],['text','Upload legalitas',true]]);
+      if(sub==='bank') return form([['text','Nama bank'],['text','Nomor rekening'],['text','Atas nama'],['textarea','Catatan pencairan',true]]);
+      if(sub==='courier') return form([['text','Alamat gudang'],['select',['JNE','J&T','Dakota Cargo','Indah Cargo','Kurir sendiri'],false],['text','PIC gudang'],['text','No HP PIC']]);
+      if(sub==='hours') return form([['text','Hari operasional'],['text','Jam buka'],['text','Jam tutup'],['textarea','Catatan libur',true]]);
+      if(sub==='policy') return form([['textarea','Kebijakan garansi, retur, pembayaran, dan pengiriman',true]]);
+      return `<div class="rounded-2xl border p-5 bg-indigo-50"><h3 class="font-black text-lg">Preview Toko</h3><p class="text-sm text-slate-600 mt-1">Tampilan toko publik user akan muncul di sini.</p><div class="mt-4">${btn('Simpan Setting Toko','green')}</div></div>`;
+    }
+    if(m==='wishlist') return table(['Produk','Harga','TKDN','Aksi'],[['Pompa 30kW',money(24500000),'45.5%',btn('Keranjang')],['Panel Surya',money(2100000),'62%',btn('Bandingkan')]]);
+    if(m==='addresses') return sub==='new'?form([['text','Nama alamat'],['text','Nama penerima'],['text','No HP'],['textarea','Alamat lengkap',true]]):table(['Alamat','PIC','No HP','Status','Aksi'],[['Kantor Jakarta','Andi','08xxx',pill('Utama','green'),btn('Edit')],['Gudang Karawang','Budi','08xxx',pill('Aktif'),btn('Utamakan')]]);
+    if(m==='tickets') return sub==='new'?form([['text','Judul tiket'],['select',['Order','Produk','Pembayaran','Teknis'],false],['textarea','Ceritakan kendala',true]]):table(['Tiket','Topik','Prioritas','Status','Aksi'],[['TKT-001','Pengiriman terlambat',pill('Tinggi','rose'),pill('Open'),btn('Balas')],['TKT-002','Invoice pajak',pill('Sedang','amber'),pill('Proses','amber'),btn('Lihat')]]);
+    if(m==='notifications') return table(['Notifikasi','Waktu','Status','Aksi'],[['Order dikirim','1 jam lalu',pill('Baru','green'),btn('Buka')],['Promo marketplace','Kemarin',pill('Dibaca'),btn('Lihat')]]);
+    if(m==='security') return form([['text','Email login'],['text','Nomor WhatsApp OTP'],['select',['OTP Aktif','OTP Nonaktif'],false]])+`<div class="mt-4">${btn('Simpan Keamanan','green')}</div>`;
+    if(m==='profile') return form([['text','Nama lengkap',false,$('#buyer-sidebar-name')?.textContent||'User Demo'],['text','Email'],['text','No HP'],['select',['Perusahaan','Perorangan'],false],['textarea','Alamat / catatan profil',true]]);
+    return table(['Data','Status','Aksi'],[['Item demo',pill('Aktif','green'),btn('Proses')]]);
+  }
+  function buildAdmin(menu,sub){
+    const v=$('#view-admin'); if(!v) return; v.classList.add('bhz-final','bhz-admin'); v.classList.remove('flex','flex-col','md:flex-row','max-w-7xl');
+    menu=menu||localStorage.getItem(LS.adminMenu)||'overview'; if(!adminMenus[menu]) menu='overview'; sub=sub||localStorage.getItem(LS.adminSub)||adminMenus[menu].subs[0][0];
+    localStorage.setItem(LS.adminMenu,menu); localStorage.setItem(LS.adminSub,sub); v.innerHTML=shell('admin',adminMenus,menu,sub); lockRole('admin');
+  }
+  function buildUser(menu,sub){
+    const v=$('#view-buyer'); if(!v) return; v.classList.add('bhz-final','bhz-user'); v.classList.remove('flex','flex-col','md:flex-row','max-w-7xl');
+    menu=menu||localStorage.getItem(LS.userMenu)||'overview'; if(!userMenus[menu]) menu='overview'; sub=sub||localStorage.getItem(LS.userSub)||userMenus[menu].subs[0][0];
+    localStorage.setItem(LS.userMenu,menu); localStorage.setItem(LS.userSub,sub); v.innerHTML=shell('user',userMenus,menu,sub); lockRole('user');
+  }
+  function open(kind,menu){ if(kind==='admin') buildAdmin(menu,adminMenus[menu].subs[0][0]); else buildUser(menu,userMenus[menu].subs[0][0]); }
+  function openSub(kind,menu,sub){ if(kind==='admin') buildAdmin(menu,sub); else buildUser(menu,sub); }
+  function boot(){
+    patchSwitch();
+    const role=getRole(); lockRole(role);
+    if(!$('#view-admin')?.classList.contains('hidden')) buildAdmin();
+    if(!$('#view-buyer')?.classList.contains('hidden')) buildUser();
+    const tk=$('#tab-tkdn'); if(tk) tk.style.display='none';
+  }
+  window.BHZFinal={open,openSub,buildAdmin,buildUser,lockRole,action(label){toast(label+' berhasil diproses');}};
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  [200,800,1800,3000].forEach(t=>setTimeout(boot,t));
+  setInterval(()=>{ const role=getRole(); if(role==='admin'||role==='user') lockRole(role); },1200);
+  document.addEventListener('click',e=>{ if(e.target.closest('#tab-admin')) setTimeout(()=>{localStorage.setItem(LS.role,'admin');buildAdmin();},120); if(e.target.closest('#tab-buyer')) setTimeout(()=>{ if((localStorage.getItem(LS.role)||getRole())==='user') buildUser(); else safeSwitch('admin');},120);},true);
+})();
+</script>
 </body></html><style id="bhx-admin-right-submenu-style">#view-admin nav .bhx-admin-submenu-left,
 #view-admin nav .submenu,
 #view-admin nav .dropdown-menu,
