@@ -714,7 +714,10 @@
       { name: 'Helm Safety SNI Proyek', seller: 'PT Plastik Indo', category: 'K3 Safety', price: 'Rp 45.000', badge: 'SNI', icon: 'fa-helmet-safety' },
       { name: 'Panel Surya 450Wp Monocrystalline', seller: 'PT Surya Energi', category: 'Energi', price: 'Rp 2.100.000', badge: 'Green', icon: 'fa-solar-panel' },
       { name: 'Software ERP Inventory Pabrik', seller: 'BisnisHub Digital', category: 'Software', price: 'Rp 15.000.000', badge: 'Digital', icon: 'fa-laptop-code' },
-      { name: 'Jasa Survey & Pendataan Lapangan', seller: 'Mitra Jasa BisnisHUB', category: 'Bidang Jasa', price: 'Mulai Rp 750.000', badge: 'Jasa', icon: 'fa-handshake-angle' }
+      { name: 'Jasa Survey & Pendataan Lapangan', seller: 'Mitra Jasa BisnisHUB', category: 'Bidang Jasa', price: 'Mulai Rp 750.000', badge: 'Jasa', icon: 'fa-handshake-angle' },
+      { name: 'Jasa Desain Teknik & CAD', seller: 'Engineering Partner BisnisHUB', category: 'Jasa Keteknikan', price: 'Mulai Rp 1.500.000', badge: 'Engineering', icon: 'fa-compass-drafting' },
+      { name: 'Jasa Instalasi & Commissioning Mesin', seller: 'Teknisi Industri Nusantara', category: 'Jasa Industri', price: 'Mulai Rp 2.500.000', badge: 'Jasa', icon: 'fa-person-digging' },
+      { name: 'Sewa Pompa Alkon & Operator', seller: 'Rental Alat Pertanian', category: 'Sewa / Rental', price: 'Mulai Rp 350.000 / hari', badge: 'Rental', icon: 'fa-hand-holding-dollar' }
     ];
 
     const Orders = [
@@ -1550,14 +1553,45 @@
 
     const DEFAULT_PRODUCT_CATEGORIES = [
       { id: 'KAT-001', name: 'Pertanian & Alsintan', type: 'Produk', status: 'Aktif', icon: 'fa-tractor' },
-      { id: 'KAT-002', name: 'Pompa & Kompresor', type: 'Produk', status: 'Aktif', icon: 'fa-faucet' },
-      { id: 'KAT-003', name: 'Hidrolik & Mesin', type: 'Produk', status: 'Aktif', icon: 'fa-gears' },
-      { id: 'KAT-004', name: 'Perkakas & Tools', type: 'Produk', status: 'Aktif', icon: 'fa-screwdriver-wrench' },
+      { id: 'KAT-002', name: 'Pompa, Irigasi & Kompresor', type: 'Produk', status: 'Aktif', icon: 'fa-faucet' },
+      { id: 'KAT-003', name: 'Hidrolik, Pneumatik & Mesin', type: 'Produk', status: 'Aktif', icon: 'fa-gears' },
+      { id: 'KAT-004', name: 'Perkakas, Tools & Workshop', type: 'Produk', status: 'Aktif', icon: 'fa-screwdriver-wrench' },
       { id: 'KAT-005', name: 'Alat Berat & Konstruksi', type: 'Produk', status: 'Aktif', icon: 'fa-truck-monster' },
-      { id: 'KAT-006', name: 'Kelistrikan & Genset', type: 'Produk', status: 'Aktif', icon: 'fa-bolt' },
-      { id: 'KAT-007', name: 'Keamanan Kerja K3', type: 'Produk', status: 'Aktif', icon: 'fa-helmet-safety' },
-      { id: 'KAT-008', name: 'Software Industri', type: 'Produk Digital', status: 'Aktif', icon: 'fa-laptop-code' },
-      { id: 'KAT-009', name: 'Bidang Jasa', type: 'Jasa', status: 'Aktif', icon: 'fa-handshake-angle' }
+      { id: 'KAT-006', name: 'Kelistrikan, Panel & Genset', type: 'Produk', status: 'Aktif', icon: 'fa-bolt' },
+      { id: 'KAT-007', name: 'Keamanan Kerja K3 & Safety', type: 'Produk', status: 'Aktif', icon: 'fa-helmet-safety' },
+      { id: 'KAT-008', name: 'Software Industri, ERP & IoT', type: 'Produk Digital', status: 'Aktif', icon: 'fa-laptop-code' },
+      { id: 'KAT-009', name: 'Bidang Jasa Industri', type: 'Jasa', status: 'Aktif', icon: 'fa-handshake-angle' },
+      { id: 'KAT-010', name: 'Jasa Keteknikan / Engineering', type: 'Jasa', status: 'Aktif', icon: 'fa-compass-drafting' },
+      { id: 'KAT-011', name: 'Jasa Survey, SID & Pendataan Lapangan', type: 'Jasa', status: 'Aktif', icon: 'fa-map-location-dot' },
+      { id: 'KAT-012', name: 'Jasa Instalasi, Commissioning & Setting Mesin', type: 'Jasa', status: 'Aktif', icon: 'fa-person-digging' },
+      { id: 'KAT-013', name: 'Jasa Maintenance, Service & Overhaul', type: 'Jasa', status: 'Aktif', icon: 'fa-screwdriver-wrench' },
+      { id: 'KAT-014', name: 'Jasa Fabrikasi, Welding & Machining', type: 'Jasa', status: 'Aktif', icon: 'fa-industry' },
+      { id: 'KAT-015', name: 'Jasa Desain Teknik, Drawing & CAD', type: 'Jasa', status: 'Aktif', icon: 'fa-drafting-compass' },
+      { id: 'KAT-016', name: 'Jasa Kalibrasi, Uji Teknis & Sertifikasi', type: 'Jasa', status: 'Aktif', icon: 'fa-certificate' },
+      { id: 'KAT-017', name: 'Jasa TKDN, SNI, ISO & Perizinan', type: 'Jasa', status: 'Aktif', icon: 'fa-file-shield' },
+      { id: 'KAT-018', name: 'Jasa Logistik Industri & Heavy Cargo', type: 'Jasa', status: 'Aktif', icon: 'fa-truck-fast' },
+      { id: 'KAT-019', name: 'Jasa Operator, Mekanik & Teknisi Lapangan', type: 'Jasa', status: 'Aktif', icon: 'fa-user-gear' },
+      { id: 'KAT-020', name: 'Jasa Konsultan Proyek, Tender & Pengadaan', type: 'Jasa', status: 'Aktif', icon: 'fa-briefcase' },
+      { id: 'KAT-021', name: 'Manufaktur, Pabrikasi & Produksi', type: 'Produk', status: 'Aktif', icon: 'fa-industry' },
+      { id: 'KAT-022', name: 'CNC, Cutting, Press & Molding', type: 'Produk', status: 'Aktif', icon: 'fa-cubes' },
+      { id: 'KAT-023', name: 'Material Logam, Baja & Besi', type: 'Produk', status: 'Aktif', icon: 'fa-layer-group' },
+      { id: 'KAT-024', name: 'Material Bangunan & Infrastruktur', type: 'Produk', status: 'Aktif', icon: 'fa-building' },
+      { id: 'KAT-025', name: 'Otomotif, Spare Part & Karoseri', type: 'Produk', status: 'Aktif', icon: 'fa-car' },
+      { id: 'KAT-026', name: 'Transportasi, Material Handling & Forklift', type: 'Produk', status: 'Aktif', icon: 'fa-dolly' },
+      { id: 'KAT-027', name: 'Pertambangan, Quarry & Mineral', type: 'Produk', status: 'Aktif', icon: 'fa-mountain' },
+      { id: 'KAT-028', name: 'Energi, Solar, Battery & Power System', type: 'Produk', status: 'Aktif', icon: 'fa-solar-panel' },
+      { id: 'KAT-029', name: 'HVAC, Pendingin & Refrigerasi', type: 'Produk', status: 'Aktif', icon: 'fa-snowflake' },
+      { id: 'KAT-030', name: 'Water Treatment, Limbah & Lingkungan', type: 'Produk', status: 'Aktif', icon: 'fa-water' },
+      { id: 'KAT-031', name: 'Food Processing, Packaging & Mesin UMKM', type: 'Produk', status: 'Aktif', icon: 'fa-box-open' },
+      { id: 'KAT-032', name: 'Kimia Industri, Coating & Lubricant', type: 'Produk', status: 'Aktif', icon: 'fa-flask' },
+      { id: 'KAT-033', name: 'Instrumen Ukur, Sensor & Lab Industri', type: 'Produk', status: 'Aktif', icon: 'fa-gauge-high' },
+      { id: 'KAT-034', name: 'Automation, PLC, Robotik & Control System', type: 'Produk', status: 'Aktif', icon: 'fa-robot' },
+      { id: 'KAT-035', name: 'IT Industri, CCTV, Network & Security System', type: 'Produk', status: 'Aktif', icon: 'fa-network-wired' },
+      { id: 'KAT-036', name: 'Perkapalan, Marine & Pelabuhan', type: 'Produk', status: 'Aktif', icon: 'fa-ship' },
+      { id: 'KAT-037', name: 'Perkebunan, Kehutanan & Agro Industri', type: 'Produk', status: 'Aktif', icon: 'fa-seedling' },
+      { id: 'KAT-038', name: 'Peternakan, Perikanan & Cold Chain', type: 'Produk', status: 'Aktif', icon: 'fa-fish' },
+      { id: 'KAT-039', name: 'Tender, Proyek & Pengadaan B2B', type: 'Tender / Proyek', status: 'Aktif', icon: 'fa-file-signature' },
+      { id: 'KAT-040', name: 'Sewa Alat, Rental Mesin & Equipment', type: 'Jasa', status: 'Aktif', icon: 'fa-hand-holding-dollar' }
     ];
 
     function getProductCategories() {
@@ -1673,7 +1707,14 @@
     }
 
     function productCategoryAdminPanel() {
-      return panel('Kategori Produk & Bidang Jasa', 'Atur kategori produk, produk digital, dan layanan jasa agar seller/customer mudah mengelompokkan listing.', `
+      return panel('Kategori Produk & Bidang Jasa', 'Atur kategori lengkap untuk produk industri, bidang jasa industri, jasa keteknikan, rental alat, proyek, dan tender agar seller/customer mudah mengelompokkan listing.', `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+          ${kpiCard('Total Kategori', String(getProductCategories().length), 'fa-layer-group', 'indigo')}
+          ${kpiCard('Kategori Produk', String(getProductCategories().filter(c => String(c.type).includes('Produk')).length), 'fa-boxes-stacked', 'emerald')}
+          ${kpiCard('Kategori Jasa', String(getProductCategories().filter(c => String(c.type).includes('Jasa') || String(c.name).includes('Jasa')).length), 'fa-handshake-angle', 'orange')}
+          ${kpiCard('Tender / Proyek', String(getProductCategories().filter(c => String(c.type).includes('Tender')).length), 'fa-file-signature', 'rose')}
+        </div>
+
         <div class="rounded-[24px] bg-orange-50 border border-orange-100 p-5 mb-5">
           <h3 class="font-black text-lg mb-3">Tambah Kategori Baru</h3>
           <div class="grid md:grid-cols-4 gap-3">
@@ -1681,18 +1722,28 @@
             <select id="catType" class="border rounded-2xl p-3 bg-white">
               <option>Produk</option>
               <option>Produk Digital</option>
-              <option>Jasa</option>
+              <option>Jasa Industri</option>
+              <option>Jasa Keteknikan</option>
+              <option>Jasa Lapangan</option>
+              <option>Sewa / Rental</option>
               <option>Tender / Proyek</option>
             </select>
             <select id="catIcon" class="border rounded-2xl p-3 bg-white">
               <option value="fa-layer-group">Icon Umum</option>
               <option value="fa-handshake-angle">Jasa</option>
+              <option value="fa-compass-drafting">Engineering</option>
+              <option value="fa-map-location-dot">Survey</option>
+              <option value="fa-file-shield">Sertifikasi</option>
+              <option value="fa-truck-fast">Logistik</option>
               <option value="fa-tractor">Alsintan</option>
               <option value="fa-faucet">Pompa</option>
               <option value="fa-gears">Hidrolik</option>
               <option value="fa-screwdriver-wrench">Tools</option>
               <option value="fa-truck-monster">Alat Berat</option>
               <option value="fa-laptop-code">Software</option>
+              <option value="fa-industry">Industri</option>
+              <option value="fa-robot">Otomasi</option>
+              <option value="fa-solar-panel">Energi</option>
             </select>
             <button onclick="addProductCategory()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">Tambah</button>
           </div>
@@ -2738,7 +2789,10 @@
           <input class="border rounded-2xl p-3" placeholder="SKU">
           <select class="border rounded-2xl p-3 bg-white">
             <option>Jenis Listing: Produk Fisik</option>
-            <option>Jenis Listing: Bidang Jasa</option>
+            <option>Jenis Listing: Bidang Jasa Industri</option>
+            <option>Jenis Listing: Jasa Keteknikan</option>
+            <option>Jenis Listing: Jasa Survey / Lapangan</option>
+            <option>Jenis Listing: Sewa / Rental Alat</option>
             <option>Jenis Listing: Produk Digital</option>
             <option>Jenis Listing: Tender / Proyek</option>
           </select>
