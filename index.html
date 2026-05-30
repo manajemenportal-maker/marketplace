@@ -312,6 +312,83 @@
     </div>
   </div>
 
+  <div id="productEditModal" class="support-modal">
+    <div class="support-box">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between gap-3 bg-orange-50">
+        <div>
+          <h2 class="text-xl font-black text-slate-900">Edit Produk Bishub</h2>
+          <p class="text-sm text-slate-500 mt-1">Ubah data produk, harga, TKDN, status, gambar, dan spesifikasi.</p>
+        </div>
+        <button onclick="closeProductEditModal()" class="w-10 h-10 rounded-2xl bg-white hover:bg-slate-100 font-black">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="p-5 grid gap-4">
+        <input id="editProductIndex" type="hidden">
+        <div class="grid md:grid-cols-2 gap-3">
+          <div class="md:col-span-2">
+            <label class="text-xs font-black uppercase text-slate-500">Nama Produk</label>
+            <input id="editProductName" class="support-input mt-1" placeholder="Nama produk">
+          </div>
+          <div>
+            <label class="text-xs font-black uppercase text-slate-500">Seller / Vendor</label>
+            <input id="editProductSeller" class="support-input mt-1" placeholder="Nama seller">
+          </div>
+          <div>
+            <label class="text-xs font-black uppercase text-slate-500">Kategori</label>
+            <select id="editProductCategory" class="support-input mt-1">
+              <option>Pompa & Kompresor</option>
+              <option>Mesin Pertanian</option>
+              <option>Hydrolik</option>
+              <option>K3 & Safety</option>
+              <option>Perkakas & Tools</option>
+              <option>Software Industri</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-black uppercase text-slate-500">Harga</label>
+            <input id="editProductPrice" class="support-input mt-1" placeholder="Rp 0">
+          </div>
+          <div>
+            <label class="text-xs font-black uppercase text-slate-500">TKDN</label>
+            <input id="editProductTkdn" class="support-input mt-1" placeholder="TKDN 40%">
+          </div>
+          <div>
+            <label class="text-xs font-black uppercase text-slate-500">Stok</label>
+            <input id="editProductStock" class="support-input mt-1" placeholder="Stok tersedia">
+          </div>
+          <div>
+            <label class="text-xs font-black uppercase text-slate-500">Status</label>
+            <select id="editProductStatus" class="support-input mt-1">
+              <option>Aktif</option>
+              <option>Review</option>
+              <option>Draft</option>
+              <option>Nonaktif</option>
+              <option>Ditolak</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-black uppercase text-slate-500">Upload Gambar Utama</label>
+            <input id="editProductImage" type="file" accept="image/*" class="support-input mt-1">
+          </div>
+          <div>
+            <label class="text-xs font-black uppercase text-slate-500">Upload Dokumen / TKDN</label>
+            <input id="editProductDoc" type="file" class="support-input mt-1">
+          </div>
+          <div class="md:col-span-2">
+            <label class="text-xs font-black uppercase text-slate-500">Spesifikasi / Deskripsi</label>
+            <textarea id="editProductDesc" class="support-input mt-1" rows="5" placeholder="Spesifikasi teknis, garansi, kelengkapan, dimensi, dan catatan produk."></textarea>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 justify-end">
+          <button onclick="closeProductEditModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl px-5 py-3 font-black">Batal</button>
+          <button onclick="duplicateProductFromEdit()" class="bg-amber-400 hover:bg-amber-500 text-slate-950 rounded-2xl px-5 py-3 font-black">Duplikat</button>
+          <button onclick="saveProductEdit()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Produk</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const STORAGE_KEY = 'bisnishub_clean_editable_state_v2';
 
@@ -374,7 +451,7 @@
       ['USR-004', 'Rama Teknik', 'rama@teknik.id', 'Seller', 'Suspend']
     ];
 
-    const demoProducts = [
+    let demoProducts = JSON.parse(localStorage.getItem('bishub_products') || 'null') || [
       ['Pompa Sentrifugal Industri 30kW', 'PT Bintang Pompa', 'Rp 24.500.000', 'TKDN 45.5%', 'Aktif'],
       ['Traktor Tangan Diesel G1000', 'CV Agro Mandiri', 'Rp 15.500.000', 'TKDN 38.2%', 'Review'],
       ['Mesin Press Hidrolik 50 Ton', 'CV Baja Mandiri', 'Rp 45.000.000', 'TKDN 35.8%', 'Aktif'],
@@ -944,17 +1021,29 @@
     }
 
     function adminProducts() {
-      const rows = demoProducts.map(product => `
+      const rows = demoProducts.map((product, index) => `
         <tr>
           <td><b>${product[0]}</b><br><span class="text-xs text-slate-400">${product[1]}</span></td>
           <td class="font-black">${product[2]}</td>
           <td>${badge(product[3], 'rose')}</td>
           <td>${badge(product[4], statusColor(product[4]))}</td>
-          <td class="space-x-2">${actionButton('Approve', 'emerald')} ${actionButton('Tolak', 'rose')}</td>
+          <td>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="openProductEdit(${index})" class="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-3 py-2 text-xs font-black">
+                <i class="fa-solid fa-pen-to-square mr-1"></i>Edit
+              </button>
+              <button onclick="approveProduct(${index})" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-3 py-2 text-xs font-black">Approve</button>
+              <button onclick="rejectProduct(${index})" class="bg-rose-600 hover:bg-rose-700 text-white rounded-xl px-3 py-2 text-xs font-black">Tolak</button>
+            </div>
+          </td>
         </tr>
       `);
 
-      return panel('Produk', 'Moderasi produk, kategori, stok, harga, dan dokumen.', table(['Produk', 'Harga', 'TKDN', 'Status', 'Aksi'], rows));
+      return panel('Produk', 'Moderasi produk, edit data, kategori, stok, harga, gambar, dan dokumen.', table(['Produk', 'Harga', 'TKDN', 'Status', 'Aksi'], rows), `
+        <button onclick="openProductEdit('new')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black text-sm">
+          <i class="fa-solid fa-plus mr-2"></i>Tambah / Edit Produk
+        </button>
+      `);
     }
 
     function adminOrders() {
@@ -988,18 +1077,18 @@
     }
 
     function adminSupport() {
-      return panel('Support / Tiket Masuk', 'Admin melihat semua tiket customer dan bisa mengubah statusnya.', `
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-          ${kpiCard('Tiket Open', String(getSupportTickets().filter(ticket => ticket.status === 'Open').length), 'fa-headset', 'rose')}
-          ${kpiCard('Diproses', String(getSupportTickets().filter(ticket => ticket.status === 'Diproses').length), 'fa-spinner', 'amber')}
-          ${kpiCard('Selesai', String(getSupportTickets().filter(ticket => ticket.status === 'Selesai').length), 'fa-circle-check', 'emerald')}
-        </div>
-        ${supportTicketCards()}
-      `, `
-        <button onclick="openSupportModal()" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black text-sm">
-          Buat Tiket Manual
-        </button>
+      const rows = demoTickets.map(ticket => `
+        <tr>
+          <td class="font-black">${ticket[0]}</td>
+          <td>${ticket[1]}</td>
+          <td>${ticket[2]}</td>
+          <td>${badge(ticket[3], statusColor(ticket[3]))}</td>
+          <td>${badge(ticket[4], statusColor(ticket[4]))}</td>
+          <td>${actionButton('Balas')}</td>
+        </tr>
       `);
+
+      return panel('Support', 'Kelola tiket bantuan user dan seller.', table(['ID', 'User', 'Topik', 'Prioritas', 'Status', 'Aksi'], rows));
     }
 
     function adminCMS() {
@@ -1122,10 +1211,24 @@
     }
 
     function userAddProduct() {
-      return panel('Tambah Produk', 'Form lengkap upload produk user.', `
+      const productRows = demoProducts.map((product, index) => `
+        <tr>
+          <td><b>${product[0]}</b><br><span class="text-xs text-slate-400">${product[1]}</span></td>
+          <td class="font-black">${product[2]}</td>
+          <td>${badge(product[3], 'rose')}</td>
+          <td>${badge(product[4], statusColor(product[4]))}</td>
+          <td>
+            <button onclick="openProductEdit(${index})" class="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-3 py-2 text-xs font-black">
+              <i class="fa-solid fa-pen-to-square mr-1"></i>Edit
+            </button>
+          </td>
+        </tr>
+      `);
+
+      return panel('Tambah Produk', 'Form lengkap upload produk user dan menu edit produk.', `
         <div class="grid md:grid-cols-2 gap-4">
-          <input class="border rounded-2xl p-3" placeholder="Nama produk">
-          <select class="border rounded-2xl p-3">
+          <input id="quickProductName" class="border rounded-2xl p-3" placeholder="Nama produk">
+          <select id="quickProductCategory" class="border rounded-2xl p-3">
             <option>Kategori Industri</option>
             <option>Pompa & Kompresor</option>
             <option>Mesin Pertanian</option>
@@ -1133,18 +1236,23 @@
           </select>
           <input class="border rounded-2xl p-3" placeholder="Brand / Merek">
           <input class="border rounded-2xl p-3" placeholder="SKU">
-          <input class="border rounded-2xl p-3" placeholder="Harga Retail">
+          <input id="quickProductPrice" class="border rounded-2xl p-3" placeholder="Harga Retail">
           <input class="border rounded-2xl p-3" placeholder="Harga Grosir / B2B">
           <input class="border rounded-2xl p-3" placeholder="Stok">
           <input class="border rounded-2xl p-3" placeholder="MOQ">
           <input type="file" class="border rounded-2xl p-3 md:col-span-2">
           <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Spesifikasi teknis dan deskripsi produk"></textarea>
-          <input class="border rounded-2xl p-3" placeholder="Nilai TKDN %">
+          <input id="quickProductTkdn" class="border rounded-2xl p-3" placeholder="Nilai TKDN %">
           <input class="border rounded-2xl p-3" placeholder="No. Sertifikat / Dokumen">
         </div>
         <div class="mt-5 flex flex-wrap gap-2">
           <button onclick="showToast('Draft produk disimpan')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Simpan Draft</button>
-          <button onclick="showToast('Produk diajukan ke admin')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Ajukan ke Admin</button>
+          <button onclick="submitQuickProduct()" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Ajukan ke Admin</button>
+          <button onclick="openProductEdit('new')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Buka Form Edit Lengkap</button>
+        </div>
+        <div class="mt-6">
+          <h3 class="font-black text-lg mb-3">Produk Saya / Produk Demo</h3>
+          ${table(['Produk', 'Harga', 'TKDN', 'Status', 'Edit'], productRows)}
         </div>
       `);
     }
@@ -1476,6 +1584,90 @@
         </div>
         <button onclick="saveProfile()" class="mt-5 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Profil</button>
       `);
+    }
+
+    function saveProducts() {
+      localStorage.setItem('bishub_products', JSON.stringify(demoProducts));
+    }
+
+    function openProductEdit(index) {
+      const modal = document.getElementById('productEditModal');
+      if (!modal) return;
+
+      const product = index === 'new' ? ['', state.name || 'Seller Demo', 'Rp ', 'TKDN ', 'Draft'] : demoProducts[index];
+      document.getElementById('editProductIndex').value = index;
+      document.getElementById('editProductName').value = product?.[0] || '';
+      document.getElementById('editProductSeller').value = product?.[1] || '';
+      document.getElementById('editProductPrice').value = product?.[2] || '';
+      document.getElementById('editProductTkdn').value = product?.[3] || '';
+      document.getElementById('editProductStatus').value = product?.[4] || 'Draft';
+      document.getElementById('editProductStock').value = product?.[5] || '';
+      document.getElementById('editProductDesc').value = product?.[6] || '';
+      modal.classList.add('show');
+    }
+
+    function closeProductEditModal() {
+      const modal = document.getElementById('productEditModal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    function saveProductEdit() {
+      const indexValue = document.getElementById('editProductIndex').value;
+      const product = [
+        document.getElementById('editProductName').value.trim() || 'Produk Baru Bishub',
+        document.getElementById('editProductSeller').value.trim() || state.name || 'Seller Demo',
+        document.getElementById('editProductPrice').value.trim() || 'Rp 0',
+        document.getElementById('editProductTkdn').value.trim() || 'TKDN 0%',
+        document.getElementById('editProductStatus').value || 'Draft',
+        document.getElementById('editProductStock').value.trim(),
+        document.getElementById('editProductDesc').value.trim()
+      ];
+
+      if (indexValue === 'new') {
+        demoProducts.unshift(product);
+      } else {
+        demoProducts[Number(indexValue)] = product;
+      }
+
+      saveProducts();
+      closeProductEditModal();
+      if (state.role === 'admin') renderAdminDashboard();
+      if (state.role === 'user') renderUserDashboard();
+      showToast('Produk berhasil disimpan');
+    }
+
+    function duplicateProductFromEdit() {
+      document.getElementById('editProductIndex').value = 'new';
+      showToast('Mode duplikat aktif, klik Simpan Produk untuk membuat produk baru');
+    }
+
+    function approveProduct(index) {
+      if (demoProducts[index]) {
+        demoProducts[index][4] = 'Aktif';
+        saveProducts();
+        renderAdminDashboard();
+        showToast('Produk di-approve');
+      }
+    }
+
+    function rejectProduct(index) {
+      if (demoProducts[index]) {
+        demoProducts[index][4] = 'Ditolak';
+        saveProducts();
+        renderAdminDashboard();
+        showToast('Produk ditolak');
+      }
+    }
+
+    function submitQuickProduct() {
+      const name = document.getElementById('quickProductName')?.value?.trim() || 'Produk Baru User';
+      const category = document.getElementById('quickProductCategory')?.value || 'Kategori Industri';
+      const price = document.getElementById('quickProductPrice')?.value?.trim() || 'Rp 0';
+      const tkdn = document.getElementById('quickProductTkdn')?.value?.trim() || 'TKDN 0%';
+      demoProducts.unshift([name, state.name || 'User Seller', price, tkdn, 'Review', '', category]);
+      saveProducts();
+      renderUserDashboard();
+      showToast('Produk diajukan ke admin dan masuk status Review');
     }
 
     function saveProfile() {
