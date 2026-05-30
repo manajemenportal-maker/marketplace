@@ -144,6 +144,87 @@
     }
     .toast.show { display: block; }
 
+    .floating-help {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 70;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .floating-help button,
+    .floating-help a {
+      min-width: 168px;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 900;
+      text-decoration: none;
+      box-shadow: 0 14px 32px rgba(15, 23, 42, 0.20);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .btn-whatsapp {
+      background: #22c55e;
+      color: #052e16;
+    }
+    .btn-ticket {
+      background: #f97316;
+      color: #ffffff;
+    }
+    .support-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.72);
+      padding: 16px;
+    }
+    .support-modal.show { display: flex; }
+    .support-box {
+      width: min(720px, 100%);
+      max-height: 92vh;
+      overflow: auto;
+      background: #ffffff;
+      border-radius: 30px;
+      box-shadow: 0 28px 80px rgba(15, 23, 42, 0.40);
+    }
+    .support-input {
+      width: 100%;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 12px 14px;
+      outline: none;
+      font-size: 14px;
+      background: #ffffff;
+    }
+    .support-input:focus {
+      border-color: #f97316;
+      box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12);
+    }
+    @media (max-width: 700px) {
+      .floating-help {
+        right: 12px;
+        bottom: 12px;
+      }
+      .floating-help button,
+      .floating-help a {
+        min-width: auto;
+        width: 52px;
+        height: 52px;
+        padding: 0;
+        border-radius: 18px;
+      }
+      .floating-help span { display: none; }
+    }
+
     @media (max-width: 900px) {
       .dashboard-layout { flex-direction: column; }
       .sidebar {
@@ -168,6 +249,68 @@
 <body>
   <div id="app" class="app-shell"></div>
   <div id="toast" class="toast"></div>
+
+  <div id="supportModal" class="support-modal">
+    <div class="support-box">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between gap-3 bg-orange-50">
+        <div>
+          <h2 class="text-xl font-black text-slate-900">Pusat Bantuan Bishub</h2>
+          <p class="text-sm text-slate-500 mt-1">Customer bisa chat admin atau membuat tiket bantuan.</p>
+        </div>
+        <button onclick="closeSupportModal()" class="w-10 h-10 rounded-2xl bg-white hover:bg-slate-100 font-black">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="p-5 grid gap-4">
+        <div class="grid md:grid-cols-2 gap-4">
+          <a href="https://wa.me/6285111033789?text=Halo%20Admin%20Bishub%2C%20saya%20ingin%20bertanya%20tentang%20layanan%20Bishub." target="_blank" class="rounded-2xl bg-green-500 hover:bg-green-600 text-green-950 font-black p-4 text-center no-underline">
+            <i class="fa-brands fa-whatsapp mr-2"></i>Chat Admin WhatsApp
+          </a>
+          <a href="mailto:kalimajasuryaalam@gmail.com?subject=Bantuan%20Bishub&body=Halo%20Admin%20Bishub%2C%0A%0ASaya%20ingin%20bertanya%20tentang%3A%0A" class="rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black p-4 text-center no-underline">
+            <i class="fa-solid fa-envelope mr-2"></i>Email Admin
+          </a>
+        </div>
+
+        <div class="rounded-[24px] border border-slate-200 p-4">
+          <h3 class="font-black text-lg mb-3">Buat Tiket Bantuan</h3>
+          <div class="grid md:grid-cols-2 gap-3">
+            <input id="ticketName" class="support-input" placeholder="Nama customer / user">
+            <input id="ticketPhone" class="support-input" placeholder="No. WhatsApp">
+            <select id="ticketCategory" class="support-input">
+              <option>Masalah Pesanan</option>
+              <option>Pembayaran</option>
+              <option>Produk / Seller</option>
+              <option>Tender</option>
+              <option>Akun</option>
+              <option>Komplain</option>
+              <option>Lainnya</option>
+            </select>
+            <select id="ticketPriority" class="support-input">
+              <option>Normal</option>
+              <option>Penting</option>
+              <option>Mendesak</option>
+            </select>
+            <input id="ticketSubject" class="support-input md:col-span-2" placeholder="Judul masalah / pertanyaan">
+            <textarea id="ticketMessage" class="support-input md:col-span-2" rows="5" placeholder="Tulis detail pertanyaan, kendala, nomor invoice, atau kebutuhan bantuan."></textarea>
+          </div>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button onclick="submitSupportTicket()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">
+              <i class="fa-solid fa-paper-plane mr-2"></i>Kirim Tiket
+            </button>
+            <button onclick="fillDemoTicket()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl px-5 py-3 font-black">
+              Isi Contoh
+            </button>
+          </div>
+        </div>
+
+        <div class="rounded-[24px] bg-slate-50 border border-slate-200 p-4">
+          <h3 class="font-black mb-2">Kontak Admin Bishub</h3>
+          <p class="text-sm text-slate-600"><b>WhatsApp:</b> 0851 1103 3789</p>
+          <p class="text-sm text-slate-600"><b>Email:</b> kalimajasuryaalam@gmail.com</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     const STORAGE_KEY = 'bisnishub_clean_editable_state_v2';
@@ -419,6 +562,9 @@
               <button onclick="switchRole('${isAdmin ? 'user' : 'admin'}')" class="px-4 py-2 rounded-xl text-xs font-black ${isAdmin ? 'bg-white text-slate-950' : 'bg-slate-900 text-white'}">
                 Masuk ${isAdmin ? 'User' : 'Admin'} Demo
               </button>
+              <button onclick="openSupportModal()" class="px-4 py-2 rounded-xl text-xs font-black bg-orange-500 text-white">
+                Bantuan
+              </button>
               <button onclick="resetCurrentDashboard()" class="px-4 py-2 rounded-xl text-xs font-black bg-amber-400 text-slate-950">
                 Reset Halaman Ini
               </button>
@@ -443,6 +589,7 @@
           </aside>
           <main class="flex-1 min-w-0">${content}</main>
         </div>
+        ${renderFloatingHelp()}
       `;
     }
 
@@ -615,6 +762,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">${productCards}</div>
           </section>
         </main>
+        ${renderFloatingHelp()}
       `;
     }
 
@@ -702,6 +850,7 @@
             </aside>
           </section>
         </main>
+        ${renderFloatingHelp()}
       `;
     }
 
@@ -839,18 +988,18 @@
     }
 
     function adminSupport() {
-      const rows = demoTickets.map(ticket => `
-        <tr>
-          <td class="font-black">${ticket[0]}</td>
-          <td>${ticket[1]}</td>
-          <td>${ticket[2]}</td>
-          <td>${badge(ticket[3], statusColor(ticket[3]))}</td>
-          <td>${badge(ticket[4], statusColor(ticket[4]))}</td>
-          <td>${actionButton('Balas')}</td>
-        </tr>
+      return panel('Support / Tiket Masuk', 'Admin melihat semua tiket customer dan bisa mengubah statusnya.', `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+          ${kpiCard('Tiket Open', String(getSupportTickets().filter(ticket => ticket.status === 'Open').length), 'fa-headset', 'rose')}
+          ${kpiCard('Diproses', String(getSupportTickets().filter(ticket => ticket.status === 'Diproses').length), 'fa-spinner', 'amber')}
+          ${kpiCard('Selesai', String(getSupportTickets().filter(ticket => ticket.status === 'Selesai').length), 'fa-circle-check', 'emerald')}
+        </div>
+        ${supportTicketCards()}
+      `, `
+        <button onclick="openSupportModal()" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black text-sm">
+          Buat Tiket Manual
+        </button>
       `);
-
-      return panel('Support', 'Kelola tiket bantuan user dan seller.', table(['ID', 'User', 'Topik', 'Prioritas', 'Status', 'Aksi'], rows));
     }
 
     function adminCMS() {
@@ -1243,16 +1392,48 @@
     }
 
     function userSupport() {
-      const rows = demoTickets.map(ticket => `
+      const tickets = getSupportTickets();
+      const rows = tickets.map(ticket => `
         <tr>
-          <td class="font-black">${ticket[0]}</td>
-          <td>${ticket[2]}</td>
-          <td>${badge(ticket[4], statusColor(ticket[4]))}</td>
-          <td>${actionButton('Balas')}</td>
+          <td class="font-black">${ticket.id}</td>
+          <td>
+            <b>${ticket.subject}</b>
+            <p class="text-xs text-slate-500 mt-1">${ticket.category} • ${ticket.createdAt}</p>
+          </td>
+          <td>${badge(ticket.priority, ticket.priority === 'Mendesak' ? 'rose' : ticket.priority === 'Penting' ? 'amber' : 'indigo')}</td>
+          <td>${badge(ticket.status, ticket.status === 'Selesai' ? 'emerald' : ticket.status === 'Diproses' ? 'amber' : 'rose')}</td>
+          <td>
+            <a href="https://wa.me/6285111033789?text=Halo%20Admin%20Bishub%2C%20saya%20ingin%20menanyakan%20tiket%20${ticket.id}" target="_blank" class="bg-green-500 text-green-950 rounded-xl px-3 py-2 text-xs font-black no-underline">WA Admin</a>
+          </td>
         </tr>
       `);
 
-      return panel('Bantuan / Tiket', 'Tiket bantuan user.', table(['ID', 'Topik', 'Status', 'Aksi'], rows), actionButton('Buat Tiket', 'rose'));
+      return panel('Bantuan / Tiket', 'Hubungi admin, buat tiket bantuan, dan pantau riwayat laporan.', `
+        <div class="grid md:grid-cols-3 gap-4 mb-5">
+          <button onclick="openSupportModal()" class="rounded-[22px] bg-orange-50 border border-orange-100 p-5 text-left hover:bg-orange-100">
+            <i class="fa-solid fa-ticket text-3xl text-orange-500 mb-3"></i>
+            <b class="block text-lg">Buat Tiket</b>
+            <p class="text-sm text-slate-500 mt-1">Komplain, pertanyaan, dan kendala akun.</p>
+          </button>
+          <a href="https://wa.me/6285111033789?text=Halo%20Admin%20Bishub%2C%20saya%20butuh%20bantuan." target="_blank" class="rounded-[22px] bg-green-50 border border-green-100 p-5 text-left hover:bg-green-100 no-underline text-slate-900">
+            <i class="fa-brands fa-whatsapp text-3xl text-green-500 mb-3"></i>
+            <b class="block text-lg">WhatsApp Admin</b>
+            <p class="text-sm text-slate-500 mt-1">Chat cepat ke 0851 1103 3789.</p>
+          </a>
+          <a href="mailto:kalimajasuryaalam@gmail.com?subject=Bantuan%20Bishub" class="rounded-[22px] bg-slate-50 border border-slate-200 p-5 text-left hover:bg-slate-100 no-underline text-slate-900">
+            <i class="fa-solid fa-envelope text-3xl text-slate-700 mb-3"></i>
+            <b class="block text-lg">Email Admin</b>
+            <p class="text-sm text-slate-500 mt-1">kalimajasuryaalam@gmail.com</p>
+          </a>
+        </div>
+        ${tickets.length ? table(['ID', 'Topik', 'Prioritas', 'Status', 'Aksi'], rows) : `
+          <div class="rounded-[24px] bg-slate-50 border border-dashed border-slate-300 p-8 text-center">
+            <i class="fa-solid fa-ticket text-4xl text-slate-300 mb-3"></i>
+            <h3 class="font-black text-slate-700">Belum ada tiket</h3>
+            <p class="text-sm text-slate-500 mt-1">Klik Buat Tiket untuk menghubungi admin.</p>
+          </div>
+        `}
+      `);
     }
 
     function userNotifications() {
@@ -1304,6 +1485,144 @@
       renderUserDashboard();
       showToast('Profil tersimpan');
     }
+
+    function getSupportTickets() {
+      try {
+        const tickets = JSON.parse(localStorage.getItem('bishub_support_tickets') || '[]');
+        return Array.isArray(tickets) ? tickets : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveSupportTickets(tickets) {
+      localStorage.setItem('bishub_support_tickets', JSON.stringify(tickets));
+    }
+
+    function openSupportModal() {
+      const modal = document.getElementById('supportModal');
+      if (modal) modal.classList.add('show');
+    }
+
+    function closeSupportModal() {
+      const modal = document.getElementById('supportModal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    function fillDemoTicket() {
+      const fields = {
+        ticketName: state.name || 'User Demo',
+        ticketPhone: '085111033789',
+        ticketSubject: 'Minta bantuan terkait pesanan / toko',
+        ticketMessage: 'Halo Admin Bishub, saya ingin menanyakan status pesanan dan pengaturan toko saya.'
+      };
+
+      Object.entries(fields).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (el) el.value = value;
+      });
+    }
+
+    function submitSupportTicket() {
+      const name = document.getElementById('ticketName')?.value?.trim() || state.name || 'Customer';
+      const phone = document.getElementById('ticketPhone')?.value?.trim() || '-';
+      const category = document.getElementById('ticketCategory')?.value || 'Lainnya';
+      const priority = document.getElementById('ticketPriority')?.value || 'Normal';
+      const subject = document.getElementById('ticketSubject')?.value?.trim();
+      const message = document.getElementById('ticketMessage')?.value?.trim();
+
+      if (!subject || !message) {
+        showToast('Judul dan detail tiket wajib diisi');
+        return;
+      }
+
+      const tickets = getSupportTickets();
+      const ticket = {
+        id: 'TKT-' + new Date().getTime().toString().slice(-6),
+        name,
+        phone,
+        category,
+        priority,
+        subject,
+        message,
+        status: 'Open',
+        createdAt: new Date().toLocaleString('id-ID')
+      };
+
+      tickets.unshift(ticket);
+      saveSupportTickets(tickets);
+      closeSupportModal();
+      showToast('Tiket bantuan berhasil dikirim ke Admin');
+
+      if (state.role === 'admin' && state.adminMenu === 'support') {
+        renderAdminDashboard();
+      }
+      if (state.role === 'user' && state.userMenu === 'support') {
+        renderUserDashboard();
+      }
+    }
+
+    function updateSupportTicketStatus(ticketId, status) {
+      const tickets = getSupportTickets();
+      const target = tickets.find(ticket => ticket.id === ticketId);
+      if (target) target.status = status;
+      saveSupportTickets(tickets);
+      renderAdminDashboard();
+      showToast('Status tiket diperbarui');
+    }
+
+    function renderFloatingHelp() {
+      return `
+        <div class="floating-help">
+          <a class="btn-whatsapp" href="https://wa.me/6285111033789?text=Halo%20Admin%20Bishub%2C%20saya%20ingin%20menghubungi%20admin." target="_blank">
+            <i class="fa-brands fa-whatsapp"></i><span>WhatsApp Admin</span>
+          </a>
+          <button class="btn-ticket" onclick="openSupportModal()">
+            <i class="fa-solid fa-headset"></i><span>Buat Tiket</span>
+          </button>
+        </div>
+      `;
+    }
+
+    function supportTicketCards() {
+      const tickets = getSupportTickets();
+      if (!tickets.length) {
+        return `
+          <div class="rounded-[24px] bg-slate-50 border border-dashed border-slate-300 p-8 text-center">
+            <i class="fa-solid fa-headset text-4xl text-slate-300 mb-3"></i>
+            <h3 class="font-black text-slate-700">Belum ada tiket bantuan</h3>
+            <p class="text-sm text-slate-500 mt-1">Tiket customer akan tampil di sini setelah user membuat laporan.</p>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="grid gap-3">
+          ${tickets.map(ticket => `
+            <div class="border rounded-[22px] p-4 bg-white">
+              <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+                <div>
+                  <div class="flex flex-wrap gap-2 mb-2">
+                    ${badge(ticket.status, ticket.status === 'Selesai' ? 'emerald' : ticket.status === 'Diproses' ? 'amber' : 'rose')}
+                    ${badge(ticket.priority, ticket.priority === 'Mendesak' ? 'rose' : ticket.priority === 'Penting' ? 'amber' : 'indigo')}
+                    ${badge(ticket.category, 'slate')}
+                  </div>
+                  <h3 class="font-black text-slate-900">${ticket.subject}</h3>
+                  <p class="text-sm text-slate-500 mt-1">${ticket.message}</p>
+                  <p class="text-xs text-slate-400 mt-2">${ticket.id} • ${ticket.name} • ${ticket.phone} • ${ticket.createdAt}</p>
+                </div>
+                <div class="flex flex-wrap gap-2 shrink-0">
+                  <button onclick="updateSupportTicketStatus('${ticket.id}', 'Diproses')" class="bg-amber-500 text-white rounded-xl px-3 py-2 text-xs font-black">Proses</button>
+                  <button onclick="updateSupportTicketStatus('${ticket.id}', 'Selesai')" class="bg-emerald-600 text-white rounded-xl px-3 py-2 text-xs font-black">Selesai</button>
+                  <a href="https://wa.me/${String(ticket.phone).replace(/[^0-9]/g, '').replace(/^0/, '62')}" target="_blank" class="bg-green-500 text-green-950 rounded-xl px-3 py-2 text-xs font-black no-underline">WA</a>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
 
     renderApp();
   </script>
