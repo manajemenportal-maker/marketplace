@@ -382,10 +382,39 @@ document.addEventListener('DOMContentLoaded', () => {
   function table(head,rows){return `<div class="bhz-table-wrap"><table class="bhz-table"><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
   function form(fields){return `<div class="bhz-form-grid">${fields.map(f=>f[0]==='textarea'?`<textarea class="bhz-textarea ${f[2]?'full':''}" placeholder="${f[1]}">${f[3]||''}</textarea>`:f[0]==='select'?`<select class="bhz-select ${f[2]?'full':''}">${f[1].map(x=>`<option>${x}</option>`).join('')}</select>`:`<input class="bhz-input ${f[2]?'full':''}" placeholder="${f[1]}" value="${f[3]||''}">`).join('')}</div>`}
   
-  // -- HTML SHELL --
+  // -- HTML SHELL (DENGAN TOMBOL LOGOUT & FLEX LAYOUT) --
   function shell(kind,menus,active,sub){
     const menu=menus[active]||menus.overview; sub=sub||menu.subs[0][0];
-    return `<aside class="bhz-sidebar bhz-${kind}"><div class="bhz-side-head"><div class="bhz-side-logo">${kind==='admin'?'<i class="fa-solid fa-shield-halved"></i>':'US'}</div><div><h3>${kind==='admin'?'Admin Pusat':'Dashboard User'}</h3><p>${kind==='admin'?'Menu utama di kiri':'Kendali akun & toko'}</p></div></div><nav class="bhz-main-nav">${Object.entries(menus).map(([k,m])=>`<button type="button" class="${active===k?'active':''}" onclick="BHZFinal.open('${kind}','${k}')"><i class="fa-solid ${m.icon}"></i><span>${m.title}</span></button>`).join('')}</nav></aside><section class="bhz-workspace"><div class="bhz-page-head"><div><h1><i class="fa-solid ${menu.icon} text-indigo-600"></i>${menu.title}</h1><p>${menu.desc}. Pilih submenu di bawah untuk detail.</p></div><div class="bhz-page-actions">${btn('Refresh','soft')}${kind==='admin'?btn('Export','dark'):btn('Simpan','primary')}</div></div><div class="bhz-panel"><div class="bhz-panel-head"><h2>Submenu ${menu.title}</h2></div><div class="bhz-panel-body"><div class="bhz-sub-grid">${menu.subs.map(s=>`<button type="button" class="bhz-sub-card ${sub===s[0]?'active':''}" onclick="BHZFinal.openSub('${kind}','${active}','${s[0]}')"><i class="fa-solid ${s[1]}"></i><span><b>${s[2]}</b><small>${s[3]}</small></span></button>`).join('')}</div><div class="bhz-detail mt-6">${kind==='admin'?adminDetail(active,sub):userDetail(active,sub)}</div></div></div></section>`;
+    return `<aside class="bhz-sidebar bhz-${kind}" style="display:flex; flex-direction:column; justify-content:space-between; height:calc(100vh - 120px);">
+      <div style="overflow-y:auto;" class="hide-scrollbar">
+        <div class="bhz-side-head">
+          <div class="bhz-side-logo">${kind==='admin'?'<i class="fa-solid fa-shield-halved"></i>':'US'}</div>
+          <div><h3>${kind==='admin'?'Admin Pusat':'Dashboard User'}</h3><p>${kind==='admin'?'Mode admin terisolasi':'Kendali akun & toko'}</p></div>
+        </div>
+        <nav class="bhz-main-nav">
+          ${Object.entries(menus).map(([k,m])=>`<button type="button" class="${active===k?'active':''}" onclick="BHZFinal.open('${kind}','${k}')"><i class="fa-solid ${m.icon}"></i><span>${m.title}</span></button>`).join('')}
+        </nav>
+      </div>
+      <div class="p-3 border-t ${kind==='admin'?'border-slate-800':'border-slate-200'}">
+        <button type="button" onclick="BHZFinal.logout()" class="w-full flex items-center gap-3 text-left p-3 rounded-xl font-bold ${kind==='admin'?'text-rose-400 hover:bg-rose-500/10':'text-rose-600 hover:bg-rose-50'} transition-colors">
+          <i class="fa-solid fa-power-off w-5 text-center"></i>
+          <span class="text-[13px]">Keluar Akun</span>
+        </button>
+      </div>
+    </aside>
+    <section class="bhz-workspace">
+      <div class="bhz-page-head">
+        <div><h1><i class="fa-solid ${menu.icon} text-indigo-600"></i>${menu.title}</h1><p>${menu.desc}. Pilih submenu di bawah untuk detail.</p></div>
+        <div class="bhz-page-actions">${btn('Refresh','soft')}${kind==='admin'?btn('Export','dark'):btn('Simpan','primary')}</div>
+      </div>
+      <div class="bhz-panel">
+        <div class="bhz-panel-head"><h2>Submenu ${menu.title}</h2></div>
+        <div class="bhz-panel-body">
+          <div class="bhz-sub-grid">${menu.subs.map(s=>`<button type="button" class="bhz-sub-card ${sub===s[0]?'active':''}" onclick="BHZFinal.openSub('${kind}','${active}','${s[0]}')"><i class="fa-solid ${s[1]}"></i><span><b>${s[2]}</b><small>${s[3]}</small></span></button>`).join('')}</div>
+          <div class="bhz-detail mt-6">${kind==='admin'?adminDetail(active,sub):userDetail(active,sub)}</div>
+        </div>
+      </div>
+    </section>`;
   }
 
   // -- DETAIL KONTEN ADMIN --
@@ -440,7 +469,63 @@ document.addEventListener('DOMContentLoaded', () => {
     const v=$('#view-buyer'); if(v){ v.className='bhz-dash-wrap bhz-user'; v.innerHTML=shell('user',userMenus,menu,sub); }
   }
 
-  // -- MAIN CONTROL --
+  // -- ROLE ENFORCEMENT & UI ISOLATION --
+  function enforceRoleUI() {
+      const role = localStorage.getItem(LS.role) || 'guest';
+      const authInfo = document.getElementById('auth-display-info');
+      const tabAdmin = document.getElementById('tab-admin');
+      const tabBuyer = document.getElementById('tab-buyer');
+      const tabMp = document.getElementById('tab-marketplace');
+      const tabForum = document.getElementById('tab-forum');
+      
+      if(role === 'admin') {
+          if(authInfo) authInfo.innerHTML = '<span class="block text-[10px] text-emerald-300">Mode Admin</span><span id="current-user-email" class="font-bold tracking-wide">Admin Pusat</span>';
+          if(tabAdmin) tabAdmin.classList.remove('hidden');
+          if(tabBuyer) tabBuyer.classList.add('hidden');
+          // STRICT ISOLATION: Hide marketplace tabs for Admin
+          if(tabMp) tabMp.classList.add('hidden'); 
+          if(tabForum) tabForum.classList.add('hidden');
+      } else if(role === 'user') {
+          if(authInfo) authInfo.innerHTML = '<span class="block text-[10px] text-indigo-200">Mode User B2B</span><span id="current-user-email" class="font-bold tracking-wide">Toko / Buyer</span>';
+          if(tabAdmin) tabAdmin.classList.add('hidden');
+          if(tabBuyer) tabBuyer.classList.remove('hidden');
+          if(tabMp) tabMp.classList.remove('hidden');
+          if(tabForum) tabForum.classList.remove('hidden');
+      } else {
+          if(authInfo) authInfo.innerHTML = '<span class="block text-[10px] text-indigo-200">Akses Sistem</span><span id="current-user-email" class="font-bold tracking-wide">Login / Daftar</span>';
+          if(tabAdmin) tabAdmin.classList.add('hidden');
+          if(tabBuyer) tabBuyer.classList.add('hidden');
+          if(tabMp) tabMp.classList.remove('hidden');
+          if(tabForum) tabForum.classList.remove('hidden');
+      }
+  }
+
+  // Intercept the global switchAppView to force role-based routing
+  const oldSwitch = window.switchAppView;
+  window.switchAppView = function(viewName) {
+      const role = localStorage.getItem(LS.role) || 'guest';
+      
+      // Strict role boundary checks
+      if(role === 'admin' && viewName !== 'admin') {
+          toast('Mode Admin aktif. Anda dikunci dalam Panel Admin.');
+          viewName = 'admin'; 
+      }
+      if(role === 'user' && viewName === 'admin') {
+          viewName = 'buyer'; 
+      }
+      
+      if(oldSwitch) oldSwitch(viewName);
+      
+      enforceRoleUI();
+      if(viewName === 'admin') buildAdmin();
+      if(viewName === 'buyer') buildUser();
+  };
+
+  // Run UI enforcement on load
+  document.addEventListener('DOMContentLoaded', enforceRoleUI);
+  enforceRoleUI();
+
+  // -- MAIN CONTROL EXPORTS --
   window.BHZFinal={
     open(kind,menu){
       if(kind==='admin') buildAdmin(menu,adminMenus[menu].subs[0][0]);
@@ -451,6 +536,13 @@ document.addEventListener('DOMContentLoaded', () => {
       else buildUser(menu,sub);
     },
     action(label){ toast(label+' berhasil diproses'); },
+    logout() {
+      localStorage.removeItem(LS.role);
+      localStorage.removeItem('superapp_current_view');
+      enforceRoleUI();
+      if(window.switchAppView) window.switchAppView('marketplace');
+      toast('Berhasil keluar dari sistem');
+    },
     buildAdmin, buildUser
   };
 })();
