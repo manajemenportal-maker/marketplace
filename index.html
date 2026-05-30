@@ -1080,6 +1080,77 @@
       });
     }
 
+
+    function sortedCategoriesByKind(kind) {
+      const categories = getProductCategories().filter(category => category.status === 'Aktif');
+      const isService = category => {
+        const text = `${category.type || ''} ${category.name || ''}`.toLowerCase();
+        return text.includes('jasa') || text.includes('service') || text.includes('engineering') || text.includes('rental') || text.includes('sewa') || text.includes('konsultan');
+      };
+      const isCompany = category => {
+        const text = `${category.type || ''} ${category.name || ''}`.toLowerCase();
+        return text.includes('company') || text.includes('perusahaan') || text.includes('supplier') || text.includes('kontraktor') || text.includes('pabrik') || text.includes('bengkel');
+      };
+
+      return categories
+        .filter(category => {
+          if (kind === 'jasa') return isService(category);
+          if (kind === 'perusahaan') return isCompany(category);
+          return !isService(category) && !isCompany(category);
+        })
+        .sort((a, b) => String(a.name).localeCompare(String(b.name), 'id', { sensitivity: 'base' }));
+    }
+
+    function groupedCategoryOptions(activeCategory = '') {
+      const produk = sortedCategoriesByKind('produk');
+      const jasa = sortedCategoriesByKind('jasa');
+      const perusahaan = sortedCategoriesByKind('perusahaan');
+
+      const group = (label, items) => items.length ? `
+        <optgroup label="${label}">
+          ${items.map(category => `<option value="${category.name}" ${activeCategory === category.name ? 'selected' : ''}>${category.name}</option>`).join('')}
+        </optgroup>
+      ` : '';
+
+      return `
+        ${group('Kelompok Produk', produk)}
+        ${group('Kelompok Jasa', jasa)}
+        ${group('Kelompok Perusahaan', perusahaan)}
+      `;
+    }
+
+    function renderCategoryScrollGroup(title, kind, activeCategory) {
+      const categories = sortedCategoriesByKind(kind);
+      if (!categories.length) return '';
+
+      return `
+        <div class="rounded-[24px] border border-slate-200 bg-white p-4">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <h3 class="font-black text-sm text-slate-800">${title}</h3>
+            <span class="text-[11px] font-black text-slate-400 uppercase">Urut A-Z</span>
+          </div>
+          <div class="flex gap-2 overflow-x-auto pb-1">
+            ${categories.map(category => `
+              <button onclick="state.marketCategory='${String(category.name).replace(/'/g, "\\'")}'; saveState(); renderMarketplace();" class="sub-tab ${activeCategory === category.name ? 'active' : ''}">
+                <i class="fa-solid ${category.icon || 'fa-layer-group'} mr-1"></i>${category.name}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderGroupedCategoryScroll(activeCategory = '') {
+      return `
+        <div class="mt-4 grid gap-3">
+          ${renderCategoryScrollGroup('Kelompok Produk', 'produk', activeCategory)}
+          ${renderCategoryScrollGroup('Kelompok Jasa', 'jasa', activeCategory)}
+          ${renderCategoryScrollGroup('Kelompok Perusahaan', 'perusahaan', activeCategory)}
+        </div>
+      `;
+    }
+
+
     function renderMarketplaceSearchBar() {
       const categories = getProductCategories();
       const activeCategory = state.marketCategory || '';
@@ -1099,7 +1170,7 @@
               <label class="text-xs font-black uppercase text-slate-500">Kategori</label>
               <select id="marketCategorySelect" class="mt-1 border rounded-2xl p-3 w-full bg-white text-sm font-bold">
                 <option value="">Semua Kategori</option>
-                ${categories.map(category => `<option value="${category.name}" ${activeCategory === category.name ? 'selected' : ''}>${category.name}</option>`).join('')}
+                ${groupedCategoryOptions(activeCategory)}
               </select>
             </div>
             <button onclick="setMarketplaceSearch()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">
@@ -1110,9 +1181,13 @@
             </button>
           </div>
           
-          <div class="mt-4 rounded-2xl bg-slate-50 border border-slate-200 p-3 text-xs md:text-sm text-slate-600 font-bold">
-            Pilih kategori melalui dropdown agar pencarian lebih rapi dan tidak memenuhi layar.
+          <div class="mt-4 flex items-center gap-2">
+            <button onclick="state.marketCategory=''; saveState(); renderMarketplace();" class="sub-tab ${!activeCategory ? 'active' : ''}">
+              Semua Kategori
+            </button>
+            <span class="text-xs font-black text-slate-400">Kategori disusun per kelompok dan urut abjad.</span>
           </div>
+          ${renderGroupedCategoryScroll(activeCategory)}
 
         </section>
       `;
@@ -1220,8 +1295,10 @@
               <div>
                 <label class="text-xs font-black uppercase text-slate-500">Kategori Perusahaan</label>
                 <select id="companyCategorySelect" class="mt-1 border rounded-2xl p-3 w-full bg-white text-sm font-bold">
-                  <option value="">Semua Kategori</option>
-                  ${categories.map(category => `<option value="${category.name}" ${activeCategory === category.name ? 'selected' : ''}>${category.name}</option>`).join('')}
+                  <option value="">Semua Kategori Perusahaan</option>
+                  ${categories
+                    .sort((a, b) => String(a.name).localeCompare(String(b.name), 'id', { sensitivity: 'base' }))
+                    .map(category => `<option value="${category.name}" ${activeCategory === category.name ? 'selected' : ''}>${category.name}</option>`).join('')}
                 </select>
               </div>
               <button onclick="setCompanyDirectorySearch()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">Cari</button>
