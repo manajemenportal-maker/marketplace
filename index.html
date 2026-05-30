@@ -313,10 +313,16 @@
       white-space: nowrap;
       min-height: 72px;
       width: max-content;
+      min-width: 100%;
       animation: adMarquee var(--ad-speed, 18s) linear infinite;
       will-change: transform;
       padding-left: 0;
-      transform: translate3d(100vw, 0, 0);
+    }
+    .running-ad-track.is-copy {
+      position: absolute;
+      top: 0;
+      left: 0;
+      animation-delay: calc(var(--ad-speed, 18s) / -2);
     }
     .running-ad-track:hover { animation-play-state: paused; }
     .running-ad-space::before,
@@ -421,7 +427,7 @@
 
     @keyframes adMarquee {
       0% { transform: translate3d(100vw, 0, 0); }
-      100% { transform: translate3d(calc(-100% - 100vw), 0, 0); }
+      100% { transform: translate3d(-100%, 0, 0); }
     }
     @media (max-width: 700px) {
       .floating-help {
@@ -644,6 +650,7 @@
       { key: 'overview', label: 'Overview', icon: 'fa-gauge-high' },
       { key: 'users', label: 'Akun & Role', icon: 'fa-users' },
       { key: 'sellers', label: 'Seller / Vendor', icon: 'fa-store' },
+      { key: 'companies', label: 'Database Perusahaan', icon: 'fa-building-user' },
       { key: 'products', label: 'Produk', icon: 'fa-boxes-stacked' },
       { key: 'orders', label: 'Order & Refund', icon: 'fa-receipt' },
       { key: 'tenders', label: 'Tender', icon: 'fa-briefcase' },
@@ -659,6 +666,7 @@
       { key: 'orders', label: 'Pesanan Saya', icon: 'fa-box-open' },
       { key: 'addProduct', label: 'Tambah Produk', icon: 'fa-circle-plus' },
       { key: 'store', label: 'Kelola Toko', icon: 'fa-store' },
+      { key: 'companyProfile', label: 'Profil Perusahaan', icon: 'fa-building-user' },
       { key: 'wishlist', label: 'Wishlist', icon: 'fa-heart' },
       { key: 'address', label: 'Alamat Proyek', icon: 'fa-location-dot' },
       { key: 'support', label: 'Bantuan / Tiket', icon: 'fa-headset' },
@@ -671,6 +679,7 @@
       overview: ['Ringkasan', 'Aktivitas', 'Kinerja'],
       users: ['Daftar User', 'Role & Akses', 'Verifikasi', 'Segmentasi'],
       sellers: ['Ringkasan Seller', 'Verifikasi Seller', 'Audit Vendor', 'Withdraw'],
+      companies: ['Daftar Perusahaan', 'Review Compro', 'Kategori Perusahaan', 'Publikasi'],
       products: ['Review Produk', 'Produk Aktif', 'Kategori', 'Stok & Harga', 'Dokumen'],
       orders: ['Transaksi', 'Refund', 'Dispute', 'Invoice'],
       tenders: ['Tender Open', 'Review Tender', 'Bidding', 'Arsip'],
@@ -686,6 +695,7 @@
       orders: ['Semua Pesanan', 'Diproses', 'Dikirim', 'Selesai', 'Komplain'],
       addProduct: ['Info Produk', 'Harga & Stok', 'Gambar & Media', 'Spesifikasi', 'Dokumen', 'Pengiriman', 'Preview'],
       store: ['Profil Toko', 'Legalitas', 'Rekening', 'Kurir & Gudang', 'Jam Operasional', 'Kebijakan', 'Preview Toko'],
+      companyProfile: ['Compro Utama', 'Bidang Usaha', 'Legalitas', 'Portofolio', 'Produk & Jasa', 'Kontak', 'Preview Compro'],
       wishlist: ['Produk Disimpan', 'Supplier Favorit', 'Riwayat Dilihat'],
       address: ['Alamat Utama', 'Gudang', 'Proyek', 'Tambah Alamat'],
       support: ['Buat Tiket', 'Tiket Saya', 'Chat Admin', 'FAQ'],
@@ -718,7 +728,8 @@
       { name: 'Jasa Survey & Pendataan Lapangan', seller: 'Mitra Jasa BisnisHUB', category: 'Bidang Jasa', price: 'Mulai Rp 750.000', badge: 'Jasa', icon: 'fa-handshake-angle' },
       { name: 'Jasa Desain Teknik & CAD', seller: 'Engineering Partner BisnisHUB', category: 'Jasa Keteknikan', price: 'Mulai Rp 1.500.000', badge: 'Engineering', icon: 'fa-compass-drafting' },
       { name: 'Jasa Instalasi & Commissioning Mesin', seller: 'Teknisi Industri Nusantara', category: 'Jasa Industri', price: 'Mulai Rp 2.500.000', badge: 'Jasa', icon: 'fa-person-digging' },
-      { name: 'Sewa Pompa Alkon & Operator', seller: 'Rental Alat Pertanian', category: 'Sewa / Rental', price: 'Mulai Rp 350.000 / hari', badge: 'Rental', icon: 'fa-hand-holding-dollar' }
+      { name: 'Sewa Pompa Alkon & Operator', seller: 'Rental Alat Pertanian', category: 'Sewa / Rental', price: 'Mulai Rp 350.000 / hari', badge: 'Rental', icon: 'fa-hand-holding-dollar' },
+      { name: 'Database Company Profile Vendor Industri', seller: 'BisnisHUB Company Directory', category: 'Database Perusahaan & Company Profile', price: 'Profil Perusahaan', badge: 'Compro', icon: 'fa-building-user' }
     ];
 
     const Orders = [
@@ -1437,17 +1448,18 @@
       const items = ads.textItems && ads.textItems.length ? ads.textItems : DEFAULT_ADS_SETTINGS.textItems;
       const repeated = [...items, ...items, ...items];
 
+      const trackHtml = repeated.map((text, index) => `
+        <span class="running-ad-item">
+          <span class="running-ad-badge">${index % 3 === 0 ? 'PROMO' : index % 3 === 1 ? 'IKLAN USER' : 'BISNISHUB'}</span>
+          <span>${text}</span>
+          <span class="running-ad-separator">•</span>
+        </span>
+      `).join('');
+
       return `
         <section class="running-ad-space" style="--ad-speed:${Math.max(8, Number(ads.speedSeconds || 18))}s">
-          <div class="running-ad-track">
-            ${repeated.map((text, index) => `
-              <span class="running-ad-item">
-                <span class="running-ad-badge">${index % 3 === 0 ? 'PROMO' : index % 3 === 1 ? 'IKLAN USER' : 'BISNISHUB'}</span>
-                <span>${text}</span>
-                <span class="running-ad-separator">•</span>
-              </span>
-            `).join('')}
-          </div>
+          <div class="running-ad-track">${trackHtml}</div>
+          <div class="running-ad-track is-copy">${trackHtml}</div>
         </section>
       `;
     }
@@ -1683,7 +1695,13 @@
       { id: 'KAT-037', name: 'Perkebunan, Kehutanan & Agro Industri', type: 'Produk', status: 'Aktif', icon: 'fa-seedling' },
       { id: 'KAT-038', name: 'Peternakan, Perikanan & Cold Chain', type: 'Produk', status: 'Aktif', icon: 'fa-fish' },
       { id: 'KAT-039', name: 'Tender, Proyek & Pengadaan B2B', type: 'Tender / Proyek', status: 'Aktif', icon: 'fa-file-signature' },
-      { id: 'KAT-040', name: 'Sewa Alat, Rental Mesin & Equipment', type: 'Jasa', status: 'Aktif', icon: 'fa-hand-holding-dollar' }
+      { id: 'KAT-040', name: 'Sewa Alat, Rental Mesin & Equipment', type: 'Jasa', status: 'Aktif', icon: 'fa-hand-holding-dollar' },
+      { id: 'KAT-041', name: 'Database Perusahaan & Company Profile', type: 'Company Profile', status: 'Aktif', icon: 'fa-building-user' },
+      { id: 'KAT-042', name: 'Supplier, Distributor & Principal', type: 'Company Profile', status: 'Aktif', icon: 'fa-warehouse' },
+      { id: 'KAT-043', name: 'Kontraktor, Vendor & Subkontraktor', type: 'Company Profile', status: 'Aktif', icon: 'fa-person-digging' },
+      { id: 'KAT-044', name: 'Konsultan, Engineering & Project Management', type: 'Company Profile', status: 'Aktif', icon: 'fa-user-tie' },
+      { id: 'KAT-045', name: 'Bengkel, Workshop & Service Center', type: 'Company Profile', status: 'Aktif', icon: 'fa-screwdriver-wrench' },
+      { id: 'KAT-046', name: 'Pabrik, Produsen & Manufaktur', type: 'Company Profile', status: 'Aktif', icon: 'fa-industry' }
     ];
 
     function getProductCategories() {
@@ -1818,6 +1836,8 @@
               <option>Jasa Keteknikan</option>
               <option>Jasa Lapangan</option>
               <option>Sewa / Rental</option>
+              <option>Company Profile</option>
+              <option>Database Perusahaan</option>
               <option>Tender / Proyek</option>
             </select>
             <select id="catIcon" class="border rounded-2xl p-3 bg-white">
@@ -1953,6 +1973,31 @@
                 <td>${actionButton('Cairkan', 'emerald')} ${actionButton('Tahan', 'rose')}</td>
               </tr>
             `))}
+          `);
+        }
+      }
+
+
+      if (menu === 'companies') {
+        if (sub === 'Review Compro') {
+          return panel('Review Company Profile', 'Review profil perusahaan sebelum tayang di database.', `
+            ${adminCompanies()}
+          `);
+        }
+        if (sub === 'Kategori Perusahaan') {
+          return productCategoryAdminPanel();
+        }
+        if (sub === 'Publikasi') {
+          return panel('Publikasi Compro', 'Atur publikasi company profile ke halaman marketplace dan database.', `
+            <div class="grid md:grid-cols-2 gap-4">
+              ${['Tampilkan di database publik','Tampilkan tombol hubungi perusahaan','Tampilkan produk & jasa terkait','Tampilkan portofolio'].map(item => `
+                <label class="flex justify-between items-center border rounded-2xl p-5 bg-white">
+                  <span class="font-black">${item}</span>
+                  <input type="checkbox" checked class="accent-orange-500">
+                </label>
+              `).join('')}
+            </div>
+            <button onclick="showToast('Setting publikasi company profile disimpan')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Simpan Publikasi</button>
           `);
         }
       }
@@ -2456,6 +2501,7 @@
       if (key === 'overview') return adminOverview();
       if (key === 'users') return adminUsers();
       if (key === 'sellers') return adminSellers();
+      if (key === 'companies') return adminCompanies();
       if (key === 'products') return adminProducts();
       if (key === 'orders') return adminOrders();
       if (key === 'tenders') return adminTenders();
@@ -2525,6 +2571,39 @@
         `)))}
       `;
     }
+
+
+    function adminCompanies() {
+      const profiles = getCompanyProfiles();
+      const rows = (profiles.length ? profiles : [
+        { id: 'CMP-001', companyName: 'PT Contoh Industri Nusantara', category: 'Pabrik, Produsen & Manufaktur', industry: 'Manufaktur', city: 'Tangerang', status: 'Tayang' },
+        { id: 'CMP-002', companyName: 'CV Teknik Karya Mandiri', category: 'Jasa Keteknikan / Engineering', industry: 'Engineering', city: 'Bogor', status: 'Review' },
+        { id: 'CMP-003', companyName: 'Mitra Survey Lapangan', category: 'Jasa Survey, SID & Pendataan Lapangan', industry: 'Survey', city: 'Jakarta', status: 'Review' }
+      ]).map(profile => `
+        <tr>
+          <td class="font-black">${profile.id}</td>
+          <td><b>${profile.companyName}</b><br><span class="text-xs text-slate-400">${profile.city || '-'}</span></td>
+          <td>${profile.category || profile.industry || '-'}</td>
+          <td>${badge(profile.status || 'Review', (profile.status || '').includes('Tayang') ? 'emerald' : 'amber')}</td>
+          <td>${actionButton('Lihat Compro')} ${actionButton('Publikasikan', 'emerald')} ${actionButton('Revisi', 'amber')}</td>
+        </tr>
+      `);
+
+      return panel('Database Perusahaan', 'Kelola perusahaan yang masuk ke database BisnisHUB dan tampilkan company profile mereka.', `
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-5">
+          ${kpiCard('Total Perusahaan', String((profiles.length || 3)), 'fa-building-user', 'indigo')}
+          ${kpiCard('Menunggu Review', String(Math.max(1, profiles.filter(p => p.status !== 'Tayang').length || 2)), 'fa-clock', 'amber')}
+          ${kpiCard('Tayang', String(profiles.filter(p => p.status === 'Tayang').length || 1), 'fa-circle-check', 'emerald')}
+          ${kpiCard('Kategori Compro', '6', 'fa-layer-group', 'orange')}
+        </div>
+        ${table(['ID', 'Perusahaan', 'Kategori', 'Status', 'Aksi'], rows)}
+      `, `
+        <button onclick="setAdminMenu('products'); state.adminSub='Kategori'; saveState(); renderAdminDashboard();" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black text-sm">
+          Atur Kategori Perusahaan
+        </button>
+      `);
+    }
+
 
     function adminProducts() {
       const rows = Products.map((product, index) => `
@@ -2670,6 +2749,7 @@
       if (key === 'registration') return userRegistration();
       if (key === 'addProduct') return userAddProduct();
       if (key === 'store') return userStore();
+      if (key === 'companyProfile') return userCompanyProfile();
       if (key === 'wishlist') return userWishlist();
       if (key === 'address') return userAddress();
       if (key === 'support') return userSupport();
@@ -3112,6 +3192,182 @@
       }
 
       return panel('Kelola Toko', 'Pilih submenu toko di atas.', `${tabTitle}`);
+    }
+
+
+
+    function getCompanyProfiles() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('bisnishub_company_profiles') || '[]');
+        return Array.isArray(saved) ? saved : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveCompanyProfiles(profiles) {
+      localStorage.setItem('bisnishub_company_profiles', JSON.stringify(profiles));
+    }
+
+    function saveCompanyProfile() {
+      const profile = {
+        id: 'CMP-' + new Date().getTime().toString().slice(-6),
+        companyName: document.getElementById('companyName')?.value || 'Perusahaan BisnisHUB',
+        industry: document.getElementById('companyIndustry')?.value || 'Bidang Industri',
+        category: document.getElementById('companyCategory')?.value || 'Database Perusahaan & Company Profile',
+        city: document.getElementById('companyCity')?.value || '',
+        website: document.getElementById('companyWebsite')?.value || '',
+        description: document.getElementById('companyDescription')?.value || '',
+        status: 'Menunggu Review',
+        createdAt: new Date().toLocaleString('id-ID')
+      };
+
+      const profiles = getCompanyProfiles();
+      const existingIndex = profiles.findIndex(item => item.companyName === profile.companyName);
+      if (existingIndex >= 0) profiles[existingIndex] = { ...profiles[existingIndex], ...profile };
+      else profiles.unshift(profile);
+
+      saveCompanyProfiles(profiles);
+      showToast('Company profile disimpan ke database BisnisHUB');
+      renderUserDashboard();
+    }
+
+    function userCompanyProfile() {
+      const active = state.userSub || 'Compro Utama';
+
+      const header = `
+        <div class="mb-4 rounded-[24px] bg-orange-50 border border-orange-100 p-4">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <p class="text-xs font-black uppercase tracking-widest text-orange-700">Database Perusahaan BisnisHUB</p>
+              <h3 class="text-xl font-black text-slate-900 mt-1">${active}</h3>
+              <p class="text-sm text-slate-500 mt-1">Perusahaan dapat masuk database dan menampilkan company profile, portofolio, produk, jasa, serta kontak resmi.</p>
+            </div>
+            <button onclick="saveCompanyProfile()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 text-sm font-black">
+              Simpan Compro
+            </button>
+          </div>
+        </div>
+      `;
+
+      if (active === 'Compro Utama') {
+        return panel('Profil Perusahaan', 'Data utama company profile untuk database BisnisHUB.', `
+          ${header}
+          <div class="grid md:grid-cols-2 gap-4">
+            <input id="companyName" class="border rounded-2xl p-3" placeholder="Nama perusahaan">
+            <select id="companyCategory" class="border rounded-2xl p-3 bg-white">
+              ${categoryOptions('Database Perusahaan & Company Profile')}
+            </select>
+            <input id="companyIndustry" class="border rounded-2xl p-3" placeholder="Bidang usaha / industri">
+            <input id="companyCity" class="border rounded-2xl p-3" placeholder="Kota / domisili perusahaan">
+            <input id="companyWebsite" class="border rounded-2xl p-3" placeholder="Website perusahaan">
+            <input class="border rounded-2xl p-3" placeholder="Email resmi perusahaan">
+            <textarea id="companyDescription" class="border rounded-2xl p-3 md:col-span-2" rows="5" placeholder="Profil singkat perusahaan, keunggulan, pengalaman, dan kapasitas usaha."></textarea>
+            <div>
+              <label class="text-xs font-black uppercase text-slate-500">Upload Logo Perusahaan</label>
+              <input type="file" accept="image/*" class="mt-1 border rounded-2xl p-3 w-full">
+            </div>
+            <div>
+              <label class="text-xs font-black uppercase text-slate-500">Upload Banner / Foto Kantor</label>
+              <input type="file" accept="image/*" class="mt-1 border rounded-2xl p-3 w-full">
+            </div>
+          </div>
+        `);
+      }
+
+      if (active === 'Bidang Usaha') {
+        return panel('Profil Perusahaan', 'Pilih bidang usaha, industri, dan layanan.', `
+          ${header}
+          <div class="grid md:grid-cols-2 gap-4">
+            <select class="border rounded-2xl p-3 bg-white">
+              ${categoryOptions('Supplier, Distributor & Principal')}
+            </select>
+            <input class="border rounded-2xl p-3" placeholder="Spesialisasi utama, contoh: pompa irigasi, hidrolik, SID">
+            <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Daftar bidang usaha, layanan, kapasitas kerja, area layanan, dan target customer."></textarea>
+            <input class="border rounded-2xl p-3" placeholder="Area layanan / wilayah operasi">
+            <input class="border rounded-2xl p-3" placeholder="Kapasitas tim / teknisi / unit kerja">
+          </div>
+        `);
+      }
+
+      if (active === 'Legalitas') {
+        return panel('Profil Perusahaan', 'Legalitas untuk meningkatkan kepercayaan customer.', `
+          ${header}
+          <div class="grid md:grid-cols-2 gap-4">
+            <input class="border rounded-2xl p-3" placeholder="NIB">
+            <input class="border rounded-2xl p-3" placeholder="NPWP">
+            <input class="border rounded-2xl p-3" placeholder="Akta / izin usaha">
+            <input class="border rounded-2xl p-3" placeholder="Sertifikasi ISO / SNI / TKDN">
+            <input type="file" class="border rounded-2xl p-3">
+            <input type="file" class="border rounded-2xl p-3">
+          </div>
+        `);
+      }
+
+      if (active === 'Portofolio') {
+        return panel('Profil Perusahaan', 'Tampilkan pengalaman proyek dan klien.', `
+          ${header}
+          <div class="grid md:grid-cols-2 gap-4">
+            <input class="border rounded-2xl p-3" placeholder="Nama proyek / pekerjaan">
+            <input class="border rounded-2xl p-3" placeholder="Nama klien / instansi">
+            <input class="border rounded-2xl p-3" placeholder="Nilai proyek">
+            <input class="border rounded-2xl p-3" placeholder="Tahun pekerjaan">
+            <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Uraian pekerjaan dan hasil."></textarea>
+            <input type="file" accept="image/*" multiple class="border rounded-2xl p-3 md:col-span-2">
+          </div>
+        `);
+      }
+
+      if (active === 'Produk & Jasa') {
+        return panel('Profil Perusahaan', 'Hubungkan company profile dengan produk dan jasa yang ditawarkan.', `
+          ${header}
+          <div class="grid md:grid-cols-2 gap-4">
+            <input class="border rounded-2xl p-3" placeholder="Produk utama">
+            <input class="border rounded-2xl p-3" placeholder="Jasa utama">
+            <select class="border rounded-2xl p-3 bg-white">
+              ${categoryOptions('Bidang Jasa Industri')}
+            </select>
+            <select class="border rounded-2xl p-3 bg-white">
+              ${categoryOptions('Jasa Keteknikan / Engineering')}
+            </select>
+            <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Deskripsi produk, jasa, dan layanan unggulan."></textarea>
+          </div>
+        `);
+      }
+
+      if (active === 'Kontak') {
+        return panel('Profil Perusahaan', 'Kontak resmi perusahaan.', `
+          ${header}
+          <div class="grid md:grid-cols-2 gap-4">
+            <input class="border rounded-2xl p-3" placeholder="Nama PIC">
+            <input class="border rounded-2xl p-3" placeholder="Jabatan PIC">
+            <input class="border rounded-2xl p-3" placeholder="WhatsApp perusahaan">
+            <input class="border rounded-2xl p-3" placeholder="Email perusahaan">
+            <textarea class="border rounded-2xl p-3 md:col-span-2" rows="3" placeholder="Alamat lengkap kantor / workshop / gudang."></textarea>
+          </div>
+        `);
+      }
+
+      if (active === 'Preview Compro') {
+        const profiles = getCompanyProfiles();
+        return panel('Preview Company Profile', 'Tampilan company profile sebelum dipublikasikan ke database.', `
+          ${header}
+          <div class="rounded-[28px] overflow-hidden border bg-white">
+            <div class="h-40 bg-gradient-to-r from-orange-500 to-slate-950"></div>
+            <div class="p-5">
+              <h3 class="text-2xl font-black">Company Profile BisnisHUB</h3>
+              <p class="text-sm text-slate-500 mt-2">Profil perusahaan, bidang usaha, legalitas, portofolio, produk, jasa, dan kontak akan tampil di database perusahaan.</p>
+              <div class="mt-5 grid md:grid-cols-3 gap-4">
+                ${kpiCard('Profil Tersimpan', String(profiles.length), 'fa-building-user', 'orange')}
+                ${kpiCard('Status', profiles.length ? profiles[0].status : 'Draft', 'fa-circle-check', 'emerald')}
+                ${kpiCard('Kategori', 'Company Profile', 'fa-layer-group', 'indigo')}
+              </div>
+            </div>
+          </div>
+        `);
+      }
+
+      return panel('Profil Perusahaan', 'Pilih submenu company profile di atas.', `${header}`);
     }
 
 
