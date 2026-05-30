@@ -309,20 +309,19 @@
     .running-ad-track {
       display: flex;
       align-items: center;
-      gap: 60px;
       white-space: nowrap;
       min-height: 72px;
       width: max-content;
-      min-width: 100%;
       animation: adMarquee var(--ad-speed, 18s) linear infinite;
       will-change: transform;
       padding-left: 0;
     }
-    .running-ad-track.is-copy {
-      position: absolute;
-      top: 0;
-      left: 0;
-      animation-delay: calc(var(--ad-speed, 18s) / -2);
+    .running-ad-group {
+      display: flex;
+      align-items: center;
+      gap: 44px;
+      padding-right: 44px;
+      flex-shrink: 0;
     }
     .running-ad-track:hover { animation-play-state: paused; }
     .running-ad-space::before,
@@ -407,7 +406,10 @@
       }
       .running-ad-track {
         min-height: 58px;
-        gap: 24px;
+      }
+      .running-ad-group {
+        gap: 26px;
+        padding-right: 26px;
       }
       .running-ad-item {
         font-size: 12px;
@@ -426,8 +428,8 @@
     }
 
     @keyframes adMarquee {
-      0% { transform: translate3d(100vw, 0, 0); }
-      100% { transform: translate3d(-100%, 0, 0); }
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-50%, 0, 0); }
     }
     @media (max-width: 700px) {
       .floating-help {
@@ -1598,7 +1600,7 @@
               <input id="adsText3" class="border rounded-2xl p-3" placeholder="Teks iklan 3" value="${ads.textItems[2] || ''}">
             </div>
             <div class="mt-4 rounded-2xl bg-slate-50 border p-4 text-sm text-slate-600">
-              Teks berjalan dari luar kanan layar sampai benar-benar habis melewati ujung kiri, lalu menyambung lagi secara halus.
+              Teks berjalan dibuat loop rapi, jarak antar iklan konsisten, dan tidak bertumpuk di ujung layar.
             </div>
           </div>
 
@@ -1634,9 +1636,7 @@
       }
 
       const items = ads.textItems && ads.textItems.length ? ads.textItems : DEFAULT_ADS_SETTINGS.textItems;
-      const repeated = [...items, ...items, ...items];
-
-      const trackHtml = repeated.map((text, index) => `
+      const baseItems = items.map((text, index) => `
         <span class="running-ad-item">
           <span class="running-ad-badge">${index % 3 === 0 ? 'PROMO' : index % 3 === 1 ? 'IKLAN USER' : 'BISNISHUB'}</span>
           <span>${text}</span>
@@ -1646,8 +1646,12 @@
 
       return `
         <section class="running-ad-space" style="--ad-speed:${Math.max(8, Number(ads.speedSeconds || 18))}s">
-          <div class="running-ad-track">${trackHtml}</div>
-          <div class="running-ad-track is-copy">${trackHtml}</div>
+          <div class="running-ad-track">
+            <div class="running-ad-group">${baseItems}</div>
+            <div class="running-ad-group" aria-hidden="true">${baseItems}</div>
+            <div class="running-ad-group" aria-hidden="true">${baseItems}</div>
+            <div class="running-ad-group" aria-hidden="true">${baseItems}</div>
+          </div>
         </section>
       `;
     }
