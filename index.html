@@ -309,12 +309,13 @@
     .running-ad-track {
       display: flex;
       align-items: center;
-      gap: 36px;
+      gap: 60px;
       white-space: nowrap;
       min-height: 72px;
       width: max-content;
       animation: adMarquee var(--ad-speed, 18s) linear infinite;
-      padding-left: 100%;
+      will-change: transform;
+      padding-left: 0;
     }
     .running-ad-track:hover { animation-play-state: paused; }
     .running-ad-space::before,
@@ -349,6 +350,12 @@
       font-size: 11px;
       font-weight: 900;
       letter-spacing: 0.04em;
+    }
+    .running-ad-separator {
+      color: #fb923c;
+      font-size: 18px;
+      font-weight: 900;
+      opacity: 0.85;
     }
     .running-ad-image {
       position: sticky;
@@ -412,8 +419,8 @@
     }
 
     @keyframes adMarquee {
-      from { transform: translateX(0); }
-      to { transform: translateX(-100%); }
+      0% { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
     }
     @media (max-width: 700px) {
       .floating-help {
@@ -1277,7 +1284,7 @@
             <div>
               <label class="text-xs font-black uppercase text-orange-800">Kecepatan Teks</label>
               <select id="adsSpeed" class="mt-1 border rounded-2xl p-3 w-full bg-white">
-                ${[8, 12, 15, 18, 22, 28, 35].map(second => `<option value="${second}" ${Number(ads.speedSeconds) === second ? 'selected' : ''}>${second} detik</option>`).join('')}
+                ${[8, 12, 15, 18, 22, 28, 35, 40, 50, 60].map(second => `<option value="${second}" ${Number(ads.speedSeconds) === second ? 'selected' : ''}>${second} detik</option>`).join('')}
               </select>
             </div>
             <div class="flex items-end">
@@ -1297,7 +1304,7 @@
               <input id="adsText3" class="border rounded-2xl p-3" placeholder="Teks iklan 3" value="${ads.textItems[2] || ''}">
             </div>
             <div class="mt-4 rounded-2xl bg-slate-50 border p-4 text-sm text-slate-600">
-              Teks akan berjalan dari kanan ke kiri dan tetap terlihat saat halaman discroll.
+              Teks berjalan dari luar kanan layar sampai habis keluar kiri, lalu menyambung lagi secara halus.
             </div>
           </div>
 
@@ -1342,6 +1349,7 @@
               <span class="running-ad-item">
                 <span class="running-ad-badge">${index % 3 === 0 ? 'PROMO' : index % 3 === 1 ? 'IKLAN USER' : 'BISNISHUB'}</span>
                 <span>${text}</span>
+                <span class="running-ad-separator">•</span>
               </span>
             `).join('')}
           </div>
