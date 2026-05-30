@@ -1019,7 +1019,618 @@
       });
     }
 
+
+    function adminActiveSubContent() {
+      const menu = state.adminMenu;
+      const sub = state.adminSub;
+
+      if (menu === 'overview') {
+        if (sub === 'Aktivitas') {
+          return panel('Aktivitas Platform', 'Pantau aktivitas terbaru di seluruh sistem.', `
+            <div class="grid gap-3">
+              ${['User baru melakukan registrasi', 'Seller mengajukan produk baru', 'Tiket bantuan masuk', 'Tender baru dibuka', 'Pencairan seller menunggu approval'].map((item, index) => `
+                <div class="flex items-center justify-between border rounded-2xl p-4 bg-white">
+                  <div><b>${item}</b><p class="text-xs text-slate-500 mt-1">${index + 1} jam lalu</p></div>
+                  ${badge(index < 2 ? 'Baru' : 'Info', index < 2 ? 'emerald' : 'indigo')}
+                </div>
+              `).join('')}
+            </div>
+          `);
+        }
+        if (sub === 'Kinerja') {
+          return panel('Kinerja Platform', 'Ringkasan performa transaksi, seller, dan support.', `
+            <div class="grid md:grid-cols-3 gap-4 mb-5">
+              ${kpiCard('Konversi', '18,7%', 'fa-chart-line', 'emerald')}
+              ${kpiCard('SLA Support', '96%', 'fa-headset', 'indigo')}
+              ${kpiCard('Produk Aktif', '1.284', 'fa-boxes-stacked', 'amber')}
+            </div>
+            <div class="rounded-2xl bg-slate-50 border p-5">
+              <h3 class="font-black mb-3">Catatan Kinerja</h3>
+              <p class="text-sm text-slate-600">Platform stabil, transaksi meningkat, dan tiket support masih dalam batas aman.</p>
+            </div>
+          `);
+        }
+      }
+
+      if (menu === 'users') {
+        if (sub === 'Role & Akses') {
+          return panel('Role & Akses', 'Atur hak akses setiap jenis akun.', `
+            <div class="grid md:grid-cols-3 gap-4">
+              ${['Admin Pusat', 'Customer', 'Seller / Vendor', 'Owner Tender', 'Support', 'Finance'].map(role => `
+                <div class="border rounded-2xl p-4 bg-white">
+                  <b>${role}</b>
+                  <p class="text-sm text-slate-500 mt-1">Hak akses dapat diatur sesuai kebutuhan operasional.</p>
+                  <button onclick="showToast('Pengaturan role ${role} dibuka')" class="mt-3 bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Atur Akses</button>
+                </div>
+              `).join('')}
+            </div>
+          `);
+        }
+        if (sub === 'Verifikasi') {
+          return panel('Verifikasi User', 'Validasi akun customer baru.', `
+            ${table(['Nama', 'Email', 'Status', 'Aksi'], demoUsers.map(user => `
+              <tr>
+                <td class="font-black">${user[1]}</td>
+                <td>${user[2]}</td>
+                <td>${badge(user[4], statusColor(user[4]))}</td>
+                <td class="space-x-2">
+                  ${actionButton('Verifikasi', 'emerald')}
+                  ${actionButton('Tolak', 'rose')}
+                </td>
+              </tr>
+            `))}
+          `);
+        }
+        if (sub === 'Segmentasi') {
+          return panel('Segmentasi Akun', 'Kelompokkan customer untuk promo, tender, dan layanan.', `
+            <div class="grid md:grid-cols-4 gap-4">
+              ${['Retail', 'B2B', 'Seller', 'Tender Owner'].map((seg, i) => kpiCard(seg, String([420, 285, 318, 72][i]), 'fa-users', ['indigo','emerald','amber','rose'][i])).join('')}
+            </div>
+            <button onclick="showToast('Segmentasi disimpan')" class="mt-5 bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Simpan Segmentasi</button>
+          `);
+        }
+      }
+
+      if (menu === 'sellers') {
+        if (sub === 'Verifikasi Seller') {
+          return panel('Verifikasi Seller', 'Review dokumen vendor sebelum aktif berjualan.', `
+            ${table(['Vendor', 'Dokumen', 'Status', 'Aksi'], demoUsers.filter(user => user[3] === 'Seller').map(user => `
+              <tr>
+                <td class="font-black">${user[1]}</td>
+                <td>NIB, NPWP, Rekening</td>
+                <td>${badge(user[4], statusColor(user[4]))}</td>
+                <td>${actionButton('Approve', 'emerald')} ${actionButton('Minta Revisi', 'amber')}</td>
+              </tr>
+            `))}
+          `);
+        }
+        if (sub === 'Audit Vendor') {
+          return panel('Audit Vendor', 'Pantau performa dan kepatuhan seller.', `
+            <div class="grid md:grid-cols-3 gap-4 mb-5">
+              ${kpiCard('Toko Aktif', '276', 'fa-store', 'emerald')}
+              ${kpiCard('Perlu Audit', '42', 'fa-triangle-exclamation', 'amber')}
+              ${kpiCard('Suspend', '3', 'fa-ban', 'rose')}
+            </div>
+            <button onclick="showToast('Audit vendor diproses')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Jalankan Audit</button>
+          `);
+        }
+        if (sub === 'Withdraw') {
+          return panel('Withdraw Seller', 'Kelola pencairan dana seller.', `
+            ${table(['Seller', 'Saldo', 'Status', 'Aksi'], [
+              ['PT Bintang Pompa', 'Rp 24.500.000', 'Menunggu'],
+              ['CV Agro Mandiri', 'Rp 15.200.000', 'Diproses'],
+              ['Teknik Jaya', 'Rp 8.700.000', 'Siap Cair']
+            ].map(row => `
+              <tr>
+                <td class="font-black">${row[0]}</td>
+                <td>${row[1]}</td>
+                <td>${badge(row[2], row[2] === 'Siap Cair' ? 'emerald' : 'amber')}</td>
+                <td>${actionButton('Cairkan', 'emerald')} ${actionButton('Tahan', 'rose')}</td>
+              </tr>
+            `))}
+          `);
+        }
+      }
+
+      if (menu === 'products') {
+        if (sub === 'Produk Aktif') {
+          return panel('Produk Aktif', 'Produk yang sudah tayang di marketplace.', `
+            ${table(['Produk', 'Harga', 'Status', 'Aksi'], demoProducts.map(product => `
+              <tr>
+                <td class="font-black">${product[0]}</td>
+                <td>${product[2]}</td>
+                <td>${badge('Aktif', 'emerald')}</td>
+                <td>${actionButton('Edit')} ${actionButton('Arsipkan', 'rose')}</td>
+              </tr>
+            `))}
+          `);
+        }
+        if (sub === 'Kategori') {
+          return panel('Kategori Produk', 'Atur kategori marketplace.', `
+            <div class="grid md:grid-cols-3 gap-4">
+              ${['Pompa & Kompresor','Mesin Pertanian','Tools','Hidrolik','Software','Konstruksi'].map(cat => `
+                <div class="border rounded-2xl p-4 bg-white">
+                  <b>${cat}</b>
+                  <p class="text-xs text-slate-500 mt-1">Kategori aktif</p>
+                  <button onclick="showToast('Kategori ${cat} diedit')" class="mt-3 bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Edit</button>
+                </div>
+              `).join('')}
+            </div>
+          `);
+        }
+        if (sub === 'Stok & Harga') {
+          return panel('Stok & Harga', 'Kontrol stok dan harga produk seller.', `
+            ${table(['Produk', 'Stok', 'Harga', 'Aksi'], demoProducts.map((product, index) => `
+              <tr>
+                <td class="font-black">${product[0]}</td>
+                <td><input class="border rounded-xl p-2 w-24" value="${[18, 9, 140, 3][index] || 10}"></td>
+                <td><input class="border rounded-xl p-2 w-40" value="${product[2]}"></td>
+                <td>${actionButton('Simpan', 'emerald')}</td>
+              </tr>
+            `))}
+          `);
+        }
+        if (sub === 'Dokumen') {
+          return panel('Dokumen Produk', 'Kelola dokumen TKDN, SNI, brosur, dan spesifikasi.', `
+            <div class="grid md:grid-cols-2 gap-4">
+              ${['Sertifikat TKDN','SNI Produk','Brosur Teknis','Manual Book'].map(doc => `
+                <div class="border rounded-2xl p-4 bg-white">
+                  <b>${doc}</b>
+                  <input type="file" class="mt-3 border rounded-xl p-3 w-full">
+                  <button onclick="showToast('${doc} diupload')" class="mt-3 bg-slate-900 text-white rounded-xl px-4 py-2 text-xs font-black">Upload</button>
+                </div>
+              `).join('')}
+            </div>
+          `);
+        }
+      }
+
+      if (menu === 'orders') {
+        if (sub === 'Refund') {
+          return panel('Refund', 'Review permintaan refund customer.', `
+            ${table(['Invoice', 'Customer', 'Nominal', 'Aksi'], demoOrders.map(order => `
+              <tr>
+                <td class="font-black">${order[0]}</td>
+                <td>${order[1]}</td>
+                <td>${order[3]}</td>
+                <td>${actionButton('Setujui', 'emerald')} ${actionButton('Tolak', 'rose')}</td>
+              </tr>
+            `))}
+          `);
+        }
+        if (sub === 'Dispute') {
+          return panel('Dispute Order', 'Mediasi masalah transaksi antara customer dan seller.', `
+            <div class="grid gap-3">
+              ${demoOrders.map(order => `
+                <div class="border rounded-2xl p-4 bg-white">
+                  <b>${order[0]} - ${order[2]}</b>
+                  <p class="text-sm text-slate-500 mt-1">Status mediasi: menunggu respon seller.</p>
+                  <button onclick="showToast('Ruang mediasi dibuka')" class="mt-3 bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Buka Mediasi</button>
+                </div>
+              `).join('')}
+            </div>
+          `);
+        }
+        if (sub === 'Invoice') {
+          return panel('Invoice', 'Kelola invoice, pajak, dan dokumen transaksi.', `
+            ${table(['Invoice', 'Nominal', 'Status', 'Aksi'], demoOrders.map(order => `
+              <tr>
+                <td class="font-black">${order[0]}</td>
+                <td>${order[3]}</td>
+                <td>${badge(order[4], statusColor(order[4]))}</td>
+                <td>${actionButton('Cetak')} ${actionButton('Kirim Email', 'emerald')}</td>
+              </tr>
+            `))}
+          `);
+        }
+      }
+
+      if (menu === 'tenders') {
+        if (sub === 'Review Tender') {
+          return panel('Review Tender', 'Validasi tender sebelum tayang.', `
+            ${table(['Tender', 'Owner', 'Nilai', 'Aksi'], demoTenders.map(tender => `
+              <tr>
+                <td class="font-black">${tender[0]}</td>
+                <td>${tender[1]}</td>
+                <td>${tender[2]}</td>
+                <td>${actionButton('Approve', 'emerald')} ${actionButton('Tolak', 'rose')}</td>
+              </tr>
+            `))}
+          `);
+        }
+        if (sub === 'Bidding') {
+          return panel('Bidding Tender', 'Pantau penawaran vendor.', `
+            ${table(['Tender', 'Jumlah Bid', 'Status', 'Aksi'], demoTenders.map(tender => `
+              <tr>
+                <td class="font-black">${tender[0]}</td>
+                <td>${Math.floor(Math.random()*10)+3} bid</td>
+                <td>${badge(tender[4], statusColor(tender[4]))}</td>
+                <td>${actionButton('Lihat Bid')}</td>
+              </tr>
+            `))}
+          `);
+        }
+        if (sub === 'Arsip') {
+          return panel('Arsip Tender', 'Tender yang sudah selesai atau ditutup.', `
+            <div class="grid gap-3">
+              ${demoTenders.map(tender => `<div class="border rounded-2xl p-4 bg-white"><b>${tender[0]}</b><p class="text-sm text-slate-500">Diarsipkan sebagai referensi pengadaan.</p></div>`).join('')}
+            </div>
+          `);
+        }
+      }
+
+      if (menu === 'support') {
+        if (sub === 'SLA') {
+          return panel('SLA Support', 'Pantau standar waktu respon admin.', `
+            <div class="grid md:grid-cols-3 gap-4">
+              ${kpiCard('Respon Rata-rata', '12 Menit', 'fa-clock', 'emerald')}
+              ${kpiCard('SLA Terpenuhi', '96%', 'fa-circle-check', 'indigo')}
+              ${kpiCard('Terlambat', '4%', 'fa-triangle-exclamation', 'rose')}
+            </div>
+          `);
+        }
+        if (sub === 'Chat Bantuan') {
+          return panel('Chat Bantuan', 'Ruang komunikasi customer dengan admin.', `
+            <div class="rounded-2xl bg-slate-50 border p-4 h-64 overflow-y-auto">
+              <div class="bg-white rounded-2xl p-3 mb-3"><b>Customer:</b> Saya butuh bantuan order.</div>
+              <div class="bg-indigo-600 text-white rounded-2xl p-3 mb-3"><b>Admin:</b> Baik, mohon kirim nomor invoice.</div>
+            </div>
+            <div class="mt-3 flex gap-2">
+              <input class="border rounded-2xl p-3 flex-1" placeholder="Ketik balasan admin...">
+              <button onclick="showToast('Balasan dikirim')" class="bg-indigo-600 text-white rounded-2xl px-5 font-black">Kirim</button>
+            </div>
+          `);
+        }
+        if (sub === 'Riwayat') {
+          return panel('Riwayat Support', 'Riwayat tiket dan penyelesaian.', supportTicketCards());
+        }
+      }
+
+      if (menu === 'cms') {
+        if (sub === 'Menu Mobile') {
+          return panel('Menu Mobile', 'Atur icon dan urutan menu HP.', `
+            <div class="grid md:grid-cols-4 gap-4">
+              ${['Home','Tender','Akun','Bantuan','Produk','Toko','Order','Notifikasi'].map(item => `
+                <div class="border rounded-2xl p-4 bg-white text-center">
+                  <i class="fa-solid fa-circle text-orange-500 mb-2"></i>
+                  <b class="block">${item}</b>
+                  <button onclick="showToast('Menu ${item} diedit')" class="mt-3 bg-slate-900 text-white rounded-xl px-4 py-2 text-xs font-black">Edit</button>
+                </div>
+              `).join('')}
+            </div>
+          `);
+        }
+        if (sub === 'Warna Icon') {
+          return panel('Warna Icon', 'Atur warna icon marketplace dan dashboard.', `
+            <div class="grid md:grid-cols-5 gap-3">
+              ${['orange','indigo','emerald','rose','amber'].map(color => `
+                <button onclick="showToast('Warna ${color} dipilih')" class="rounded-2xl p-5 bg-${color}-500 text-white font-black">${color}</button>
+              `).join('')}
+            </div>
+          `);
+        }
+        if (sub === 'Landing') {
+          return panel('Landing Page', 'Atur headline, promosi, dan CTA.', `
+            <div class="grid gap-4">
+              <input class="border rounded-2xl p-3" value="Marketplace Industri & Tender B2B">
+              <textarea class="border rounded-2xl p-3" rows="4">Solusi transaksi industri, seller, tender, dan customer dalam satu platform.</textarea>
+              <button onclick="showToast('Landing page disimpan')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Landing</button>
+            </div>
+          `);
+        }
+      }
+
+      if (menu === 'finance') {
+        if (sub === 'Komisi') {
+          return panel('Komisi Platform', 'Atur persentase komisi platform.', `
+            <label class="font-black">Komisi Platform (%)</label>
+            <input type="range" min="1" max="15" value="5" class="w-full accent-orange-500 mt-3" oninput="document.getElementById('commissionLive').textContent=this.value+'%'">
+            <div id="commissionLive" class="text-2xl font-black text-orange-600 mt-3">5%</div>
+            <button onclick="showToast('Komisi disimpan')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Simpan Komisi</button>
+          `);
+        }
+        if (sub === 'Pencairan') {
+          return panel('Pencairan Dana', 'Proses dana seller ke rekening.', `
+            ${table(['Seller', 'Nominal', 'Rekening', 'Aksi'], [
+              ['PT Bintang Pompa','Rp 24.500.000','BCA ****123'],
+              ['CV Agro Mandiri','Rp 15.200.000','Mandiri ****781'],
+              ['Teknik Jaya','Rp 8.700.000','BRI ****553']
+            ].map(row => `<tr><td class="font-black">${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${actionButton('Cairkan','emerald')}</td></tr>`))}
+          `);
+        }
+        if (sub === 'Laporan') {
+          return panel('Laporan Keuangan', 'Export laporan transaksi dan escrow.', `
+            <div class="grid md:grid-cols-3 gap-4">
+              <button onclick="showToast('Laporan harian dibuat')" class="bg-slate-900 text-white rounded-2xl p-5 font-black">Laporan Harian</button>
+              <button onclick="showToast('Laporan bulanan dibuat')" class="bg-indigo-600 text-white rounded-2xl p-5 font-black">Laporan Bulanan</button>
+              <button onclick="showToast('Laporan escrow dibuat')" class="bg-emerald-600 text-white rounded-2xl p-5 font-black">Laporan Escrow</button>
+            </div>
+          `);
+        }
+      }
+
+      if (menu === 'settings') {
+        if (sub === 'Approval') {
+          return panel('Approval Sistem', 'Atur persetujuan otomatis dan manual.', `
+            <div class="grid md:grid-cols-2 gap-4">
+              ${['Produk perlu approval admin','Seller wajib verifikasi','Tender wajib review','Withdraw wajib finance'].map(item => `
+                <label class="flex justify-between items-center border rounded-2xl p-5">
+                  <span class="font-black">${item}</span>
+                  <input type="checkbox" checked class="accent-orange-500">
+                </label>
+              `).join('')}
+            </div>
+          `);
+        }
+        if (sub === 'Payment') {
+          return panel('Payment Gateway', 'Atur rekening dan metode pembayaran.', `
+            <div class="grid md:grid-cols-2 gap-4">
+              <input class="border rounded-2xl p-3" placeholder="Nama bank settlement">
+              <input class="border rounded-2xl p-3" placeholder="Nomor rekening settlement">
+              <input class="border rounded-2xl p-3" placeholder="API Key payment gateway">
+              <input class="border rounded-2xl p-3" placeholder="Callback URL">
+            </div>
+            <button onclick="showToast('Payment disimpan')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Simpan Payment</button>
+          `);
+        }
+        if (sub === 'Keamanan Login') {
+          return panel('Keamanan Login', 'Atur OTP, password, dan admin access.', `
+            <div class="grid md:grid-cols-2 gap-4">
+              ${['OTP Customer','OTP Admin','Blokir brute force','Session timeout'].map(item => `
+                <label class="flex justify-between items-center border rounded-2xl p-5">
+                  <span class="font-black">${item}</span>
+                  <input type="checkbox" checked class="accent-orange-500">
+                </label>
+              `).join('')}
+            </div>
+          `);
+        }
+        if (sub === 'Integrasi API') {
+          return panel('Integrasi API', 'Koneksi ke Firebase, payment, ongkir, dan WhatsApp.', `
+            <div class="grid gap-4">
+              ${['Firebase Auth','Firestore Database','WhatsApp Gateway','Payment Gateway','Email SMTP'].map(api => `
+                <div class="border rounded-2xl p-4 bg-white flex justify-between items-center">
+                  <div><b>${api}</b><p class="text-xs text-slate-500">Status konfigurasi siap dihubungkan.</p></div>
+                  ${actionButton('Konfigurasi')}
+                </div>
+              `).join('')}
+            </div>
+          `);
+        }
+        if (sub === 'Backup & Log') {
+          return panel('Backup & Log', 'Backup data dan log aktivitas sistem.', `
+            <div class="grid md:grid-cols-3 gap-4">
+              <button onclick="showToast('Backup dibuat')" class="bg-slate-900 text-white rounded-2xl p-5 font-black">Backup Data</button>
+              <button onclick="showToast('Log diekspor')" class="bg-indigo-600 text-white rounded-2xl p-5 font-black">Export Log</button>
+              <button onclick="showToast('Cache dibersihkan')" class="bg-rose-600 text-white rounded-2xl p-5 font-black">Clear Cache</button>
+            </div>
+          `);
+        }
+      }
+
+      return null;
+    }
+
+    function userActiveSubContent() {
+      const menu = state.userMenu;
+      const sub = state.userSub;
+
+      if (menu === 'overview') {
+        if (sub === 'Aktivitas') {
+          return panel('Aktivitas Akun', 'Riwayat aktivitas akun customer.', `
+            <div class="grid gap-3">
+              ${['Login akun', 'Melihat produk pompa', 'Membuka tender', 'Mengirim tiket bantuan', 'Mengedit toko'].map((item, index) => `
+                <div class="border rounded-2xl p-4 bg-white flex justify-between">
+                  <b>${item}</b><span class="text-xs text-slate-500">${index + 1} jam lalu</span>
+                </div>
+              `).join('')}
+            </div>
+          `);
+        }
+        if (sub === 'Rekomendasi') {
+          return panel('Rekomendasi', 'Produk dan tender yang cocok untuk akun Anda.', `
+            <div class="grid md:grid-cols-3 gap-4">
+              ${demoProducts.slice(0,3).map(product => `
+                <div class="border rounded-2xl p-4 bg-white">
+                  <b>${product[0]}</b>
+                  <p class="font-black text-orange-600 mt-2">${product[2]}</p>
+                  <button onclick="showToast('Produk disimpan')" class="mt-3 bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Simpan</button>
+                </div>
+              `).join('')}
+            </div>
+          `);
+        }
+      }
+
+      if (menu === 'orders') {
+        if (sub === 'Diproses' || sub === 'Dikirim' || sub === 'Selesai' || sub === 'Komplain') {
+          return panel(`Pesanan ${sub}`, `Daftar pesanan dengan status ${sub}.`, `
+            ${table(['Invoice', 'Produk', 'Total', 'Status', 'Aksi'], demoOrders.map(order => `
+              <tr>
+                <td class="font-black">${order[0]}</td>
+                <td>${order[2]}</td>
+                <td>${order[3]}</td>
+                <td>${badge(sub === 'Komplain' ? 'Komplain' : sub, statusColor(sub))}</td>
+                <td>${actionButton('Detail')} ${sub === 'Komplain' ? actionButton('Chat Admin', 'rose') : actionButton('Lacak', 'blue')}</td>
+              </tr>
+            `))}
+          `);
+        }
+      }
+
+      if (menu === 'addProduct') {
+        if (sub === 'Harga & Stok') {
+          return panel('Harga & Stok Produk', 'Atur harga retail, grosir, MOQ, dan stok.', `
+            <div class="grid md:grid-cols-2 gap-4">
+              <input class="border rounded-2xl p-3" placeholder="Harga retail">
+              <input class="border rounded-2xl p-3" placeholder="Harga grosir / B2B">
+              <input class="border rounded-2xl p-3" placeholder="MOQ">
+              <input class="border rounded-2xl p-3" placeholder="Stok tersedia">
+              <input class="border rounded-2xl p-3" placeholder="Satuan, contoh: unit / pcs">
+              <input class="border rounded-2xl p-3" placeholder="Diskon / promo">
+            </div>
+            <button onclick="showToast('Harga dan stok disimpan')" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan</button>
+          `);
+        }
+        if (sub === 'Gambar & Media') {
+          return panel('Gambar & Media Produk', 'Upload foto utama, galeri, dan video.', `
+            <div class="grid md:grid-cols-2 gap-4">
+              <div><label class="text-xs font-black uppercase text-slate-500">Foto Utama</label><input type="file" accept="image/*" class="mt-1 border rounded-2xl p-3 w-full"></div>
+              <div><label class="text-xs font-black uppercase text-slate-500">Galeri Produk</label><input type="file" accept="image/*" multiple class="mt-1 border rounded-2xl p-3 w-full"></div>
+              <input class="border rounded-2xl p-3 md:col-span-2" placeholder="Link video produk / YouTube">
+            </div>
+            <button onclick="showToast('Media produk disimpan')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Simpan Media</button>
+          `);
+        }
+        if (sub === 'Spesifikasi') {
+          return panel('Spesifikasi Produk', 'Isi spesifikasi teknis produk.', `
+            <div class="grid md:grid-cols-2 gap-4">
+              <input class="border rounded-2xl p-3" placeholder="Merek">
+              <input class="border rounded-2xl p-3" placeholder="Model / tipe">
+              <input class="border rounded-2xl p-3" placeholder="Dimensi">
+              <input class="border rounded-2xl p-3" placeholder="Berat">
+              <textarea class="border rounded-2xl p-3 md:col-span-2" rows="5" placeholder="Spesifikasi lengkap"></textarea>
+            </div>
+          `);
+        }
+        if (sub === 'Dokumen') {
+          return panel('Dokumen Produk', 'Upload dokumen legal produk.', `
+            <div class="grid md:grid-cols-2 gap-4">
+              ${['TKDN','SNI','Brosur','Manual Book'].map(doc => `<div><label class="text-xs font-black uppercase text-slate-500">${doc}</label><input type="file" class="mt-1 border rounded-2xl p-3 w-full"></div>`).join('')}
+            </div>
+          `);
+        }
+        if (sub === 'Pengiriman') {
+          return panel('Pengiriman Produk', 'Atur gudang, berat, dimensi, dan kurir.', `
+            <div class="grid md:grid-cols-2 gap-4">
+              <input class="border rounded-2xl p-3" placeholder="Gudang asal">
+              <input class="border rounded-2xl p-3" placeholder="Berat produk">
+              <input class="border rounded-2xl p-3" placeholder="Panjang x Lebar x Tinggi">
+              <select class="border rounded-2xl p-3 bg-white"><option>Kargo B2B</option><option>JNE</option><option>J&T</option><option>Ambil Sendiri</option></select>
+            </div>
+          `);
+        }
+        if (sub === 'Preview') {
+          return panel('Preview Produk', 'Cek tampilan produk sebelum diajukan.', `
+            <div class="border rounded-[28px] p-5 bg-white max-w-xl">
+              <div class="h-40 rounded-2xl bg-slate-100 flex items-center justify-center mb-4"><i class="fa-solid fa-box text-5xl text-slate-300"></i></div>
+              <h3 class="font-black text-xl">Produk Baru BisnisHUB</h3>
+              <p class="text-sm text-slate-500 mt-2">Preview produk sebelum masuk review admin.</p>
+              <button onclick="showToast('Produk diajukan ke admin')" class="mt-4 bg-emerald-600 text-white rounded-2xl px-5 py-3 font-black">Ajukan Produk</button>
+            </div>
+          `);
+        }
+      }
+
+      if (menu === 'wishlist') {
+        if (sub === 'Supplier Favorit') {
+          return panel('Supplier Favorit', 'Daftar vendor yang disimpan.', `
+            <div class="grid md:grid-cols-3 gap-4">
+              ${['PT Bintang Pompa','CV Agro Mandiri','Teknik Jaya'].map(s => `<div class="border rounded-2xl p-4 bg-white"><b>${s}</b><p class="text-sm text-slate-500">Vendor favorit</p>${actionButton('Lihat Toko')}</div>`).join('')}
+            </div>
+          `);
+        }
+        if (sub === 'Riwayat Dilihat') {
+          return panel('Riwayat Dilihat', 'Produk yang baru dilihat.', `
+            <div class="grid gap-3">${demoProducts.map(product => `<div class="border rounded-2xl p-4 bg-white flex justify-between"><b>${product[0]}</b><span>${product[2]}</span></div>`).join('')}</div>
+          `);
+        }
+      }
+
+      if (menu === 'address') {
+        if (sub === 'Gudang' || sub === 'Proyek' || sub === 'Tambah Alamat') {
+          return panel(sub, 'Kelola alamat sesuai kebutuhan transaksi dan proyek.', `
+            <div class="grid md:grid-cols-2 gap-4">
+              <input class="border rounded-2xl p-3" placeholder="Nama lokasi">
+              <input class="border rounded-2xl p-3" placeholder="PIC">
+              <input class="border rounded-2xl p-3" placeholder="No. WhatsApp">
+              <input class="border rounded-2xl p-3" placeholder="Kota/Kabupaten">
+              <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Alamat lengkap"></textarea>
+            </div>
+            <button onclick="showToast('Alamat disimpan')" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Alamat</button>
+          `);
+        }
+      }
+
+      if (menu === 'support') {
+        if (sub === 'Tiket Saya') {
+          return panel('Tiket Saya', 'Riwayat tiket bantuan.', supportTicketCards());
+        }
+        if (sub === 'Chat Admin') {
+          return panel('Chat Admin', 'Hubungi admin secara cepat.', `
+            <div class="rounded-2xl bg-slate-50 border p-4 h-64 overflow-y-auto">
+              <div class="bg-white rounded-2xl p-3 mb-3">Halo, saya butuh bantuan terkait akun.</div>
+              <div class="bg-orange-500 text-white rounded-2xl p-3 mb-3">Admin akan segera membantu.</div>
+            </div>
+            <div class="mt-3 flex gap-2">
+              <input class="border rounded-2xl p-3 flex-1" placeholder="Ketik pesan...">
+              <button onclick="showToast('Pesan dikirim')" class="bg-orange-500 text-white rounded-2xl px-5 font-black">Kirim</button>
+            </div>
+          `);
+        }
+        if (sub === 'FAQ') {
+          return panel('FAQ', 'Pertanyaan umum BisnisHUB.', `
+            <div class="grid gap-3">
+              ${['Cara belanja produk?', 'Cara ajukan tender?', 'Cara kelola toko?', 'Bagaimana menghubungi admin?'].map(q => `<div class="border rounded-2xl p-4 bg-white"><b>${q}</b><p class="text-sm text-slate-500 mt-1">Jawaban tersedia di pusat bantuan.</p></div>`).join('')}
+            </div>
+          `);
+        }
+      }
+
+      if (menu === 'notif') {
+        if (sub === 'Order' || sub === 'Promo' || sub === 'Sistem') {
+          return panel(`Notifikasi ${sub}`, `Daftar notifikasi ${sub.toLowerCase()}.`, `
+            <div class="grid gap-3">
+              ${[1,2,3].map(i => `<div class="border rounded-2xl p-4 bg-white"><b>${sub} #${i}</b><p class="text-sm text-slate-500 mt-1">Informasi terbaru untuk akun Anda.</p></div>`).join('')}
+            </div>
+          `);
+        }
+      }
+
+      if (menu === 'security') {
+        if (sub === 'OTP') {
+          return panel('OTP Login', 'Aktifkan verifikasi OTP.', `<label class="flex justify-between items-center border rounded-2xl p-5"><span class="font-black">Aktifkan OTP</span><input type="checkbox" class="accent-orange-500"></label>`);
+        }
+        if (sub === 'Perangkat Login') {
+          return panel('Perangkat Login', 'Pantau perangkat yang pernah masuk.', `
+            ${table(['Perangkat', 'Lokasi', 'Status', 'Aksi'], [['Chrome Windows','Indonesia','Aktif'],['Android','Indonesia','Riwayat']].map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${badge(r[2], r[2]==='Aktif'?'emerald':'slate')}</td><td>${actionButton('Logout')}</td></tr>`))}
+          `);
+        }
+        if (sub === 'Log Aktivitas') {
+          return panel('Log Aktivitas', 'Catatan keamanan akun.', `
+            <div class="grid gap-3">${['Login berhasil','Profil diubah','Password diperbarui'].map(x => `<div class="border rounded-2xl p-4 bg-white"><b>${x}</b><p class="text-xs text-slate-500">Hari ini</p></div>`).join('')}</div>
+          `);
+        }
+      }
+
+      if (menu === 'profile') {
+        if (sub === 'Perusahaan' || sub === 'Kontak' || sub === 'Preferensi') {
+          return panel(`Profil - ${sub}`, 'Lengkapi profil akun.', `
+            <div class="grid md:grid-cols-2 gap-4">
+              <input class="border rounded-2xl p-3" placeholder="${sub} 1">
+              <input class="border rounded-2xl p-3" placeholder="${sub} 2">
+              <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Catatan ${sub}"></textarea>
+            </div>
+            <button onclick="showToast('Profil ${sub} disimpan')" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan</button>
+          `);
+        }
+      }
+
+      if (menu === 'registration') {
+        return null;
+      }
+      if (menu === 'store') {
+        return null;
+      }
+
+      return null;
+    }
+
+
     function renderAdminContent() {
+      const activeSubPanel = adminActiveSubContent();
+      if (activeSubPanel) return activeSubPanel;
+
       const key = state.adminMenu;
       if (key === 'overview') return adminOverview();
       if (key === 'users') return adminUsers();
@@ -1229,6 +1840,9 @@
     }
 
     function renderUserContent() {
+      const activeSubPanel = userActiveSubContent();
+      if (activeSubPanel) return activeSubPanel;
+
       const key = state.userMenu;
       if (key === 'overview') return userOverview();
       if (key === 'orders') return userOrders();
