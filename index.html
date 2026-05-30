@@ -1107,14 +1107,165 @@
               Reset
             </button>
           </div>
-          <div class="mt-4 flex gap-2 overflow-x-auto pb-1">
-            <button onclick="state.marketCategory=''; saveState(); renderMarketplace();" class="sub-tab ${!activeCategory ? 'active' : ''}">Semua</button>
-            ${categories.slice(0, 12).map(category => `
-              <button onclick="state.marketCategory='${category.name.replace(/'/g, "\\'")}'; saveState(); renderMarketplace();" class="sub-tab ${activeCategory === category.name ? 'active' : ''}">
-                <i class="fa-solid ${category.icon || 'fa-layer-group'} mr-1"></i>${category.name}
-              </button>
-            `).join('')}
+          
+          <div class="mt-4 rounded-2xl bg-slate-50 border border-slate-200 p-3 text-xs md:text-sm text-slate-600 font-bold">
+            Pilih kategori melalui dropdown agar pencarian lebih rapi dan tidak memenuhi layar.
           </div>
+
+        </section>
+      `;
+    }
+
+
+
+    function getMarketplaceCompanyDirectory() {
+      const savedProfiles = typeof getCompanyProfiles === 'function' ? getCompanyProfiles() : [];
+      const defaultProfiles = [
+        {
+          id: 'CMP-001',
+          companyName: 'PT Kalimaja Surya Alam',
+          category: 'Supplier, Distributor & Principal',
+          industry: 'Alsintan, Pompa, Hidrolik, dan Peralatan Industri',
+          city: 'Kab. Tangerang',
+          website: 'www.kalimaja.com',
+          description: 'Solusi total mekanisasi pertanian, pompa irigasi, traktor, combine harvester, dan kebutuhan industri B2B.',
+          status: 'Tayang'
+        },
+        {
+          id: 'CMP-002',
+          companyName: 'CV Teknik Karya Mandiri',
+          category: 'Jasa Keteknikan / Engineering',
+          industry: 'Engineering, maintenance, fabrikasi, dan service mesin',
+          city: 'Bogor',
+          website: '-',
+          description: 'Melayani jasa keteknikan, perbaikan mesin, instalasi, commissioning, dan support teknisi lapangan.',
+          status: 'Tayang'
+        },
+        {
+          id: 'CMP-003',
+          companyName: 'Mitra Survey Lapangan',
+          category: 'Jasa Survey, SID & Pendataan Lapangan',
+          industry: 'Survey, pendataan, SID, dan pengumpulan data proyek',
+          city: 'Jakarta',
+          website: '-',
+          description: 'Menyediakan tenaga survey lapangan, input data, dokumentasi proyek, dan laporan teknis.',
+          status: 'Tayang'
+        }
+      ];
+
+      return savedProfiles.length ? savedProfiles : defaultProfiles;
+    }
+
+    function getFilteredCompanies() {
+      const query = (state.companySearch || '').toLowerCase();
+      const category = state.companyCategory || '';
+      return getMarketplaceCompanyDirectory().filter(company => {
+        const text = `${company.companyName} ${company.category} ${company.industry} ${company.city} ${company.description}`.toLowerCase();
+        const matchQuery = !query || text.includes(query);
+        const matchCategory = !category || company.category === category || company.industry === category;
+        return matchQuery && matchCategory;
+      });
+    }
+
+    function setCompanyDirectorySearch() {
+      const searchInput = document.getElementById('companySearchInput');
+      const categoryInput = document.getElementById('companyCategorySelect');
+      state.companySearch = searchInput ? searchInput.value.trim() : '';
+      state.companyCategory = categoryInput ? categoryInput.value : '';
+      saveState();
+      renderMarketplace();
+      setTimeout(() => document.getElementById('companyDirectory')?.scrollIntoView({ behavior: 'smooth' }), 80);
+      showToast('Pencarian direktori perusahaan diperbarui');
+    }
+
+    function resetCompanyDirectorySearch() {
+      state.companySearch = '';
+      state.companyCategory = '';
+      saveState();
+      renderMarketplace();
+      setTimeout(() => document.getElementById('companyDirectory')?.scrollIntoView({ behavior: 'smooth' }), 80);
+      showToast('Filter direktori perusahaan direset');
+    }
+
+    function renderCompanyDirectory() {
+      const companies = getFilteredCompanies();
+      const categories = getProductCategories().filter(category => String(category.type).includes('Company') || String(category.name).includes('Perusahaan') || String(category.name).includes('Konsultan') || String(category.name).includes('Kontraktor') || String(category.name).includes('Bengkel'));
+      const activeQuery = state.companySearch || '';
+      const activeCategory = state.companyCategory || '';
+
+      return `
+        <section id="companyDirectory" class="mt-8">
+          <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-4">
+            <div>
+              <p class="text-xs font-black uppercase tracking-widest text-orange-600">Company Directory</p>
+              <h2 class="text-2xl font-black">Direktori Perusahaan</h2>
+              <p class="text-sm text-slate-500 mt-1">Database perusahaan, supplier, kontraktor, konsultan, workshop, vendor jasa industri, dan company profile.</p>
+            </div>
+            <button onclick="switchRole('user'); setTimeout(() => { state.userMenu='companyProfile'; state.userSub='Compro Utama'; saveState(); renderUserDashboard(); }, 50)" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black text-sm">
+              Daftarkan Perusahaan
+            </button>
+          </div>
+
+          <div class="content-card p-4 md:p-5 mb-5">
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px_150px_110px] gap-3 items-end">
+              <div>
+                <label class="text-xs font-black uppercase text-slate-500">Cari Perusahaan / Bidang Usaha</label>
+                <div class="mt-1 flex items-center gap-2 border rounded-2xl px-4 py-3 bg-white">
+                  <i class="fa-solid fa-building-user text-orange-500"></i>
+                  <input id="companySearchInput" value="${activeQuery}" onkeydown="if(event.key==='Enter') setCompanyDirectorySearch()" class="w-full outline-none text-sm font-bold" placeholder="Cari supplier, kontraktor, konsultan, bengkel, pabrik, jasa engineering...">
+                </div>
+              </div>
+              <div>
+                <label class="text-xs font-black uppercase text-slate-500">Kategori Perusahaan</label>
+                <select id="companyCategorySelect" class="mt-1 border rounded-2xl p-3 w-full bg-white text-sm font-bold">
+                  <option value="">Semua Kategori</option>
+                  ${categories.map(category => `<option value="${category.name}" ${activeCategory === category.name ? 'selected' : ''}>${category.name}</option>`).join('')}
+                </select>
+              </div>
+              <button onclick="setCompanyDirectorySearch()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">Cari</button>
+              <button onclick="resetCompanyDirectorySearch()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl px-5 py-3 font-black">Reset</button>
+            </div>
+          </div>
+
+          ${companies.length ? `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              ${companies.map(company => `
+                <div class="content-card p-5 hover:-translate-y-1 transition">
+                  <div class="flex items-start justify-between gap-3 mb-4">
+                    <div class="w-14 h-14 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-2xl">
+                      <i class="fa-solid fa-building-user"></i>
+                    </div>
+                    ${badge(company.status || 'Tayang', (company.status || 'Tayang') === 'Tayang' ? 'emerald' : 'amber')}
+                  </div>
+                  <h3 class="text-lg font-black leading-tight">${company.companyName}</h3>
+                  <p class="text-xs font-black text-orange-600 mt-2">${company.category || 'Company Profile'}</p>
+                  <p class="text-sm text-slate-500 mt-2">${company.industry || '-'}</p>
+                  <p class="text-sm text-slate-600 mt-3 leading-relaxed">${company.description || 'Profil perusahaan tersedia di database BisnisHUB.'}</p>
+                  <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                    <div class="rounded-xl bg-slate-50 border p-3">
+                      <b>Kota</b>
+                      <p class="text-slate-500 mt-1">${company.city || '-'}</p>
+                    </div>
+                    <div class="rounded-xl bg-slate-50 border p-3">
+                      <b>Website</b>
+                      <p class="text-slate-500 mt-1">${company.website || '-'}</p>
+                    </div>
+                  </div>
+                  <div class="mt-4 flex flex-wrap gap-2">
+                    <button onclick="showToast('Company profile ${company.companyName} dibuka')" class="bg-slate-900 text-white rounded-xl px-4 py-2 text-xs font-black">Lihat Compro</button>
+                    <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menghubungi%20${encodeURIComponent(company.companyName)}" target="_blank" class="bg-green-500 text-green-950 rounded-xl px-4 py-2 text-xs font-black no-underline">Hubungi</a>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : `
+            <div class="content-card p-8 text-center">
+              <i class="fa-solid fa-building-user text-5xl text-slate-300 mb-4"></i>
+              <h3 class="text-xl font-black">Perusahaan belum ditemukan</h3>
+              <p class="text-sm text-slate-500 mt-2">Coba gunakan kata kunci lain atau pilih kategori berbeda.</p>
+              <button onclick="resetCompanyDirectorySearch()" class="mt-5 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Reset Pencarian</button>
+            </div>
+          `}
         </section>
       `;
     }
@@ -1189,6 +1340,7 @@
               </div>
             `}
           </section>
+          ${renderCompanyDirectory()}
         </main>
         ${renderFloatingHelp()}
       `;
@@ -1642,6 +1794,7 @@
             <div class="mt-6 flex flex-wrap gap-3">
               <button onclick="document.getElementById('marketProducts').scrollIntoView({behavior:'smooth'})" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">Lihat Produk</button>
               <button onclick="switchRole('tender')" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Lihat Tender</button>
+              <button onclick="document.getElementById('companyDirectory')?.scrollIntoView({behavior:'smooth'})" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Direktori Perusahaan</button>
               <button onclick="switchRole('user')" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Masuk Akun</button>
             </div>
             <div class="mt-8 flex gap-2">
