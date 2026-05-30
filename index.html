@@ -19,16 +19,17 @@
     }
     .app-shell { min-height: 100vh; }
     .brand-logo {
-      width: 54px;
-      height: 54px;
-      border-radius: 16px;
-      object-fit: cover;
-      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
-      background: #ffffff;
-      padding: 4px;
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      box-shadow: none;
+      display: block;
     }
-    .brand-logo.market { background: rgba(255,255,255,0.96); }
-    .brand-logo.dark { background: rgba(255,255,255,0.14); }
+    .brand-logo.market,
+    .brand-logo.dark { background: transparent; }
     .sidebar {
       width: 280px;
       min-width: 280px;
