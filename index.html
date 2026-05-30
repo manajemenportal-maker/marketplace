@@ -1271,6 +1271,41 @@
     }
 
 
+
+    function renderFrontFooter() {
+      return `
+        <footer class="mt-10 rounded-[32px] bg-slate-950 text-white overflow-hidden border border-slate-800">
+          <div class="p-6 md:p-8 grid lg:grid-cols-[1.2fr_1fr] gap-6">
+            <div>
+              <h3 class="text-2xl font-black">BisnisHUB Marketplace B2B</h3>
+              <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+                Disclaimer: Informasi produk, jasa, company profile, tender, iklan, harga, stok, dan penawaran yang tampil di platform BisnisHUB berasal dari masing-masing user, seller, vendor, atau perusahaan yang terdaftar. Pengguna wajib melakukan verifikasi, komunikasi, dan kesepakatan transaksi secara cermat sebelum melakukan pembayaran atau kerja sama.
+              </p>
+            </div>
+            <div class="grid gap-3 text-sm">
+              <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+                <b class="block text-orange-300 mb-1">Alamat</b>
+                <span class="text-slate-300">Jl Mekar Wangi, Dangdang Cisauk Tangerang, Banten Indonesia 15342</span>
+              </div>
+              <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+                <b class="block text-orange-300 mb-1">Website</b>
+                <a href="https://www.bisnishub.web.id" target="_blank" class="text-slate-300 hover:text-white no-underline">www.bisnishub.web.id</a>
+              </div>
+              <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+                <b class="block text-orange-300 mb-1">Email</b>
+                <a href="mailto:adminbishub@gmail.com" class="text-slate-300 hover:text-white no-underline">adminbishub@gmail.com</a>
+              </div>
+            </div>
+          </div>
+          <div class="border-t border-slate-800 px-6 md:px-8 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-xs text-slate-400">
+            <span>@2026 manajemenportal</span>
+            <span>BisnisHUB — Portal Marketplace, Direktori Perusahaan, Jasa Industri, dan Tender B2B</span>
+          </div>
+        </footer>
+      `;
+    }
+
+
     function renderMarketplace() {
       const filteredProducts = getFilteredMarketplaceProducts();
       const productCards = filteredProducts.map(product => `
@@ -1341,6 +1376,7 @@
             `}
           </section>
           ${renderCompanyDirectory()}
+          ${renderFrontFooter()}
         </main>
         ${renderFloatingHelp()}
       `;
