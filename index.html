@@ -440,7 +440,7 @@
         </div>
         <div>
           <label class="text-xs font-black uppercase text-slate-500">Email Admin</label>
-          <input id="hiddenAdminEmail" type="email" class="admin-login-input mt-1" placeholder="admin@bisnishub.id" autocomplete="username">
+          <input id="hiddenAdminEmail" type="email" class="admin-login-input mt-1" placeholder="kalimajasuryaalam@gmail.com" autocomplete="username">
         </div>
         <div>
           <label class="text-xs font-black uppercase text-slate-500">Password Admin</label>
@@ -450,7 +450,7 @@
           <i class="fa-solid fa-shield-halved mr-2"></i>Masuk Dashboard Admin
         </button>
         <p class="text-xs text-slate-500 leading-relaxed">
-          Akses ini hanya untuk administrator resmi BisnisHUB. Gunakan kredensial admin yang telah diberikan.
+          Akses ini hanya untuk administrator resmi BisnisHUB. Gunakan email dan password admin yang telah ditentukan.
         </p>
       </div>
     </div>
@@ -2027,8 +2027,8 @@
     let bishubLogoClickCount = 0;
     let bishubLogoClickTimer = null;
 
-    const HIDDEN_ADMIN_EMAIL = 'admin@bisnishub.id';
-    const HIDDEN_ADMIN_PASSWORD = 'admin123';
+    const HIDDEN_ADMIN_EMAIL = 'kalimajasuryaalam@gmail.com';
+    const HIDDEN_ADMIN_PASSWORD = 'Yakin537@';
 
     function handleLogoTripleClick() {
       bishubLogoClickCount += 1;
@@ -2067,7 +2067,7 @@
       const email = document.getElementById('hiddenAdminEmail')?.value?.trim().toLowerCase();
       const password = document.getElementById('hiddenAdminPassword')?.value || '';
 
-      if (email === HIDDEN_ADMIN_EMAIL && password === HIDDEN_ADMIN_PASSWORD) {
+      if (email === HIDDEN_ADMIN_EMAIL.toLowerCase() && password === HIDDEN_ADMIN_PASSWORD) {
         closeAdminHiddenLogin();
         state.role = 'admin';
         state.name = 'Admin Pusat';
