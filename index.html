@@ -1,1 +1,1011 @@
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BisnisHub Dashboard Ringan</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><style>body{font-family:Inter,sans-serif;background:#eef2f7;color:#0f172a}.app{min-height:100vh}.sidebar{width:280px;min-width:280px}.menu-btn{width:100%;display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:18px;font-weight:900;font-size:13px;transition:.15s}.menu-btn.active{background:#4f46e5;color:white;box-shadow:0 10px 20px #4f46e533}.menu-btn:not(.active){color:#475569}.menu-btn:not(.active):hover{background:#f1f5f9;color:#4f46e5}.admin .menu-btn.active{background:#10b981;color:#052e16}.card{background:white;border:1px solid #e2e8f0;border-radius:26px;box-shadow:0 2px 10px #0f172a0a}.kpi{min-height:128px}.subtab{padding:10px 14px;border-radius:14px;font-weight:900;font-size:12px;border:1px solid #e2e8f0;background:#fff;color:#475569}.subtab.active{background:#4f46e5;color:#fff;border-color:#4f46e5}.admin .subtab.active{background:#10b981;color:#052e16;border-color:#10b981}.table-wrap{overflow:auto;border:1px solid #e2e8f0;border-radius:20px}.fade{animation:fade .18s ease-out both}@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}.modal{display:none}.modal.open{display:flex}@media(max-width:900px){.layout{display:block}.sidebar{width:100%;min-width:0;position:sticky;top:0;z-index:20}.side-menu{display:flex;overflow-x:auto;gap:8px;padding-bottom:4px}.side-menu::-webkit-scrollbar{display:none}.menu-btn{min-width:112px;justify-content:center;flex-direction:column;gap:5px;padding:10px}.content{padding-top:14px}.kpi{min-height:110px}}</style></head><body><div id="app" class="app"></div><div id="toast" class="fixed bottom-5 right-5 z-[80] hidden bg-slate-950 text-white px-5 py-3 rounded-2xl shadow-xl text-sm font-black"></div><div id="loginModal" class="modal fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4"><div class="bg-white rounded-[28px] shadow-2xl max-w-md w-full overflow-hidden"><div class="p-5 bg-slate-50 border-b flex justify-between items-center"><b class="text-lg">Masuk BisnisHub</b><button onclick="closeLogin()" class="w-9 h-9 rounded-xl hover:bg-slate-200"><i class="fa-solid fa-xmark"></i></button></div><div class="p-6 space-y-4"><p class="text-sm text-slate-500">Masukkan email. Email yang mengandung kata <b>admin</b> akan masuk Panel Admin, selain itu masuk Dashboard User.</p><input id="loginEmail" class="w-full border rounded-2xl p-3" value="admin@bisnishub.id" placeholder="email@domain.com"><input id="loginName" class="w-full border rounded-2xl p-3" value="Admin Pusat" placeholder="Nama"><button onclick="login()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl py-3 font-black">Masuk</button><div class="grid grid-cols-2 gap-2"><button onclick="demoAdmin()" class="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-2xl py-3 font-black text-sm">Demo Admin</button><button onclick="demoUser()" class="bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-2xl py-3 font-black text-sm">Demo User</button></div></div></div></div><script>const LS='bh_clean_dash_v1';let S=JSON.parse(localStorage.getItem(LS)||'{}');S={role:S.role||'guest',email:S.email||'',name:S.name||'User Demo',adminMenu:S.adminMenu||'overview',adminSub:S.adminSub||'',userMenu:S.userMenu||'overview',userSub:S.userSub||'',theme:S.theme||'indigo'};const save=()=>localStorage.setItem(LS,JSON.stringify(S));const rp=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n||0);const toast=m=>{let t=document.getElementById('toast');t.textContent=m;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),1800)};const badge=(t,c='indigo')=>`<span class="inline-flex px-2.5 py-1 rounded-lg bg-${c}-50 text-${c}-700 border border-${c}-100 text-xs font-black">${t}</span>`;const btn=(t,c='indigo',fn="toast('Berhasil diproses')")=>`<button onclick="${fn}" class="px-3 py-2 rounded-xl bg-${c}-600 hover:bg-${c}-700 text-white text-xs font-black whitespace-nowrap">${t}</button>`;const kpi=(t,v,i,c='indigo',s='')=>`<div class="card kpi p-5"><div class="flex justify-between gap-3"><div class="min-w-0"><p class="text-[11px] text-slate-500 font-black uppercase tracking-wide">${t}</p><h3 class="text-2xl lg:text-3xl font-black mt-2 truncate">${v}</h3>${s?`<p class="text-xs text-slate-500 mt-1">${s}</p>`:''}</div><div class="w-12 h-12 rounded-2xl bg-${c}-50 text-${c}-600 flex items-center justify-center shrink-0"><i class="fa-solid ${i}"></i></div></div></div>`;const panel=(t,sub,body,act='')=>`<section class="card overflow-hidden fade"><div class="p-5 border-b bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3"><div><h2 class="text-xl font-black">${t}</h2><p class="text-sm text-slate-500 mt-1">${sub}</p></div>${act}</div><div class="p-5">${body}</div></section>`;const tbl=(h,r)=>`<div class="table-wrap"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 uppercase text-xs"><tr>${h.map(x=>`<th class="text-left px-4 py-3 font-black whitespace-nowrap">${x}</th>`).join('')}</tr></thead><tbody>${r.join('')}</tbody></table></div>`;let users=[['USR-001','Andi Surya','andi@company.id','User','Aktif','12'],['USR-002','Budi Perkasa','budi@vendor.id','Vendor','Review','4'],['USR-003','Admin Pusat','admin@bisnishub.id','Admin','Aktif','0']];let sellers=[['PT Bintang Pompa','Terverifikasi','42 Produk',rp(245000000)],['CV Agro Mandiri','Review','18 Produk',rp(85000000)],['Toko Teknik Jaya','Aktif','33 Produk',rp(125000000)]];let products=[['Pompa Sentrifugal Industri 30kW','PT Bintang Pompa',rp(24500000),'45.5%','Aktif'],['Traktor Tangan Diesel G1000','CV Agro Mandiri',rp(15500000),'38.2%','Review'],['Mesin Press Hidrolik 50 Ton','CV Baja Mandiri',rp(45000000),'35.8%','Aktif']];let orders=[['INV-001','Andi Surya','PT Bintang Pompa',rp(24500000),'Dikirim'],['INV-002','Siti Aminah','CV Agro Mandiri',rp(15500000),'Diproses'],['INV-003','PT Pabrik Baja','CV Baja Mandiri',rp(90000000),'Selesai']];let tickets=[['TKT-001','Andi Surya','Pengiriman terlambat','Tinggi','Open'],['TKT-002','Budi Perkasa','Upload dokumen gagal','Sedang','Proses']];let tenders=[['Pengadaan 50 Unit Pompa Irigasi','Dinas Pertanian Jateng',rp(1250000000),'14 Bid','Open'],['Sewa 10 Excavator PC200','PT Tambang Makmur',rp(15000000000),'8 Bid','Review']];const adminMenus=[['overview','fa-gauge-high','Overview'],['users','fa-users','User & Role'],['sellers','fa-store','Seller/Vendor'],['products','fa-boxes-stacked','Produk'],['orders','fa-receipt','Order & Refund'],['tenders','fa-briefcase','Tender'],['support','fa-headset','Support'],['cms','fa-palette','CMS Tampilan'],['finance','fa-vault','Keuangan'],['settings','fa-gear','Setting Sistem']];const userMenus=[['overview','fa-gauge','Ringkasan'],['orders','fa-box-open','Pesanan'],['addProduct','fa-circle-plus','Tambah Produk'],['store','fa-store','Kelola Toko'],['wishlist','fa-heart','Wishlist'],['address','fa-location-dot','Alamat'],['support','fa-headset','Bantuan'],['notif','fa-bell','Notifikasi'],['security','fa-lock','Keamanan'],['profile','fa-user-gear','Profil']];const adminSubs={overview:['Ringkasan','Aktivitas','Audit'],users:['Daftar User','Role & Akses','Verifikasi','Segmentasi'],sellers:['Ringkasan Seller','Verifikasi Seller','Audit Vendor','Withdraw'],products:['Review Produk','Produk Aktif','Kategori','Stok & Harga'],orders:['Order Aktif','Refund','Dispute','Invoice'],tenders:['Tender Open','Moderasi','Bid Masuk','Arsip'],support:['Tiket Open','Prioritas','Riwayat','Template Balasan'],cms:['Banner','Menu Mobile','Warna Tema','Pengumuman'],finance:['Escrow','Komisi','Pencairan','Rekening'],settings:['Status Platform','Approval','Payment','Keamanan Login','Integrasi API','Backup & Log']};const userSubs={overview:['Ringkasan','Aktivitas','Rekomendasi'],orders:['Semua Pesanan','Dikirim','Selesai','Komplain'],addProduct:['Info Produk','Harga & Stok','Gambar & Media','Spesifikasi','Legal/TKDN','Pengiriman','Preview'],store:['Profil Toko','Legalitas','Rekening','Kurir & Gudang','Jam Operasional','Kebijakan','Preview Toko'],wishlist:['Produk Disimpan','Supplier Favorit'],address:['Alamat Proyek','Gudang','Tambah Alamat'],support:['Tiket Saya','Buat Tiket','Riwayat'],notif:['Order','Promo','Tender'],security:['Password','OTP','Perangkat'],profile:['Biodata','Perusahaan','Preferensi']};function openLogin(){document.getElementById('loginModal').classList.add('open')}function closeLogin(){document.getElementById('loginModal').classList.remove('open')}function demoAdmin(){document.getElementById('loginEmail').value='admin@bisnishub.id';document.getElementById('loginName').value='Admin Pusat';login()}function demoUser(){document.getElementById('loginEmail').value='user@bisnishub.id';document.getElementById('loginName').value='User Demo';login()}function login(){let e=document.getElementById('loginEmail').value.trim().toLowerCase(),n=document.getElementById('loginName').value.trim()||'User Demo';S.email=e;S.name=n;S.role=(e.includes('admin')||e.includes('sridamayanti'))?'admin':'user';S.adminMenu='overview';S.userMenu='overview';save();closeLogin();render();toast('Masuk sebagai '+S.role.toUpperCase())}function logout(){localStorage.removeItem(LS);S={role:'guest',email:'',name:'User Demo',adminMenu:'overview',adminSub:'',userMenu:'overview',userSub:''};render()}function setAdmin(m){S.adminMenu=m;S.adminSub='';save();render()}function setAdminSub(s){S.adminSub=s;save();renderAdminContent()}function setUser(m){S.userMenu=m;S.userSub='';save();render()}function setUserSub(s){S.userSub=s;save();renderUserContent()}function side(menus,active,fn,admin=false){return menus.map(([k,i,l])=>`<button class="menu-btn ${active===k?'active':''}" onclick="${fn}('${k}')"><i class="fa-solid ${i} w-5 text-center"></i><span>${l}</span></button>`).join('')}function shell(type){let isAdmin=type==='admin',menus=isAdmin?adminMenus:userMenus,active=isAdmin?S.adminMenu:S.userMenu,fn=isAdmin?'setAdmin':'setUser';return `<header class="bg-white border-b sticky top-0 z-40"><div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-11 h-11 rounded-2xl ${isAdmin?'bg-emerald-400 text-emerald-950':'bg-indigo-600 text-white'} flex items-center justify-center font-black">${isAdmin?'AD':'US'}</div><div><h1 class="font-black text-xl">${isAdmin?'Panel Admin Pusat':'Dashboard User'}</h1><p class="text-xs text-slate-500">${S.name} • ${S.email}</p></div></div><div class="flex gap-2"><button onclick="openLogin()" class="px-4 py-2 rounded-xl bg-slate-100 font-black text-sm">Ganti Akun</button><button onclick="logout()" class="px-4 py-2 rounded-xl bg-rose-600 text-white font-black text-sm">Logout</button></div></div></header><main class="${isAdmin?'admin':''} max-w-7xl mx-auto p-4"><div class="layout flex gap-5"><aside class="sidebar card p-3 h-max"><nav class="side-menu grid gap-2">${side(menus,active,fn,isAdmin)}</nav></aside><section class="content flex-1 min-w-0" id="mainContent"></section></div></main>`}function subTabs(list,active,fn){return `<div class="flex flex-wrap gap-2 mb-5">${list.map(x=>`<button onclick="${fn}('${x}')" class="subtab ${active===x?'active':''}">${x}</button>`).join('')}</div>`}function render(){let app=document.getElementById('app');if(S.role==='guest'){app.innerHTML=`<div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-900 to-slate-950"><div class="bg-white rounded-[32px] p-8 max-w-lg w-full shadow-2xl text-center"><div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-300 to-orange-500 mx-auto flex items-center justify-center text-indigo-950 text-2xl font-black">BH</div><h1 class="text-3xl font-black mt-5">BisnisHub Dashboard Ringan</h1><p class="text-slate-500 mt-2">Versi bersih: hanya dashboard admin dan user. Marketplace, TKDN, kalkulator, paywall, dan script lama sudah dibuang agar ringan diedit.</p><button onclick="openLogin()" class="mt-6 bg-indigo-600 text-white rounded-2xl px-7 py-3 font-black">Masuk Dashboard</button></div></div>`;return}app.innerHTML=shell(S.role);S.role==='admin'?renderAdminContent():renderUserContent()}function renderAdminContent(){let key=S.adminMenu,subs=adminSubs[key]||[],active=S.adminSub||subs[0];S.adminSub=active;save();let body='';if(key==='overview')body=adminOverview();if(key==='users')body=adminUsers();if(key==='sellers')body=adminSellers();if(key==='products')body=adminProducts();if(key==='orders')body=adminOrders();if(key==='tenders')body=adminTenders();if(key==='support')body=adminSupport();if(key==='cms')body=adminCMS();if(key==='finance')body=adminFinance();if(key==='settings')body=adminSettings();document.getElementById('mainContent').innerHTML=`${subTabs(subs,active,'setAdminSub')}${body}`}function adminOverview(){return `<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">${kpi('GMV Platform',rp(1450800000),'fa-chart-line','emerald','+18% bulan ini')}${kpi('User Aktif',users.length,'fa-users','indigo','Admin/User/Vendor')}${kpi('Seller',sellers.length,'fa-store','amber','Vendor terdaftar')}${kpi('Escrow',rp(145080000),'fa-vault','rose','Dana tertahan')}</div>${panel('Ringkasan Admin','Kontrol pusat platform BisnisHub.',`<div class="grid md:grid-cols-3 gap-4"><div class="p-5 rounded-2xl bg-emerald-50 border border-emerald-100"><b>Stabil</b><p class="text-sm text-slate-500 mt-1">Role admin/user sudah dipisah.</p></div><div class="p-5 rounded-2xl bg-indigo-50 border border-indigo-100"><b>Ringan</b><p class="text-sm text-slate-500 mt-1">Kode lama tidak dipakai sudah dibuang.</p></div><div class="p-5 rounded-2xl bg-amber-50 border border-amber-100"><b>Siap Edit</b><p class="text-sm text-slate-500 mt-1">Dashboard bersih dan mudah dikembangkan.</p></div></div>`)}`}function adminUsers(){return panel('User & Role','Kelola akun, akses, dan status user.',tbl(['ID','Nama','Email','Role','Status','Aksi'],users.map(u=>`<tr class="border-t"><td class="px-4 py-3 font-bold">${u[0]}</td><td class="px-4 py-3">${u[1]}</td><td class="px-4 py-3">${u[2]}</td><td class="px-4 py-3">${u[3]}</td><td class="px-4 py-3">${badge(u[4],u[4]==='Aktif'?'emerald':'amber')}</td><td class="px-4 py-3">${btn('Edit','indigo')} ${btn('Suspend','rose')}</td></tr>`)),btn('Tambah User','emerald'))}function adminSellers(){return panel('Seller / Vendor','Ringkasan dan verifikasi vendor tampil di kanan.',tbl(['Seller','Status','Produk','Omzet','Aksi'],sellers.map(s=>`<tr class="border-t"><td class="px-4 py-3 font-bold">${s[0]}</td><td class="px-4 py-3">${badge(s[1],s[1]==='Review'?'amber':'emerald')}</td><td class="px-4 py-3">${s[2]}</td><td class="px-4 py-3 font-black">${s[3]}</td><td class="px-4 py-3">${btn('Verifikasi','emerald')} ${btn('Audit','indigo')}</td></tr>`)),btn('Export Seller','slate'))}function adminProducts(){return panel('Produk','Moderasi produk seller.',tbl(['Produk','Seller','Harga','TKDN','Status','Aksi'],products.map(p=>`<tr class="border-t"><td class="px-4 py-3 font-bold">${p[0]}</td><td class="px-4 py-3">${p[1]}</td><td class="px-4 py-3">${p[2]}</td><td class="px-4 py-3">${p[3]}</td><td class="px-4 py-3">${badge(p[4],p[4]==='Aktif'?'emerald':'amber')}</td><td class="px-4 py-3">${btn('Approve','emerald')} ${btn('Tolak','rose')}</td></tr>`)))}function adminOrders(){return panel('Order & Refund','Pantau transaksi dan dispute.',tbl(['Invoice','Buyer','Seller','Total','Status','Aksi'],orders.map(o=>`<tr class="border-t"><td class="px-4 py-3 font-bold">${o[0]}</td><td class="px-4 py-3">${o[1]}</td><td class="px-4 py-3">${o[2]}</td><td class="px-4 py-3 font-black">${o[3]}</td><td class="px-4 py-3">${badge(o[4],o[4]==='Selesai'?'emerald':'blue')}</td><td class="px-4 py-3">${btn('Audit','indigo')} ${btn('Refund','rose')}</td></tr>`)))}function adminTenders(){return panel('Tender','Kelola tender dan penawaran.',tbl(['Tender','Owner','HPS','Bid','Status','Aksi'],tenders.map(t=>`<tr class="border-t"><td class="px-4 py-3 font-bold">${t[0]}</td><td class="px-4 py-3">${t[1]}</td><td class="px-4 py-3 font-black">${t[2]}</td><td class="px-4 py-3">${t[3]}</td><td class="px-4 py-3">${badge(t[4],t[4]==='Open'?'emerald':'amber')}</td><td class="px-4 py-3">${btn('Moderasi','indigo')} ${btn('Tutup','rose')}</td></tr>`)),btn('Posting Tender','emerald'))}function adminSupport(){return panel('Support','Kelola tiket bantuan.',tbl(['ID','User','Topik','Prioritas','Status','Aksi'],tickets.map(t=>`<tr class="border-t"><td class="px-4 py-3 font-bold">${t[0]}</td><td class="px-4 py-3">${t[1]}</td><td class="px-4 py-3">${t[2]}</td><td class="px-4 py-3">${badge(t[3],t[3]==='Tinggi'?'rose':'amber')}</td><td class="px-4 py-3">${badge(t[4],t[4]==='Open'?'rose':'amber')}</td><td class="px-4 py-3">${btn('Balas','indigo')} ${btn('Close','emerald')}</td></tr>`)))}function adminCMS(){return panel('CMS Tampilan','Atur tampilan dashboard.',`<div class="grid md:grid-cols-2 gap-4"><input class="border rounded-2xl p-3" value="BisnisHub Dashboard"><select class="border rounded-2xl p-3"><option>Indigo</option><option>Emerald</option><option>Amber</option></select></div><button onclick="toast('CMS disimpan')" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan CMS</button>`)}function adminFinance(){return panel('Keuangan & Escrow','Pantau escrow, komisi, dan pencairan.',`<div class="grid md:grid-cols-3 gap-4 mb-5">${kpi('Escrow Total',rp(1450800000),'fa-vault','emerald')}${kpi('Siap Cair',rp(245000000),'fa-money-bill-transfer','blue')}${kpi('Komisi','5%','fa-percent','amber')}</div><button onclick="toast('Laporan keuangan dibuat')" class="bg-emerald-600 text-white rounded-2xl px-5 py-3 font-black">Export Laporan</button>`)}function adminSettings(){return panel('Setting Sistem','Pengaturan global aplikasi.',`<div class="grid md:grid-cols-2 gap-4"><label class="flex justify-between border rounded-2xl p-5"><span class="font-black">Website Online</span><input type="checkbox" checked></label><label class="flex justify-between border rounded-2xl p-5"><span class="font-black">Maintenance Mode</span><input type="checkbox"></label><label class="flex justify-between border rounded-2xl p-5"><span class="font-black">Auto Approve Produk</span><input type="checkbox"></label><label class="flex justify-between border rounded-2xl p-5"><span class="font-black">OTP Login</span><input type="checkbox" checked></label></div>`)}function renderUserContent(){let key=S.userMenu,subs=userSubs[key]||[],active=S.userSub||subs[0];S.userSub=active;save();let body='';if(key==='overview')body=userOverview();if(key==='orders')body=userOrders();if(key==='addProduct')body=userAddProduct();if(key==='store')body=userStore();if(key==='wishlist')body=userWishlist();if(key==='address')body=userAddress();if(key==='support')body=userSupport();if(key==='notif')body=userNotif();if(key==='security')body=userSecurity();if(key==='profile')body=userProfile();document.getElementById('mainContent').innerHTML=`${subTabs(subs,active,'setUserSub')}${body}`}function userOverview(){return `<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">${kpi('Pesanan','12','fa-box-open','indigo')}${kpi('Belanja',rp(155000000),'fa-wallet','emerald')}${kpi('Produk Draft','3','fa-box','amber')}${kpi('Tiket Open','1','fa-headset','rose')}</div>${panel('Ringkasan User','Area kerja user bersih tanpa admin/marketplace.',`<div class="grid md:grid-cols-3 gap-4"><button onclick="setUser('orders')" class="p-5 rounded-2xl bg-indigo-50 border text-left"><b>Pesanan Saya</b><p class="text-sm text-slate-500">Lacak order dan invoice.</p></button><button onclick="setUser('addProduct')" class="p-5 rounded-2xl bg-amber-50 border text-left"><b>Tambah Produk</b><p class="text-sm text-slate-500">Upload produk lengkap.</p></button><button onclick="setUser('store')" class="p-5 rounded-2xl bg-emerald-50 border text-left"><b>Kelola Toko</b><p class="text-sm text-slate-500">Setting toko di kanan.</p></button></div>`)}`}function userOrders(){return panel('Pesanan Saya','Kelola pesanan user.',tbl(['Invoice','Produk','Total','Status','Aksi'],orders.map(o=>`<tr class="border-t"><td class="px-4 py-3 font-bold">${o[0]}</td><td class="px-4 py-3">${o[2]}</td><td class="px-4 py-3 font-black">${o[3]}</td><td class="px-4 py-3">${badge(o[4],'blue')}</td><td class="px-4 py-3">${btn('Lacak','blue')} ${btn('Komplain','rose')}</td></tr>`)))}function userAddProduct(){return panel('Tambah Produk','Form lengkap upload produk.',`<div class="grid md:grid-cols-2 gap-4"><input class="border rounded-2xl p-3" placeholder="Nama produk"><select class="border rounded-2xl p-3"><option>Kategori Industri</option><option>Pompa & Kompresor</option><option>Mesin Pertanian</option></select><input class="border rounded-2xl p-3" placeholder="Brand / Merek"><input class="border rounded-2xl p-3" placeholder="SKU"><input class="border rounded-2xl p-3" placeholder="Harga Retail"><input class="border rounded-2xl p-3" placeholder="Harga Grosir / B2B"><input class="border rounded-2xl p-3" placeholder="Stok"><input class="border rounded-2xl p-3" placeholder="MOQ"><input type="file" class="border rounded-2xl p-3 md:col-span-2"><textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Spesifikasi teknis dan deskripsi produk"></textarea><input class="border rounded-2xl p-3" placeholder="Nilai TKDN %"><input class="border rounded-2xl p-3" placeholder="No. Sertifikat / Dokumen"></div><div class="mt-5 flex flex-wrap gap-2"><button onclick="toast('Draft produk disimpan')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Simpan Draft</button><button onclick="toast('Produk diajukan ke admin')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Ajukan ke Admin</button></div>`)}function userStore(){return panel('Kelola Toko','Semua submenu toko tampil di kanan, bukan di sidebar.',`<div class="grid md:grid-cols-2 gap-4"><input class="border rounded-2xl p-3" value="Toko ${S.name}"><input class="border rounded-2xl p-3" placeholder="Slogan toko"><input class="border rounded-2xl p-3" placeholder="NIB"><input class="border rounded-2xl p-3" placeholder="NPWP"><input class="border rounded-2xl p-3" placeholder="Rekening pencairan"><input class="border rounded-2xl p-3" placeholder="Gudang asal"><textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Kebijakan toko, retur, garansi, dan operasional"></textarea></div><button onclick="toast('Setting toko tersimpan')" class="mt-5 bg-emerald-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Toko</button>`)}function userWishlist(){return panel('Wishlist','Produk favorit user.',`<div class="grid md:grid-cols-3 gap-4">${products.map(p=>`<div class="border rounded-2xl p-4"><div class="h-28 rounded-xl bg-slate-100 flex items-center justify-center mb-3"><i class="fa-solid fa-box text-3xl text-slate-300"></i></div><b>${p[0]}</b><p class="font-black text-amber-600 mt-2">${p[2]}</p>${btn('Beli','indigo')}</div>`).join('')}</div>`)}function userAddress(){return panel('Alamat Proyek','Kelola alamat kantor, gudang, dan proyek.',`<div class="grid md:grid-cols-2 gap-4"><div class="border rounded-2xl p-4"><b>Kantor Pusat</b><p class="text-sm text-slate-500 mt-1">Jakarta Selatan</p></div><div class="border rounded-2xl p-4"><b>Gudang Proyek</b><p class="text-sm text-slate-500 mt-1">Karawang</p></div></div><button onclick="toast('Alamat ditambahkan')" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Tambah Alamat</button>`)}function userSupport(){return panel('Bantuan','Tiket bantuan user.',tbl(['ID','Topik','Status','Aksi'],tickets.map(t=>`<tr class="border-t"><td class="px-4 py-3 font-bold">${t[0]}</td><td class="px-4 py-3">${t[2]}</td><td class="px-4 py-3">${badge(t[4],'amber')}</td><td class="px-4 py-3">${btn('Balas','indigo')}</td></tr>`)),btn('Buat Tiket','rose'))}function userNotif(){return panel('Notifikasi','Pusat pesan user.',`<div class="space-y-3">${['Pesanan sedang dikirim','Produk draft perlu dilengkapi','Tiket dibalas admin'].map(x=>`<div class="border rounded-2xl p-4"><i class="fa-solid fa-bell text-indigo-600 mr-2"></i><b>${x}</b></div>`).join('')}</div>`)}function userSecurity(){return panel('Keamanan','Password, OTP, dan perangkat.',`<div class="grid md:grid-cols-2 gap-4"><div class="border rounded-2xl p-5"><b>Password</b><p class="text-sm text-slate-500">Terakhir diubah 30 hari lalu</p>${btn('Ubah','indigo')}</div><div class="border rounded-2xl p-5"><b>OTP</b><p class="text-sm text-slate-500">Belum aktif</p>${btn('Aktifkan','emerald')}</div></div>`)}function userProfile(){return panel('Profil','Edit biodata user.',`<div class="grid md:grid-cols-2 gap-4"><input class="border rounded-2xl p-3" value="${S.name}"><input class="border rounded-2xl p-3" value="${S.email}"><input class="border rounded-2xl p-3" placeholder="No. HP"><select class="border rounded-2xl p-3"><option>Perusahaan</option><option>Perorangan</option></select></div><button onclick="toast('Profil tersimpan')" class="mt-5 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Profil</button>`)}render();</script></body></html>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BisnisHub Clean Marketplace + Dashboard Editable</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #eef2f7;
+      color: #0f172a;
+    }
+    .app-shell { min-height: 100vh; }
+    .sidebar {
+      width: 280px;
+      min-width: 280px;
+    }
+    .menu-button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      border-radius: 18px;
+      font-size: 13px;
+      font-weight: 900;
+      transition: 0.15s ease;
+      text-align: left;
+    }
+    .menu-button.active-admin {
+      background: #10b981;
+      color: #052e16;
+      box-shadow: 0 10px 20px rgba(16, 185, 129, 0.22);
+    }
+    .menu-button.active-user {
+      background: #4f46e5;
+      color: #ffffff;
+      box-shadow: 0 10px 20px rgba(79, 70, 229, 0.22);
+    }
+    .menu-button.idle-admin {
+      color: #cbd5e1;
+    }
+    .menu-button.idle-admin:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+    .menu-button.idle-user {
+      color: #475569;
+    }
+    .menu-button.idle-user:hover {
+      background: #f1f5f9;
+      color: #4f46e5;
+    }
+    .content-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 28px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+      overflow: hidden;
+    }
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 20px;
+      min-height: 130px;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04);
+    }
+    .sub-tab {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid #e2e8f0;
+      font-size: 12px;
+      font-weight: 900;
+      background: #ffffff;
+      color: #475569;
+      transition: 0.15s ease;
+      white-space: nowrap;
+    }
+    .sub-tab.active {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 22px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: #ffffff;
+    }
+    thead {
+      background: #f8fafc;
+      color: #64748b;
+      text-transform: uppercase;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    th, td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      text-align: left;
+      vertical-align: top;
+    }
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 80;
+      display: none;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 13px 18px;
+      border-radius: 18px;
+      font-size: 13px;
+      font-weight: 900;
+      box-shadow: 0 15px 35px rgba(15, 23, 42, 0.35);
+    }
+    .toast.show { display: block; }
+
+    @media (max-width: 900px) {
+      .dashboard-layout { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        min-width: 100%;
+        position: static;
+      }
+      .sidebar-menu {
+        display: flex;
+        overflow-x: auto;
+        gap: 8px;
+        padding-bottom: 6px;
+      }
+      .menu-button {
+        min-width: 165px;
+        justify-content: flex-start;
+      }
+      .kpi-card { min-height: 110px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="app-shell"></div>
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const STORAGE_KEY = 'bisnishub_clean_editable_state_v2';
+
+    const adminMenus = [
+      { key: 'overview', label: 'Overview', icon: 'fa-gauge-high' },
+      { key: 'users', label: 'User & Role', icon: 'fa-users' },
+      { key: 'sellers', label: 'Seller / Vendor', icon: 'fa-store' },
+      { key: 'products', label: 'Produk', icon: 'fa-boxes-stacked' },
+      { key: 'orders', label: 'Order & Refund', icon: 'fa-receipt' },
+      { key: 'tenders', label: 'Tender', icon: 'fa-briefcase' },
+      { key: 'support', label: 'Support', icon: 'fa-headset' },
+      { key: 'cms', label: 'CMS Tampilan', icon: 'fa-palette' },
+      { key: 'finance', label: 'Keuangan & Escrow', icon: 'fa-vault' },
+      { key: 'settings', label: 'Setting Sistem', icon: 'fa-gear' }
+    ];
+
+    const userMenus = [
+      { key: 'overview', label: 'Ringkasan', icon: 'fa-gauge' },
+      { key: 'orders', label: 'Pesanan Saya', icon: 'fa-box-open' },
+      { key: 'addProduct', label: 'Tambah Produk', icon: 'fa-circle-plus' },
+      { key: 'store', label: 'Kelola Toko', icon: 'fa-store' },
+      { key: 'wishlist', label: 'Wishlist', icon: 'fa-heart' },
+      { key: 'address', label: 'Alamat Proyek', icon: 'fa-location-dot' },
+      { key: 'support', label: 'Bantuan / Tiket', icon: 'fa-headset' },
+      { key: 'notif', label: 'Notifikasi', icon: 'fa-bell' },
+      { key: 'security', label: 'Keamanan', icon: 'fa-lock' },
+      { key: 'profile', label: 'Profil User', icon: 'fa-user-gear' }
+    ];
+
+    const adminSubs = {
+      overview: ['Ringkasan', 'Aktivitas', 'Kinerja'],
+      users: ['Daftar User', 'Role & Akses', 'Verifikasi', 'Segmentasi'],
+      sellers: ['Ringkasan Seller', 'Verifikasi Seller', 'Audit Vendor', 'Withdraw'],
+      products: ['Review Produk', 'Produk Aktif', 'Kategori', 'Stok & Harga', 'Dokumen'],
+      orders: ['Transaksi', 'Refund', 'Dispute', 'Invoice'],
+      tenders: ['Tender Open', 'Review Tender', 'Bidding', 'Arsip'],
+      support: ['Tiket Open', 'SLA', 'Chat Bantuan', 'Riwayat'],
+      cms: ['Hero Banner', 'Menu Mobile', 'Warna Icon', 'Landing'],
+      finance: ['Escrow', 'Komisi', 'Pencairan', 'Laporan'],
+      settings: ['Status Platform', 'Approval', 'Payment', 'Keamanan Login', 'Integrasi API', 'Backup & Log']
+    };
+
+    const userSubs = {
+      overview: ['Ringkasan', 'Aktivitas', 'Rekomendasi'],
+      orders: ['Semua Pesanan', 'Diproses', 'Dikirim', 'Selesai', 'Komplain'],
+      addProduct: ['Info Produk', 'Harga & Stok', 'Gambar & Media', 'Spesifikasi', 'Dokumen', 'Pengiriman', 'Preview'],
+      store: ['Profil Toko', 'Legalitas', 'Rekening', 'Kurir & Gudang', 'Jam Operasional', 'Kebijakan', 'Preview Toko'],
+      wishlist: ['Produk Disimpan', 'Supplier Favorit', 'Riwayat Dilihat'],
+      address: ['Alamat Utama', 'Gudang', 'Proyek', 'Tambah Alamat'],
+      support: ['Buat Tiket', 'Tiket Saya', 'Chat Admin', 'FAQ'],
+      notif: ['Semua', 'Order', 'Promo', 'Sistem'],
+      security: ['Password', 'OTP', 'Perangkat Login', 'Log Aktivitas'],
+      profile: ['Biodata', 'Perusahaan', 'Kontak', 'Preferensi']
+    };
+
+    const demoUsers = [
+      ['USR-001', 'Andi Surya', 'andi@company.id', 'Buyer', 'Aktif'],
+      ['USR-002', 'Budi Perkasa', 'budi@vendor.id', 'Seller', 'Verifikasi'],
+      ['USR-003', 'Siti Aminah', 'siti@pabrik.id', 'Buyer', 'Aktif'],
+      ['USR-004', 'Rama Teknik', 'rama@teknik.id', 'Seller', 'Suspend']
+    ];
+
+    const demoProducts = [
+      ['Pompa Sentrifugal Industri 30kW', 'PT Bintang Pompa', 'Rp 24.500.000', 'TKDN 45.5%', 'Aktif'],
+      ['Traktor Tangan Diesel G1000', 'CV Agro Mandiri', 'Rp 15.500.000', 'TKDN 38.2%', 'Review'],
+      ['Mesin Press Hidrolik 50 Ton', 'CV Baja Mandiri', 'Rp 45.000.000', 'TKDN 35.8%', 'Aktif'],
+      ['Helm Safety SNI Proyek', 'PT Plastik Indo', 'Rp 45.000', 'TKDN 80%', 'Aktif']
+    ];
+
+    const marketplaceProducts = [
+      { name: 'Pompa Sentrifugal Industri 30kW', seller: 'PT Bintang Pompa', category: 'Pompa & Kompresor', price: 'Rp 24.500.000', badge: 'B2B', icon: 'fa-water' },
+      { name: 'Traktor Tangan Diesel G1000', seller: 'CV Agro Mandiri', category: 'Mesin Pertanian', price: 'Rp 15.500.000', badge: 'Agro', icon: 'fa-tractor' },
+      { name: 'Mesin Press Hidrolik 50 Ton', seller: 'CV Baja Mandiri', category: 'Hydrolik', price: 'Rp 45.000.000', badge: 'TKDN', icon: 'fa-gears' },
+      { name: 'Helm Safety SNI Proyek', seller: 'PT Plastik Indo', category: 'K3 Safety', price: 'Rp 45.000', badge: 'SNI', icon: 'fa-helmet-safety' },
+      { name: 'Panel Surya 450Wp Monocrystalline', seller: 'PT Surya Energi', category: 'Energi', price: 'Rp 2.100.000', badge: 'Green', icon: 'fa-solar-panel' },
+      { name: 'Software ERP Inventory Pabrik', seller: 'BisnisHub Digital', category: 'Software', price: 'Rp 15.000.000', badge: 'Digital', icon: 'fa-laptop-code' }
+    ];
+
+    const demoOrders = [
+      ['INV-001', 'Andi Surya', 'Pompa Sentrifugal', 'Rp 24.500.000', 'Dikirim'],
+      ['INV-002', 'Siti Aminah', 'Traktor Tangan', 'Rp 15.500.000', 'Diproses'],
+      ['INV-003', 'PT Pabrik Baja', 'Mesin Press', 'Rp 90.000.000', 'Selesai']
+    ];
+
+    const demoTenders = [
+      ['Pengadaan 50 Pompa Irigasi', 'Dinas Pertanian Jateng', 'Rp 1.250.000.000', '14 Bid', 'Open'],
+      ['Sewa 10 Excavator PC200', 'PT Tambang Makmur', 'Rp 15.000.000.000', '8 Bid', 'Review'],
+      ['Pengadaan Helm Safety 5000 pcs', 'Kontraktor Nasional', 'Rp 350.000.000', '23 Bid', 'Close']
+    ];
+
+    const demoTickets = [
+      ['TKT-001', 'Andi Surya', 'Pengiriman terlambat', 'Tinggi', 'Open'],
+      ['TKT-002', 'Budi Perkasa', 'Upload TKDN gagal', 'Sedang', 'Proses'],
+      ['TKT-003', 'Siti Aminah', 'Minta invoice pajak', 'Rendah', 'Close']
+    ];
+
+    let state = loadState();
+
+    function loadState() {
+      const defaultState = {
+        role: 'marketplace',
+        name: 'Pengunjung',
+        adminMenu: 'overview',
+        userMenu: 'overview',
+        adminSub: 'Ringkasan',
+        userSub: 'Ringkasan'
+      };
+
+      try {
+        return { ...defaultState, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') };
+      } catch (error) {
+        return defaultState;
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    function badge(text, color = 'indigo') {
+      const colorMap = {
+        indigo: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+        emerald: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+        amber: 'bg-amber-50 text-amber-700 border-amber-100',
+        rose: 'bg-rose-50 text-rose-700 border-rose-100',
+        blue: 'bg-blue-50 text-blue-700 border-blue-100',
+        slate: 'bg-slate-50 text-slate-700 border-slate-200'
+      };
+      return `<span class="inline-flex px-2.5 py-1 rounded-lg border text-xs font-black ${colorMap[color] || colorMap.indigo}">${text}</span>`;
+    }
+
+    function statusColor(status) {
+      const map = {
+        Aktif: 'emerald',
+        Open: 'emerald',
+        Selesai: 'emerald',
+        Dikirim: 'blue',
+        Diproses: 'amber',
+        Review: 'amber',
+        Verifikasi: 'amber',
+        Proses: 'amber',
+        Tinggi: 'rose',
+        Suspend: 'rose',
+        Close: 'slate'
+      };
+      return map[status] || 'indigo';
+    }
+
+    function actionButton(label, color = 'indigo') {
+      const colorMap = {
+        indigo: 'bg-indigo-600 hover:bg-indigo-700',
+        emerald: 'bg-emerald-600 hover:bg-emerald-700',
+        amber: 'bg-amber-500 hover:bg-amber-600 text-slate-950',
+        rose: 'bg-rose-600 hover:bg-rose-700',
+        slate: 'bg-slate-900 hover:bg-slate-950'
+      };
+      return `<button onclick="showToast('${label} diproses')" class="px-4 py-2 rounded-xl text-white text-xs font-black whitespace-nowrap ${colorMap[color] || colorMap.indigo}">${label}</button>`;
+    }
+
+    function kpiCard(title, value, icon, color = 'indigo', note = '') {
+      const colorMap = {
+        indigo: 'bg-indigo-50 text-indigo-600',
+        emerald: 'bg-emerald-50 text-emerald-600',
+        amber: 'bg-amber-50 text-amber-600',
+        rose: 'bg-rose-50 text-rose-600',
+        blue: 'bg-blue-50 text-blue-600'
+      };
+
+      return `
+        <div class="kpi-card">
+          <div>
+            <p class="text-xs text-slate-500 font-black uppercase tracking-wide">${title}</p>
+            <h3 class="text-2xl font-black mt-2 leading-tight">${value}</h3>
+            ${note ? `<p class="text-xs text-slate-500 mt-1">${note}</p>` : ''}
+          </div>
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center ${colorMap[color] || colorMap.indigo}">
+            <i class="fa-solid ${icon}"></i>
+          </div>
+        </div>
+      `;
+    }
+
+    function panel(title, subtitle, body, actions = '') {
+      return `
+        <div class="content-card">
+          <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-black text-slate-900">${title}</h2>
+              <p class="text-sm text-slate-500 mt-1">${subtitle}</p>
+            </div>
+            ${actions}
+          </div>
+          <div class="p-5">${body}</div>
+        </div>
+      `;
+    }
+
+    function table(headers, rows) {
+      return `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>${headers.map(header => `<th>${header}</th>`).join('')}</tr>
+            </thead>
+            <tbody>${rows.join('')}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderApp() {
+      if (state.role === 'admin') {
+        renderAdminDashboard();
+      } else if (state.role === 'user') {
+        renderUserDashboard();
+      } else {
+        renderMarketplace();
+      }
+    }
+
+    function renderHeader(title, subtitle, isAdmin) {
+      return `
+        <header class="sticky top-0 z-40 ${isAdmin ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'} shadow-sm border-b ${isAdmin ? 'border-slate-800' : 'border-slate-200'}">
+          <div class="px-4 md:px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl ${isAdmin ? 'bg-emerald-400 text-slate-950' : 'bg-indigo-600 text-white'} flex items-center justify-center font-black">BH</div>
+              <div>
+                <h1 class="text-xl md:text-2xl font-black leading-tight">${title}</h1>
+                <p class="text-xs ${isAdmin ? 'text-slate-400' : 'text-slate-500'}">${subtitle}</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="switchRole('marketplace')" class="px-4 py-2 rounded-xl text-xs font-black bg-indigo-600 text-white">
+                Marketplace B2B
+              </button>
+              <button onclick="switchRole('${isAdmin ? 'user' : 'admin'}')" class="px-4 py-2 rounded-xl text-xs font-black ${isAdmin ? 'bg-white text-slate-950' : 'bg-slate-900 text-white'}">
+                Masuk ${isAdmin ? 'User' : 'Admin'} Demo
+              </button>
+              <button onclick="resetCurrentDashboard()" class="px-4 py-2 rounded-xl text-xs font-black bg-amber-400 text-slate-950">
+                Reset Halaman Ini
+              </button>
+            </div>
+          </div>
+        </header>
+      `;
+    }
+
+    function renderLayout(options) {
+      const { roleClass, title, subtitle, sidebar, content, isAdmin } = options;
+
+      document.getElementById('app').innerHTML = `
+        ${renderHeader(title, subtitle, isAdmin)}
+        <div class="dashboard-layout ${roleClass} flex gap-5 p-4 md:p-6 max-w-[1500px] mx-auto">
+          <aside class="sidebar ${isAdmin ? 'bg-slate-950 text-white' : 'bg-white'} rounded-[28px] border ${isAdmin ? 'border-slate-800' : 'border-slate-200'} shadow-sm h-fit sticky top-24 overflow-hidden">
+            <div class="p-5 border-b ${isAdmin ? 'border-slate-800' : 'border-slate-100'}">
+              <p class="text-xs font-black uppercase tracking-widest ${isAdmin ? 'text-emerald-300' : 'text-indigo-600'}">${isAdmin ? 'Admin Pusat' : 'Dashboard User'}</p>
+              <h2 class="font-black mt-1">${state.name}</h2>
+            </div>
+            <nav class="sidebar-menu p-3 grid gap-2">${sidebar}</nav>
+          </aside>
+          <main class="flex-1 min-w-0">${content}</main>
+        </div>
+      `;
+    }
+
+    function switchRole(role) {
+      state.role = role;
+      state.name = role === 'admin' ? 'Admin Pusat' : role === 'user' ? 'User Demo' : 'Pengunjung';
+      state.adminMenu = 'overview';
+      state.userMenu = 'overview';
+      state.adminSub = 'Ringkasan';
+      state.userSub = 'Ringkasan';
+      saveState();
+      renderApp();
+      showToast(role === 'marketplace' ? 'Masuk Marketplace B2B' : `Masuk sebagai ${role.toUpperCase()}`);
+    }
+
+    function resetCurrentDashboard() {
+      const role = state.role;
+      const adminMenu = state.adminMenu;
+      const userMenu = state.userMenu;
+
+      if (role === 'marketplace') {
+        state = {
+          ...state,
+          role: 'marketplace',
+          name: 'Pengunjung'
+        };
+      } else if (role === 'admin') {
+        state = {
+          ...state,
+          role: 'admin',
+          name: 'Admin Pusat',
+          adminMenu,
+          adminSub: (adminSubs[adminMenu] || ['Ringkasan'])[0]
+        };
+      } else {
+        state = {
+          ...state,
+          role: 'user',
+          name: 'User Demo',
+          userMenu,
+          userSub: (userSubs[userMenu] || ['Ringkasan'])[0]
+        };
+      }
+
+      saveState();
+      renderApp();
+      showToast('Reset hanya di halaman ini, tidak pindah akun');
+    }
+
+    function renderMenuButtons(menuList, activeKey, role) {
+      return menuList.map(item => {
+        const isActive = item.key === activeKey;
+        const activeClass = role === 'admin' ? 'active-admin' : 'active-user';
+        const idleClass = role === 'admin' ? 'idle-admin' : 'idle-user';
+        const click = role === 'admin' ? `setAdminMenu('${item.key}')` : `setUserMenu('${item.key}')`;
+
+        return `
+          <button onclick="${click}" class="menu-button ${isActive ? activeClass : idleClass}">
+            <i class="fa-solid ${item.icon} w-5 text-center"></i>
+            <span>${item.label}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderSubTabs(subs, activeSub, setterName) {
+      return `
+        <div class="mb-5 overflow-x-auto">
+          <div class="flex gap-2 min-w-max">
+            ${subs.map(sub => `<button onclick="${setterName}('${sub}')" class="sub-tab ${sub === activeSub ? 'active' : ''}">${sub}</button>`).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function setAdminMenu(key) {
+      state.adminMenu = key;
+      state.adminSub = (adminSubs[key] || ['Ringkasan'])[0];
+      saveState();
+      renderAdminDashboard();
+    }
+
+    function setAdminSub(sub) {
+      state.adminSub = sub;
+      saveState();
+      renderAdminDashboard();
+    }
+
+    function setUserMenu(key) {
+      state.userMenu = key;
+      state.userSub = (userSubs[key] || ['Ringkasan'])[0];
+      saveState();
+      renderUserDashboard();
+    }
+
+    function setUserSub(sub) {
+      state.userSub = sub;
+      saveState();
+      renderUserDashboard();
+    }
+
+
+    function renderMarketplace() {
+      const productCards = marketplaceProducts.map(product => `
+        <div class="content-card p-4 hover:-translate-y-1 transition">
+          <div class="h-36 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+            <i class="fa-solid ${product.icon} text-4xl text-indigo-400"></i>
+          </div>
+          <div class="flex items-center justify-between gap-2 mb-2">
+            ${badge(product.badge, product.badge === 'TKDN' ? 'rose' : 'indigo')}
+            <span class="text-[10px] font-black text-slate-400 uppercase">${product.category}</span>
+          </div>
+          <h3 class="font-black leading-tight min-h-[48px]">${product.name}</h3>
+          <p class="text-xs text-slate-500 mt-2"><i class="fa-solid fa-building mr-1"></i>${product.seller}</p>
+          <div class="mt-4 flex items-center justify-between gap-3">
+            <b class="text-amber-600">${product.price}</b>
+            <button onclick="showToast('Produk masuk keranjang demo')" class="bg-indigo-600 text-white rounded-xl px-3 py-2 text-xs font-black">Tambah</button>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('app').innerHTML = `
+        <header class="sticky top-0 z-40 bg-gradient-to-r from-indigo-700 to-slate-950 text-white shadow-sm border-b border-indigo-900">
+          <div class="px-4 md:px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 max-w-[1500px] mx-auto">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl bg-amber-400 text-indigo-950 flex items-center justify-center font-black">BH</div>
+              <div>
+                <h1 class="text-xl md:text-2xl font-black leading-tight">BisnisHub Marketplace B2B</h1>
+                <p class="text-xs text-indigo-100">Etalase produk industri, seller, tender, dan akun dashboard.</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="switchRole('user')" class="px-4 py-2 rounded-xl text-xs font-black bg-white text-indigo-950">Dashboard User</button>
+              <button onclick="switchRole('admin')" class="px-4 py-2 rounded-xl text-xs font-black bg-emerald-400 text-slate-950">Dashboard Admin</button>
+            </div>
+          </div>
+        </header>
+        <main class="p-4 md:p-6 max-w-[1500px] mx-auto">
+          <section class="rounded-[32px] bg-gradient-to-br from-indigo-900 to-slate-950 text-white p-7 md:p-10 shadow-sm mb-6 overflow-hidden relative">
+            <i class="fa-solid fa-store absolute -right-6 -bottom-8 text-[180px] opacity-10"></i>
+            <div class="relative z-10 max-w-3xl">
+              <span class="inline-flex bg-amber-400 text-indigo-950 rounded-full px-3 py-1 text-xs font-black">B2B MARKETPLACE</span>
+              <h2 class="text-3xl md:text-5xl font-black mt-4 leading-tight">Belanja produk industri dan kelola akun dari satu sistem.</h2>
+              <p class="text-indigo-100 mt-4 text-sm md:text-base">Marketplace dikembalikan, tapi tetap clean dan ringan. Dashboard admin/user tetap terpisah dan tidak ikut tampil kecuali dipilih.</p>
+              <div class="mt-6 flex flex-wrap gap-3">
+                <button onclick="document.getElementById('marketProducts').scrollIntoView({behavior:'smooth'})" class="bg-amber-400 text-indigo-950 rounded-2xl px-5 py-3 font-black">Lihat Produk</button>
+                <button onclick="switchRole('user')" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Masuk User</button>
+              </div>
+            </div>
+          </section>
+          <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+            ${kpiCard('Produk Aktif', '120+', 'fa-boxes-stacked', 'indigo')}
+            ${kpiCard('Vendor', '48', 'fa-store', 'amber')}
+            ${kpiCard('Order Demo', '312', 'fa-receipt', 'emerald')}
+            ${kpiCard('Kategori', '16', 'fa-layer-group', 'blue')}
+          </section>
+          <section id="marketProducts">
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-4">
+              <div>
+                <h2 class="text-2xl font-black">Produk Marketplace B2B</h2>
+                <p class="text-sm text-slate-500 mt-1">Etalase ringan. Nanti bisa disambungkan ke data produk user/seller.</p>
+              </div>
+              <div class="flex gap-2">
+                <input class="border rounded-2xl px-4 py-3 text-sm outline-none" placeholder="Cari produk demo...">
+                <button onclick="showToast('Pencarian demo aktif')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black text-sm">Cari</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">${productCards}</div>
+          </section>
+        </main>
+      `;
+    }
+
+    function renderAdminDashboard() {
+      const sidebar = renderMenuButtons(adminMenus, state.adminMenu, 'admin');
+      const content = renderSubTabs(adminSubs[state.adminMenu] || [], state.adminSub, 'setAdminSub') + renderAdminContent();
+
+      renderLayout({
+        roleClass: 'admin',
+        title: 'BisnisHub Admin Center',
+        subtitle: 'Panel khusus admin. Tidak menampilkan dashboard user atau marketplace.',
+        sidebar,
+        content,
+        isAdmin: true
+      });
+    }
+
+    function renderAdminContent() {
+      const key = state.adminMenu;
+      if (key === 'overview') return adminOverview();
+      if (key === 'users') return adminUsers();
+      if (key === 'sellers') return adminSellers();
+      if (key === 'products') return adminProducts();
+      if (key === 'orders') return adminOrders();
+      if (key === 'tenders') return adminTenders();
+      if (key === 'support') return adminSupport();
+      if (key === 'cms') return adminCMS();
+      if (key === 'finance') return adminFinance();
+      if (key === 'settings') return adminSettings();
+      return adminOverview();
+    }
+
+    function adminOverview() {
+      return `
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
+          ${kpiCard('GMV Platform', 'Rp 1,45 M', 'fa-chart-line', 'emerald', '+18% bulan ini')}
+          ${kpiCard('User Aktif', '1.240', 'fa-users', 'indigo', 'Buyer dan seller')}
+          ${kpiCard('Vendor', '318', 'fa-store', 'amber', '42 menunggu review')}
+          ${kpiCard('Escrow', 'Rp 245 Jt', 'fa-vault', 'rose', 'Dana tertahan aman')}
+        </div>
+        ${panel('Overview Admin', 'Ringkasan platform bersih dan stabil.', `
+          <div class="grid md:grid-cols-3 gap-4">
+            <button onclick="setAdminMenu('users')" class="p-5 rounded-2xl bg-indigo-50 border text-left">
+              <b>User & Role</b>
+              <p class="text-sm text-slate-500 mt-1">Kelola akun dan hak akses.</p>
+            </button>
+            <button onclick="setAdminMenu('products')" class="p-5 rounded-2xl bg-amber-50 border text-left">
+              <b>Review Produk</b>
+              <p class="text-sm text-slate-500 mt-1">Approve produk seller.</p>
+            </button>
+            <button onclick="setAdminMenu('finance')" class="p-5 rounded-2xl bg-emerald-50 border text-left">
+              <b>Escrow</b>
+              <p class="text-sm text-slate-500 mt-1">Pantau dana dan pencairan.</p>
+            </button>
+          </div>
+        `)}
+      `;
+    }
+
+    function adminUsers() {
+      const rows = demoUsers.map(user => `
+        <tr>
+          <td class="font-black">${user[0]}</td>
+          <td><b>${user[1]}</b><br><span class="text-xs text-slate-400">${user[2]}</span></td>
+          <td>${user[3]}</td>
+          <td>${badge(user[4], statusColor(user[4]))}</td>
+          <td class="space-x-2">${actionButton('Edit Role')} ${actionButton('Suspend', 'rose')}</td>
+        </tr>
+      `);
+
+      return panel('User & Role', 'Kelola user, role, verifikasi, dan segmentasi.', table(['ID', 'Nama', 'Role', 'Status', 'Aksi'], rows), actionButton('Tambah User', 'emerald'));
+    }
+
+    function adminSellers() {
+      return `
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
+          ${kpiCard('Total Seller', '318', 'fa-store', 'indigo')}
+          ${kpiCard('Terverifikasi', '276', 'fa-circle-check', 'emerald')}
+          ${kpiCard('Menunggu Review', '42', 'fa-clock', 'amber')}
+          ${kpiCard('Withdraw', 'Rp 85 Jt', 'fa-money-bill-transfer', 'rose')}
+        </div>
+        ${panel('Seller / Vendor', 'Ringkasan seller tampil di kanan, bukan di bawah sidebar.', table(['Vendor', 'Email', 'Status', 'Aksi'], demoUsers.filter(user => user[3] === 'Seller').map(user => `
+          <tr>
+            <td class="font-black">${user[1]}</td>
+            <td>${user[2]}</td>
+            <td>${badge(user[4], statusColor(user[4]))}</td>
+            <td class="space-x-2">${actionButton('Verifikasi', 'emerald')} ${actionButton('Audit')}</td>
+          </tr>
+        `)))}
+      `;
+    }
+
+    function adminProducts() {
+      const rows = demoProducts.map(product => `
+        <tr>
+          <td><b>${product[0]}</b><br><span class="text-xs text-slate-400">${product[1]}</span></td>
+          <td class="font-black">${product[2]}</td>
+          <td>${badge(product[3], 'rose')}</td>
+          <td>${badge(product[4], statusColor(product[4]))}</td>
+          <td class="space-x-2">${actionButton('Approve', 'emerald')} ${actionButton('Tolak', 'rose')}</td>
+        </tr>
+      `);
+
+      return panel('Produk', 'Moderasi produk, kategori, stok, harga, dan dokumen.', table(['Produk', 'Harga', 'TKDN', 'Status', 'Aksi'], rows));
+    }
+
+    function adminOrders() {
+      const rows = demoOrders.map(order => `
+        <tr>
+          <td class="font-black">${order[0]}</td>
+          <td>${order[1]}</td>
+          <td>${order[2]}</td>
+          <td class="font-black">${order[3]}</td>
+          <td>${badge(order[4], statusColor(order[4]))}</td>
+          <td class="space-x-2">${actionButton('Audit')} ${actionButton('Refund', 'rose')}</td>
+        </tr>
+      `);
+
+      return panel('Order & Refund', 'Pantau transaksi, refund, dispute, dan invoice.', table(['Invoice', 'Buyer', 'Produk', 'Total', 'Status', 'Aksi'], rows));
+    }
+
+    function adminTenders() {
+      const rows = demoTenders.map(tender => `
+        <tr>
+          <td class="font-black">${tender[0]}</td>
+          <td>${tender[1]}</td>
+          <td class="font-black">${tender[2]}</td>
+          <td>${tender[3]}</td>
+          <td>${badge(tender[4], statusColor(tender[4]))}</td>
+          <td class="space-x-2">${actionButton('Moderasi')} ${actionButton('Tutup', 'rose')}</td>
+        </tr>
+      `);
+
+      return panel('Tender', 'Kelola tender dan bidding vendor.', table(['Tender', 'Owner', 'HPS', 'Bid', 'Status', 'Aksi'], rows), actionButton('Posting Tender', 'emerald'));
+    }
+
+    function adminSupport() {
+      const rows = demoTickets.map(ticket => `
+        <tr>
+          <td class="font-black">${ticket[0]}</td>
+          <td>${ticket[1]}</td>
+          <td>${ticket[2]}</td>
+          <td>${badge(ticket[3], statusColor(ticket[3]))}</td>
+          <td>${badge(ticket[4], statusColor(ticket[4]))}</td>
+          <td>${actionButton('Balas')}</td>
+        </tr>
+      `);
+
+      return panel('Support', 'Kelola tiket bantuan user dan seller.', table(['ID', 'User', 'Topik', 'Prioritas', 'Status', 'Aksi'], rows));
+    }
+
+    function adminCMS() {
+      return panel('CMS Tampilan', 'Atur tampilan dashboard dan menu mobile.', `
+        <div class="grid md:grid-cols-2 gap-4">
+          <input class="border rounded-2xl p-3" value="BisnisHub Dashboard">
+          <select class="border rounded-2xl p-3">
+            <option>Indigo</option>
+            <option>Emerald</option>
+            <option>Amber</option>
+          </select>
+          <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4">Dashboard khusus admin dan user tanpa marketplace.</textarea>
+        </div>
+        <button onclick="showToast('CMS disimpan')" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan CMS</button>
+      `);
+    }
+
+    function adminFinance() {
+      return panel('Keuangan & Escrow', 'Pantau escrow, komisi, dan pencairan.', `
+        <div class="grid md:grid-cols-3 gap-4 mb-5">
+          ${kpiCard('Escrow Total', 'Rp 1,45 M', 'fa-vault', 'emerald')}
+          ${kpiCard('Siap Cair', 'Rp 245 Jt', 'fa-money-bill-transfer', 'blue')}
+          ${kpiCard('Komisi', '5%', 'fa-percent', 'amber')}
+        </div>
+        <button onclick="showToast('Laporan keuangan dibuat')" class="bg-emerald-600 text-white rounded-2xl px-5 py-3 font-black">Export Laporan</button>
+      `);
+    }
+
+    function adminSettings() {
+      return panel('Setting Sistem', 'Pengaturan global aplikasi.', `
+        <div class="grid md:grid-cols-2 gap-4">
+          <label class="flex justify-between items-center border rounded-2xl p-5">
+            <span class="font-black">Website Online</span>
+            <input type="checkbox" checked>
+          </label>
+          <label class="flex justify-between items-center border rounded-2xl p-5">
+            <span class="font-black">Maintenance Mode</span>
+            <input type="checkbox">
+          </label>
+          <label class="flex justify-between items-center border rounded-2xl p-5">
+            <span class="font-black">Auto Approve Produk</span>
+            <input type="checkbox">
+          </label>
+          <label class="flex justify-between items-center border rounded-2xl p-5">
+            <span class="font-black">OTP Login</span>
+            <input type="checkbox" checked>
+          </label>
+        </div>
+      `);
+    }
+
+    function renderUserDashboard() {
+      const sidebar = renderMenuButtons(userMenus, state.userMenu, 'user');
+      const content = renderSubTabs(userSubs[state.userMenu] || [], state.userSub, 'setUserSub') + renderUserContent();
+
+      renderLayout({
+        roleClass: 'user',
+        title: 'BisnisHub User Dashboard',
+        subtitle: 'Panel khusus user. Tidak menampilkan admin atau marketplace.',
+        sidebar,
+        content,
+        isAdmin: false
+      });
+    }
+
+    function renderUserContent() {
+      const key = state.userMenu;
+      if (key === 'overview') return userOverview();
+      if (key === 'orders') return userOrders();
+      if (key === 'addProduct') return userAddProduct();
+      if (key === 'store') return userStore();
+      if (key === 'wishlist') return userWishlist();
+      if (key === 'address') return userAddress();
+      if (key === 'support') return userSupport();
+      if (key === 'notif') return userNotifications();
+      if (key === 'security') return userSecurity();
+      if (key === 'profile') return userProfile();
+      return userOverview();
+    }
+
+    function userOverview() {
+      return `
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
+          ${kpiCard('Pesanan', '12', 'fa-box-open', 'indigo')}
+          ${kpiCard('Belanja', 'Rp 155 Jt', 'fa-wallet', 'emerald')}
+          ${kpiCard('Draft Produk', '3', 'fa-box', 'amber')}
+          ${kpiCard('Tiket Open', '1', 'fa-headset', 'rose')}
+        </div>
+        ${panel('Ringkasan User', 'Area kerja user bersih tanpa admin dan marketplace.', `
+          <div class="grid md:grid-cols-3 gap-4">
+            <button onclick="setUserMenu('orders')" class="p-5 rounded-2xl bg-indigo-50 border text-left">
+              <b>Pesanan Saya</b>
+              <p class="text-sm text-slate-500 mt-1">Lacak order dan invoice.</p>
+            </button>
+            <button onclick="setUserMenu('addProduct')" class="p-5 rounded-2xl bg-amber-50 border text-left">
+              <b>Tambah Produk</b>
+              <p class="text-sm text-slate-500 mt-1">Upload produk lengkap.</p>
+            </button>
+            <button onclick="setUserMenu('store')" class="p-5 rounded-2xl bg-emerald-50 border text-left">
+              <b>Kelola Toko</b>
+              <p class="text-sm text-slate-500 mt-1">Setting toko di kanan.</p>
+            </button>
+          </div>
+        `)}
+      `;
+    }
+
+    function userOrders() {
+      const rows = demoOrders.map(order => `
+        <tr>
+          <td class="font-black">${order[0]}</td>
+          <td>${order[2]}</td>
+          <td class="font-black">${order[3]}</td>
+          <td>${badge(order[4], statusColor(order[4]))}</td>
+          <td class="space-x-2">${actionButton('Lacak', 'blue')} ${actionButton('Komplain', 'rose')}</td>
+        </tr>
+      `);
+
+      return panel('Pesanan Saya', 'Kelola pesanan user.', table(['Invoice', 'Produk', 'Total', 'Status', 'Aksi'], rows));
+    }
+
+    function userAddProduct() {
+      return panel('Tambah Produk', 'Form lengkap upload produk user.', `
+        <div class="grid md:grid-cols-2 gap-4">
+          <input class="border rounded-2xl p-3" placeholder="Nama produk">
+          <select class="border rounded-2xl p-3">
+            <option>Kategori Industri</option>
+            <option>Pompa & Kompresor</option>
+            <option>Mesin Pertanian</option>
+            <option>Perkakas & Tools</option>
+          </select>
+          <input class="border rounded-2xl p-3" placeholder="Brand / Merek">
+          <input class="border rounded-2xl p-3" placeholder="SKU">
+          <input class="border rounded-2xl p-3" placeholder="Harga Retail">
+          <input class="border rounded-2xl p-3" placeholder="Harga Grosir / B2B">
+          <input class="border rounded-2xl p-3" placeholder="Stok">
+          <input class="border rounded-2xl p-3" placeholder="MOQ">
+          <input type="file" class="border rounded-2xl p-3 md:col-span-2">
+          <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Spesifikasi teknis dan deskripsi produk"></textarea>
+          <input class="border rounded-2xl p-3" placeholder="Nilai TKDN %">
+          <input class="border rounded-2xl p-3" placeholder="No. Sertifikat / Dokumen">
+        </div>
+        <div class="mt-5 flex flex-wrap gap-2">
+          <button onclick="showToast('Draft produk disimpan')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Simpan Draft</button>
+          <button onclick="showToast('Produk diajukan ke admin')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Ajukan ke Admin</button>
+        </div>
+      `);
+    }
+
+    function userStore() {
+      return panel('Kelola Toko', 'Semua submenu toko tampil di kanan, bukan di sidebar.', `
+        <div class="grid md:grid-cols-2 gap-4">
+          <input class="border rounded-2xl p-3" value="Toko ${state.name}">
+          <input class="border rounded-2xl p-3" placeholder="Slogan toko">
+          <input class="border rounded-2xl p-3" placeholder="NIB">
+          <input class="border rounded-2xl p-3" placeholder="NPWP">
+          <input class="border rounded-2xl p-3" placeholder="Rekening pencairan">
+          <input class="border rounded-2xl p-3" placeholder="Gudang asal">
+          <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Kebijakan toko, retur, garansi, dan operasional"></textarea>
+        </div>
+        <button onclick="showToast('Setting toko tersimpan')" class="mt-5 bg-emerald-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Toko</button>
+      `);
+    }
+
+    function userWishlist() {
+      return panel('Wishlist', 'Produk favorit user.', `
+        <div class="grid md:grid-cols-3 gap-4">
+          ${demoProducts.slice(0, 3).map(product => `
+            <div class="border rounded-2xl p-4">
+              <div class="h-28 rounded-xl bg-slate-100 flex items-center justify-center mb-3">
+                <i class="fa-solid fa-box text-3xl text-slate-300"></i>
+              </div>
+              <b>${product[0]}</b>
+              <p class="font-black text-amber-600 mt-2">${product[2]}</p>
+              <div class="mt-3">${actionButton('Beli')}</div>
+            </div>
+          `).join('')}
+        </div>
+      `);
+    }
+
+    function userAddress() {
+      return panel('Alamat Proyek', 'Kelola alamat kantor, gudang, dan proyek.', `
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="border rounded-2xl p-4">
+            <b>Kantor Pusat</b>
+            <p class="text-sm text-slate-500 mt-1">Jakarta Selatan</p>
+          </div>
+          <div class="border rounded-2xl p-4">
+            <b>Gudang Proyek</b>
+            <p class="text-sm text-slate-500 mt-1">Karawang</p>
+          </div>
+        </div>
+        <button onclick="showToast('Alamat ditambahkan')" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Tambah Alamat</button>
+      `);
+    }
+
+    function userSupport() {
+      const rows = demoTickets.map(ticket => `
+        <tr>
+          <td class="font-black">${ticket[0]}</td>
+          <td>${ticket[2]}</td>
+          <td>${badge(ticket[4], statusColor(ticket[4]))}</td>
+          <td>${actionButton('Balas')}</td>
+        </tr>
+      `);
+
+      return panel('Bantuan / Tiket', 'Tiket bantuan user.', table(['ID', 'Topik', 'Status', 'Aksi'], rows), actionButton('Buat Tiket', 'rose'));
+    }
+
+    function userNotifications() {
+      return panel('Notifikasi', 'Pesan order, promo, dan sistem.', `
+        <div class="space-y-3">
+          <div class="p-4 rounded-2xl bg-slate-50 border"><b>Pesanan INV-001 sedang dikirim.</b><p class="text-xs text-slate-500 mt-1">1 jam lalu</p></div>
+          <div class="p-4 rounded-2xl bg-slate-50 border"><b>Produk draft perlu dilengkapi gambar.</b><p class="text-xs text-slate-500 mt-1">3 jam lalu</p></div>
+          <div class="p-4 rounded-2xl bg-slate-50 border"><b>Promo seller aktif minggu ini.</b><p class="text-xs text-slate-500 mt-1">Kemarin</p></div>
+        </div>
+      `);
+    }
+
+    function userSecurity() {
+      return panel('Keamanan', 'Password, OTP, dan perangkat login.', `
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="border rounded-2xl p-5">
+            <b>Password</b>
+            <p class="text-sm text-slate-500 mt-1">Terakhir diubah 30 hari lalu.</p>
+            <div class="mt-3">${actionButton('Ubah Password')}</div>
+          </div>
+          <div class="border rounded-2xl p-5">
+            <b>OTP Login</b>
+            <p class="text-sm text-slate-500 mt-1">Belum aktif.</p>
+            <div class="mt-3">${actionButton('Aktifkan OTP', 'emerald')}</div>
+          </div>
+        </div>
+      `);
+    }
+
+    function userProfile() {
+      return panel('Profil User', 'Biodata dan preferensi user.', `
+        <div class="grid md:grid-cols-2 gap-4">
+          <input id="profileName" class="border rounded-2xl p-3" value="${state.name}">
+          <input class="border rounded-2xl p-3" value="user@demo.id">
+          <input class="border rounded-2xl p-3" placeholder="No. WhatsApp">
+          <select class="border rounded-2xl p-3">
+            <option>Perusahaan</option>
+            <option>Perorangan</option>
+          </select>
+        </div>
+        <button onclick="saveProfile()" class="mt-5 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Profil</button>
+      `);
+    }
+
+    function saveProfile() {
+      const input = document.getElementById('profileName');
+      state.name = input.value || 'User Demo';
+      saveState();
+      renderUserDashboard();
+      showToast('Profil tersimpan');
+    }
+
+    renderApp();
+  </script>
+</body>
+</html>
