@@ -379,6 +379,8 @@
         renderAdminDashboard();
       } else if (state.role === 'user') {
         renderUserDashboard();
+      } else if (state.role === 'tender') {
+        renderTenderMarketplace();
       } else {
         renderMarketplace();
       }
@@ -398,6 +400,9 @@
             <div class="flex flex-wrap gap-2">
               <button onclick="switchRole('marketplace')" class="px-4 py-2 rounded-xl text-xs font-black bg-indigo-600 text-white">
                 Marketplace B2B
+              </button>
+              <button onclick="switchRole('tender')" class="px-4 py-2 rounded-xl text-xs font-black bg-amber-400 text-slate-950">
+                Bursa Tender
               </button>
               <button onclick="switchRole('${isAdmin ? 'user' : 'admin'}')" class="px-4 py-2 rounded-xl text-xs font-black ${isAdmin ? 'bg-white text-slate-950' : 'bg-slate-900 text-white'}">
                 Masuk ${isAdmin ? 'User' : 'Admin'} Demo
@@ -438,7 +443,7 @@
       state.userSub = 'Ringkasan';
       saveState();
       renderApp();
-      showToast(role === 'marketplace' ? 'Masuk Marketplace B2B' : `Masuk sebagai ${role.toUpperCase()}`);
+      showToast(role === 'marketplace' ? 'Masuk Marketplace B2B' : role === 'tender' ? 'Masuk Bursa Tender' : `Masuk sebagai ${role.toUpperCase()}`);
     }
 
     function resetCurrentDashboard() {
@@ -446,10 +451,10 @@
       const adminMenu = state.adminMenu;
       const userMenu = state.userMenu;
 
-      if (role === 'marketplace') {
+      if (role === 'marketplace' || role === 'tender') {
         state = {
           ...state,
-          role: 'marketplace',
+          role,
           name: 'Pengunjung'
         };
       } else if (role === 'admin') {
@@ -558,6 +563,7 @@
               </div>
             </div>
             <div class="flex flex-wrap gap-2">
+              <button onclick="switchRole('tender')" class="px-4 py-2 rounded-xl text-xs font-black bg-amber-400 text-indigo-950">Bursa Tender</button>
               <button onclick="switchRole('user')" class="px-4 py-2 rounded-xl text-xs font-black bg-white text-indigo-950">Dashboard User</button>
               <button onclick="switchRole('admin')" class="px-4 py-2 rounded-xl text-xs font-black bg-emerald-400 text-slate-950">Dashboard Admin</button>
             </div>
@@ -572,6 +578,7 @@
               <p class="text-indigo-100 mt-4 text-sm md:text-base">Marketplace dikembalikan, tapi tetap clean dan ringan. Dashboard admin/user tetap terpisah dan tidak ikut tampil kecuali dipilih.</p>
               <div class="mt-6 flex flex-wrap gap-3">
                 <button onclick="document.getElementById('marketProducts').scrollIntoView({behavior:'smooth'})" class="bg-amber-400 text-indigo-950 rounded-2xl px-5 py-3 font-black">Lihat Produk</button>
+                <button onclick="switchRole('tender')" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Lihat Tender</button>
                 <button onclick="switchRole('user')" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Masuk User</button>
               </div>
             </div>
@@ -579,7 +586,7 @@
           <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
             ${kpiCard('Produk Aktif', '120+', 'fa-boxes-stacked', 'indigo')}
             ${kpiCard('Vendor', '48', 'fa-store', 'amber')}
-            ${kpiCard('Order Demo', '312', 'fa-receipt', 'emerald')}
+            ${kpiCard('Tender Open', '3', 'fa-briefcase', 'emerald')}
             ${kpiCard('Kategori', '16', 'fa-layer-group', 'blue')}
           </section>
           <section id="marketProducts">
@@ -594,6 +601,93 @@
               </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">${productCards}</div>
+          </section>
+        </main>
+      `;
+    }
+
+
+    function renderTenderMarketplace() {
+      const tenderCards = demoTenders.map((tender, index) => {
+        const status = tender[4];
+        const color = statusColor(status);
+        return `
+          <div class="content-card p-5 hover:-translate-y-1 transition">
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              <div>
+                <div class="flex flex-wrap gap-2 mb-3">
+                  ${badge(status, color)}
+                  ${badge(index === 0 ? 'TKDN Min. 40%' : index === 1 ? 'Sewa/Beli' : 'SNI', index === 0 ? 'rose' : 'indigo')}
+                </div>
+                <h3 class="text-lg font-black text-slate-900 leading-tight">${tender[0]}</h3>
+                <p class="text-xs text-slate-500 mt-2"><i class="fa-solid fa-building mr-1"></i>${tender[1]}</p>
+              </div>
+              <div class="md:text-right shrink-0">
+                <p class="text-xs font-black text-slate-500 uppercase">Nilai HPS</p>
+                <div class="text-xl font-black text-amber-600 mt-1">${tender[2]}</div>
+                <p class="text-xs text-slate-500 mt-2">${tender[3]}</p>
+              </div>
+            </div>
+            <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button onclick="showToast('Detail tender dibuka')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl px-4 py-3 text-xs font-black">Lihat Detail</button>
+              <button onclick="showToast('Form penawaran tender dibuka')" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-4 py-3 text-xs font-black">Ajukan Penawaran</button>
+              <button onclick="switchRole('user')" class="bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-2xl px-4 py-3 text-xs font-black">Masuk User</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('app').innerHTML = `
+        <header class="sticky top-0 z-40 bg-gradient-to-r from-amber-500 to-slate-950 text-white shadow-sm border-b border-amber-700">
+          <div class="px-4 md:px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 max-w-[1500px] mx-auto">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl bg-white text-amber-700 flex items-center justify-center font-black"><i class="fa-solid fa-briefcase"></i></div>
+              <div>
+                <h1 class="text-xl md:text-2xl font-black leading-tight">BisnisHub Bursa Tender</h1>
+                <p class="text-xs text-amber-100">Daftar pengadaan, proyek B2B, dan penawaran vendor.</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="switchRole('marketplace')" class="px-4 py-2 rounded-xl text-xs font-black bg-white text-amber-700">Marketplace B2B</button>
+              <button onclick="switchRole('user')" class="px-4 py-2 rounded-xl text-xs font-black bg-indigo-600 text-white">Dashboard User</button>
+              <button onclick="switchRole('admin')" class="px-4 py-2 rounded-xl text-xs font-black bg-emerald-400 text-slate-950">Dashboard Admin</button>
+            </div>
+          </div>
+        </header>
+        <main class="p-4 md:p-6 max-w-[1500px] mx-auto">
+          <section class="rounded-[32px] bg-gradient-to-br from-slate-950 to-amber-700 text-white p-7 md:p-10 shadow-sm mb-6 overflow-hidden relative">
+            <i class="fa-solid fa-file-signature absolute -right-6 -bottom-8 text-[180px] opacity-10"></i>
+            <div class="relative z-10 max-w-3xl">
+              <span class="inline-flex bg-white text-amber-700 rounded-full px-3 py-1 text-xs font-black">BURSA TENDER B2B</span>
+              <h2 class="text-3xl md:text-5xl font-black mt-4 leading-tight">Cari proyek, kirim penawaran, dan pantau peluang pengadaan.</h2>
+              <p class="text-amber-100 mt-4 text-sm md:text-base">Menu tender sudah dikembalikan dalam versi clean. Nanti bisa disambungkan ke database tender dan upload dokumen penawaran.</p>
+            </div>
+          </section>
+          <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+            ${kpiCard('Tender Aktif', '3', 'fa-briefcase', 'amber')}
+            ${kpiCard('Total Bid', '45', 'fa-hand-holding-dollar', 'indigo')}
+            ${kpiCard('Nilai HPS', 'Rp 16,6 M', 'fa-wallet', 'emerald')}
+            ${kpiCard('Vendor Siap', '48', 'fa-store', 'blue')}
+          </section>
+          <section class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-5">
+            <div>
+              <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-4">
+                <div>
+                  <h2 class="text-2xl font-black">Daftar Tender & Proyek</h2>
+                  <p class="text-sm text-slate-500 mt-1">Pilih proyek untuk melihat detail dan mengajukan penawaran.</p>
+                </div>
+                <button onclick="showToast('Form posting tender dibuka')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black text-sm">Posting Proyek</button>
+              </div>
+              <div class="grid gap-4">${tenderCards}</div>
+            </div>
+            <aside class="content-card p-5 h-fit sticky top-24">
+              <h3 class="font-black text-lg mb-3"><i class="fa-solid fa-filter text-amber-600 mr-2"></i>Filter Cepat</h3>
+              <div class="grid gap-3">
+                <button onclick="showToast('Filter tender open aktif')" class="text-left bg-emerald-50 border border-emerald-100 rounded-2xl p-4 font-black text-emerald-700">Tender Open</button>
+                <button onclick="showToast('Filter TKDN aktif')" class="text-left bg-rose-50 border border-rose-100 rounded-2xl p-4 font-black text-rose-700">Syarat TKDN</button>
+                <button onclick="showToast('Filter proyek swasta aktif')" class="text-left bg-indigo-50 border border-indigo-100 rounded-2xl p-4 font-black text-indigo-700">Proyek Swasta</button>
+              </div>
+            </aside>
           </section>
         </main>
       `;
