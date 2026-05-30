@@ -316,6 +316,7 @@
       animation: adMarquee var(--ad-speed, 18s) linear infinite;
       will-change: transform;
       padding-left: 0;
+      transform: translate3d(100vw, 0, 0);
     }
     .running-ad-track:hover { animation-play-state: paused; }
     .running-ad-space::before,
@@ -419,8 +420,8 @@
     }
 
     @keyframes adMarquee {
-      0% { transform: translateX(100vw); }
-      100% { transform: translateX(-100%); }
+      0% { transform: translate3d(100vw, 0, 0); }
+      100% { transform: translate3d(calc(-100% - 100vw), 0, 0); }
     }
     @media (max-width: 700px) {
       .floating-help {
@@ -1028,8 +1029,89 @@
     }
 
 
+
+    function getMarketplaceFilters() {
+      return {
+        query: (state.marketSearch || '').toLowerCase(),
+        category: state.marketCategory || ''
+      };
+    }
+
+    function setMarketplaceSearch() {
+      const searchInput = document.getElementById('marketSearchInput');
+      const categoryInput = document.getElementById('marketCategorySelect');
+
+      state.marketSearch = searchInput ? searchInput.value.trim() : '';
+      state.marketCategory = categoryInput ? categoryInput.value : '';
+      saveState();
+      renderMarketplace();
+      showToast('Pencarian marketplace diperbarui');
+    }
+
+    function resetMarketplaceSearch() {
+      state.marketSearch = '';
+      state.marketCategory = '';
+      saveState();
+      renderMarketplace();
+      showToast('Filter marketplace direset');
+    }
+
+    function getFilteredMarketplaceProducts() {
+      const filters = getMarketplaceFilters();
+
+      return marketplaceProducts.filter(product => {
+        const text = `${product.name} ${product.seller} ${product.category} ${product.badge}`.toLowerCase();
+        const matchQuery = !filters.query || text.includes(filters.query);
+        const matchCategory = !filters.category || product.category === filters.category || product.name.includes(filters.category);
+        return matchQuery && matchCategory;
+      });
+    }
+
+    function renderMarketplaceSearchBar() {
+      const categories = getProductCategories();
+      const activeCategory = state.marketCategory || '';
+      const activeQuery = state.marketSearch || '';
+
+      return `
+        <section class="content-card p-4 md:p-5 mb-6">
+          <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px_150px_110px] gap-3 items-end">
+            <div>
+              <label class="text-xs font-black uppercase text-slate-500">Cari Produk / Jasa / Seller</label>
+              <div class="mt-1 flex items-center gap-2 border rounded-2xl px-4 py-3 bg-white">
+                <i class="fa-solid fa-magnifying-glass text-orange-500"></i>
+                <input id="marketSearchInput" value="${activeQuery}" onkeydown="if(event.key==='Enter') setMarketplaceSearch()" class="w-full outline-none text-sm font-bold" placeholder="Cari pompa, traktor, jasa engineering, TKDN, tender...">
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-black uppercase text-slate-500">Kategori</label>
+              <select id="marketCategorySelect" class="mt-1 border rounded-2xl p-3 w-full bg-white text-sm font-bold">
+                <option value="">Semua Kategori</option>
+                ${categories.map(category => `<option value="${category.name}" ${activeCategory === category.name ? 'selected' : ''}>${category.name}</option>`).join('')}
+              </select>
+            </div>
+            <button onclick="setMarketplaceSearch()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">
+              Cari
+            </button>
+            <button onclick="resetMarketplaceSearch()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl px-5 py-3 font-black">
+              Reset
+            </button>
+          </div>
+          <div class="mt-4 flex gap-2 overflow-x-auto pb-1">
+            <button onclick="state.marketCategory=''; saveState(); renderMarketplace();" class="sub-tab ${!activeCategory ? 'active' : ''}">Semua</button>
+            ${categories.slice(0, 12).map(category => `
+              <button onclick="state.marketCategory='${category.name.replace(/'/g, "\\'")}'; saveState(); renderMarketplace();" class="sub-tab ${activeCategory === category.name ? 'active' : ''}">
+                <i class="fa-solid ${category.icon || 'fa-layer-group'} mr-1"></i>${category.name}
+              </button>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+
     function renderMarketplace() {
-      const productCards = marketplaceProducts.map(product => `
+      const filteredProducts = getFilteredMarketplaceProducts();
+      const productCards = filteredProducts.map(product => `
         <div class="content-card p-4 hover:-translate-y-1 transition">
           <div class="h-36 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
             <i class="fa-solid ${product.icon} text-4xl text-indigo-400"></i>
@@ -1073,6 +1155,7 @@
             ${kpiCard('Tender Open', '3', 'fa-briefcase', 'emerald')}
             ${kpiCard('Kategori', '16', 'fa-layer-group', 'blue')}
           </section>
+          ${renderMarketplaceSearchBar()}
           <section id="marketProducts">
             <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-4">
               <div>
@@ -1084,7 +1167,16 @@
                 <button onclick="showToast('Pencarian diperbarui')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black text-sm">Cari</button>
               </div>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">${productCards}</div>
+            ${filteredProducts.length ? `
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">${productCards}</div>
+            ` : `
+              <div class="content-card p-8 text-center">
+                <i class="fa-solid fa-magnifying-glass text-5xl text-slate-300 mb-4"></i>
+                <h3 class="text-xl font-black">Produk atau jasa belum ditemukan</h3>
+                <p class="text-sm text-slate-500 mt-2">Coba gunakan kata kunci lain atau pilih kategori berbeda.</p>
+                <button onclick="resetMarketplaceSearch()" class="mt-5 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Reset Pencarian</button>
+              </div>
+            `}
           </section>
         </main>
         ${renderFloatingHelp()}
@@ -1307,7 +1399,7 @@
               <input id="adsText3" class="border rounded-2xl p-3" placeholder="Teks iklan 3" value="${ads.textItems[2] || ''}">
             </div>
             <div class="mt-4 rounded-2xl bg-slate-50 border p-4 text-sm text-slate-600">
-              Teks berjalan dari luar kanan layar sampai habis keluar kiri, lalu menyambung lagi secara halus.
+              Teks berjalan dari luar kanan layar sampai benar-benar habis melewati ujung kiri, lalu menyambung lagi secara halus.
             </div>
           </div>
 
