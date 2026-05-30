@@ -294,14 +294,17 @@
     }
 
     .running-ad-space {
-      position: relative;
+      position: sticky;
+      top: 76px;
+      z-index: 35;
       overflow: hidden;
       border-radius: 24px;
       border: 1px solid rgba(249, 115, 22, 0.25);
       background: linear-gradient(90deg, #fff7ed, #ffedd5, #ffffff);
       min-height: 72px;
       margin-bottom: 18px;
-      box-shadow: 0 12px 28px rgba(249, 115, 22, 0.10);
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.16);
+      backdrop-filter: blur(10px);
     }
     .running-ad-track {
       display: flex;
@@ -314,6 +317,22 @@
       padding-left: 100%;
     }
     .running-ad-track:hover { animation-play-state: paused; }
+    .running-ad-space::before,
+    .running-ad-image::before {
+      content: "IKLAN";
+      position: absolute;
+      left: 14px;
+      top: 10px;
+      z-index: 4;
+      background: #0f172a;
+      color: #ffffff;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+
     .running-ad-item {
       display: inline-flex;
       align-items: center;
@@ -332,6 +351,9 @@
       letter-spacing: 0.04em;
     }
     .running-ad-image {
+      position: sticky;
+      top: 76px;
+      z-index: 35;
       width: 100%;
       height: 86px;
       border-radius: 24px;
@@ -339,7 +361,8 @@
       border: 1px solid rgba(249, 115, 22, 0.22);
       margin-bottom: 18px;
       background: #fff7ed;
-      box-shadow: 0 12px 28px rgba(249, 115, 22, 0.10);
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.16);
+      backdrop-filter: blur(10px);
     }
     .running-ad-image img {
       width: 100%;
@@ -355,6 +378,39 @@
       background: #fff7ed;
       border: 1px solid #fed7aa;
     }
+    @media (max-width: 700px) {
+      .running-ad-space {
+        top: 68px;
+        min-height: 58px;
+        border-radius: 18px;
+        margin-left: -2px;
+        margin-right: -2px;
+      }
+      .running-ad-image {
+        top: 68px;
+        height: 66px;
+        border-radius: 18px;
+      }
+      .running-ad-track {
+        min-height: 58px;
+        gap: 24px;
+      }
+      .running-ad-item {
+        font-size: 12px;
+      }
+      .running-ad-badge {
+        padding: 5px 8px;
+        font-size: 9px;
+      }
+      .running-ad-space::before,
+      .running-ad-image::before {
+        left: 9px;
+        top: 7px;
+        font-size: 8px;
+        padding: 3px 7px;
+      }
+    }
+
     @keyframes adMarquee {
       from { transform: translateX(0); }
       to { transform: translateX(-100%); }
@@ -1208,7 +1264,7 @@
     function adminAdsSettingPanel() {
       const ads = getAdsSettings();
 
-      return panel('Iklan Berjalan & Banner Promo', 'Atur space iklan di atas carousel. Bisa berupa tulisan berjalan kanan-ke-kiri atau banner gambar promosi user.', `
+      return panel('Iklan Berjalan & Banner Promo', 'Atur space iklan sticky di atas carousel. Iklan tetap terlihat saat halaman discroll ke bawah, bisa berupa teks berjalan atau banner gambar promosi user.', `
         <div class="rounded-[24px] bg-orange-50 border border-orange-100 p-5 mb-5">
           <div class="grid md:grid-cols-3 gap-4">
             <div>
@@ -1241,7 +1297,7 @@
               <input id="adsText3" class="border rounded-2xl p-3" placeholder="Teks iklan 3" value="${ads.textItems[2] || ''}">
             </div>
             <div class="mt-4 rounded-2xl bg-slate-50 border p-4 text-sm text-slate-600">
-              Teks akan berjalan dari kanan ke kiri di atas carousel marketplace.
+              Teks akan berjalan dari kanan ke kiri dan tetap terlihat saat halaman discroll.
             </div>
           </div>
 
@@ -1252,7 +1308,7 @@
             <input type="file" accept="image/*" onchange="readAdsBannerFile(this)" class="border rounded-2xl p-3 w-full mb-3 text-sm">
             <input id="adsBannerAlt" class="border rounded-2xl p-3 w-full" placeholder="Judul banner / alt text" value="${ads.bannerAlt || ''}">
             <div class="mt-4 rounded-2xl bg-slate-50 border p-4 text-sm text-slate-600">
-              Cocok untuk promosi user, seller premium, paket iklan, atau campaign tender.
+              Cocok untuk promosi user, seller premium, paket iklan, atau campaign tender. Banner tetap terlihat saat halaman discroll.
             </div>
           </div>
         </div>
