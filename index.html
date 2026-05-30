@@ -2960,6 +2960,159 @@ log('zona TKDN disembunyikan, rekap ekspedisi gratis aktif');
   setTimeout(boot,300);setTimeout(boot,1000);
 })();
 </script>
+
+
+<!-- =====================================================
+     PATCH FINAL: RAPHIHKAN KARTU DASHBOARD ADMIN
+     Aman: hanya styling kartu KPI admin, tidak sentuh kalkulator/logika utama.
+====================================================== -->
+<style id="bhx-admin-card-clean-final-style">
+  #bhx-admin-content .bhx-admin-kpi-grid-final{
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:16px!important;
+    margin-bottom:22px!important;
+    align-items:stretch!important;
+    width:100%!important;
+  }
+  #bhx-admin-content .bhx-admin-kpi-grid-final > div{
+    min-height:138px!important;
+    height:100%!important;
+    border-radius:24px!important;
+    padding:18px!important;
+    border:1px solid #e2e8f0!important;
+    background:#fff!important;
+    box-shadow:0 8px 24px rgba(15,23,42,.06)!important;
+    overflow:hidden!important;
+    position:relative!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:space-between!important;
+  }
+  #bhx-admin-content .bhx-admin-kpi-grid-final > div::after{
+    content:"";
+    position:absolute;
+    right:-26px;
+    bottom:-26px;
+    width:90px;
+    height:90px;
+    border-radius:999px;
+    background:linear-gradient(135deg,rgba(79,70,229,.08),rgba(245,158,11,.08));
+    pointer-events:none;
+  }
+  #bhx-admin-content .bhx-admin-kpi-grid-final > div > div{
+    width:100%!important;
+    height:100%!important;
+    display:flex!important;
+    align-items:flex-start!important;
+    justify-content:space-between!important;
+    gap:12px!important;
+    position:relative!important;
+    z-index:2!important;
+  }
+  #bhx-admin-content .bhx-admin-kpi-grid-final p{
+    font-size:11px!important;
+    line-height:1.25!important;
+    letter-spacing:.04em!important;
+    color:#64748b!important;
+    font-weight:900!important;
+    text-transform:uppercase!important;
+    margin:0!important;
+  }
+  #bhx-admin-content .bhx-admin-kpi-grid-final h3{
+    margin-top:10px!important;
+    font-size:clamp(20px,2.2vw,30px)!important;
+    line-height:1.05!important;
+    font-weight:950!important;
+    color:#0f172a!important;
+    letter-spacing:-.04em!important;
+    white-space:normal!important;
+    word-break:break-word!important;
+    max-width:100%!important;
+  }
+  #bhx-admin-content .bhx-admin-kpi-grid-final .w-12.h-12,
+  #bhx-admin-content .bhx-admin-kpi-grid-final [class*="w-12"][class*="h-12"]{
+    width:48px!important;
+    min-width:48px!important;
+    height:48px!important;
+    border-radius:18px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.55)!important;
+  }
+  #bhx-admin-content .bhx-admin-kpi-grid-final i{
+    font-size:18px!important;
+  }
+  #bhx-admin-content .bhx-admin-kpi-grid-final + .bg-white,
+  #bhx-admin-content .bhx-admin-kpi-grid-final + .fade-in,
+  #bhx-admin-content .bhx-admin-kpi-grid-final + div{
+    margin-top:0!important;
+  }
+  @media (max-width:1180px){
+    #bhx-admin-content .bhx-admin-kpi-grid-final{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  }
+  @media (max-width:720px){
+    #bhx-admin-content .bhx-admin-kpi-grid-final{grid-template-columns:1fr!important;gap:12px!important;}
+    #bhx-admin-content .bhx-admin-kpi-grid-final > div{min-height:118px!important;padding:16px!important;}
+  }
+</style>
+<script id="bhx-admin-card-clean-final-script">
+(function(){
+  if(window.__BHX_ADMIN_CARD_CLEAN_FINAL__) return;
+  window.__BHX_ADMIN_CARD_CLEAN_FINAL__ = true;
+  function isAdminOverviewVisible(){
+    const admin = document.getElementById('view-admin');
+    const area = document.getElementById('bhx-admin-content');
+    if(!admin || !area) return false;
+    if(admin.classList.contains('hidden')) return false;
+    const txt = (area.textContent || '').toLowerCase();
+    return txt.includes('overview admin') || txt.includes('pusat monitoring seluruh marketplace');
+  }
+  function markAdminCards(){
+    const area = document.getElementById('bhx-admin-content');
+    if(!area) return;
+    area.querySelectorAll('.bhx-admin-kpi-grid-final').forEach(el=>el.classList.remove('bhx-admin-kpi-grid-final'));
+    if(!isAdminOverviewVisible()) return;
+    const grids = Array.from(area.children).filter(el=>el.classList && el.classList.contains('grid'));
+    const kpiGrid = grids.find(g=>g.children.length >= 4 && /GMV Platform|Escrow Aktif|Vendor|User/.test(g.textContent || '')) || grids[0];
+    if(kpiGrid) kpiGrid.classList.add('bhx-admin-kpi-grid-final');
+  }
+  const oldToggle = window.toggleAdminMenu;
+  if(typeof oldToggle === 'function' && !oldToggle.__bhxCardCleanFinal){
+    window.toggleAdminMenu = function(){
+      const r = oldToggle.apply(this, arguments);
+      setTimeout(markAdminCards, 60);
+      setTimeout(markAdminCards, 220);
+      return r;
+    };
+    window.toggleAdminMenu.__bhxCardCleanFinal = true;
+  }
+  if(window.BHX && typeof window.BHX.setMenu === 'function' && !window.BHX.setMenu.__bhxCardCleanFinal){
+    const oldSetMenu = window.BHX.setMenu;
+    window.BHX.setMenu = function(){
+      const r = oldSetMenu.apply(this, arguments);
+      setTimeout(markAdminCards, 60);
+      setTimeout(markAdminCards, 220);
+      return r;
+    };
+    window.BHX.setMenu.__bhxCardCleanFinal = true;
+  }
+  const mo = new MutationObserver(()=>markAdminCards());
+  function boot(){
+    const area = document.getElementById('bhx-admin-content');
+    if(area && !area.__bhxAdminCardObserver){
+      mo.observe(area,{childList:true,subtree:false,characterData:false});
+      area.__bhxAdminCardObserver = true;
+    }
+    markAdminCards();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  [150,500,1200,2500].forEach(ms=>setTimeout(boot,ms));
+  document.addEventListener('click',()=>setTimeout(markAdminCards,120),true);
+})();
+</script>
+
 </body></html><style id="bhx-admin-right-submenu-style">#view-admin nav .bhx-admin-submenu-left,
 #view-admin nav .submenu,
 #view-admin nav .dropdown-menu,
