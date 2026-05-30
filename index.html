@@ -444,6 +444,169 @@
       }
       .kpi-card { min-height: 110px; }
     }
+
+    .mobile-bottom-dock {
+      display: none;
+    }
+    .mobile-bottom-dock .dock-item {
+      border: 0;
+      background: transparent;
+      color: #64748b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      text-decoration: none;
+      font-size: 10px;
+      font-weight: 900;
+      min-height: 58px;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+    .mobile-bottom-dock .dock-item i {
+      font-size: 18px;
+    }
+    .mobile-bottom-dock .dock-item.active {
+      background: linear-gradient(135deg, #f97316, #fb923c);
+      color: #ffffff;
+      box-shadow: 0 14px 26px rgba(249, 115, 22, 0.26);
+    }
+    .mobile-pill-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.14);
+      color: #fff7ed;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        background:
+          radial-gradient(circle at top right, rgba(249,115,22,0.09), transparent 25%),
+          linear-gradient(180deg, #f8fafc 0%, #eef2f7 58%, #f8fafc 100%);
+      }
+      .app-shell {
+        padding-bottom: 102px;
+      }
+      .brand-logo {
+        width: 94px;
+        height: 42px;
+      }
+      .content-card {
+        border-radius: 22px;
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.07);
+      }
+      .kpi-card {
+        border-radius: 22px;
+        min-height: 104px;
+        padding: 16px;
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.06);
+      }
+      .table-wrap {
+        border-radius: 18px;
+      }
+      th, td {
+        padding: 12px 12px;
+        font-size: 12px;
+      }
+      .sidebar-menu {
+        gap: 10px;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+      }
+      .sidebar-menu::-webkit-scrollbar {
+        display: none;
+      }
+      .menu-button {
+        min-width: 148px;
+        border-radius: 16px;
+        padding: 12px 13px;
+        font-size: 12px;
+      }
+      .sub-tab {
+        padding: 9px 12px;
+        font-size: 11px;
+      }
+      .hero-carousel {
+        min-height: 310px;
+        border-radius: 24px;
+      }
+      .hero-carousel-content {
+        padding: 24px 20px;
+      }
+      .hero-carousel-content h2 {
+        font-size: 1.7rem;
+        line-height: 1.15;
+      }
+      .running-ad-space,
+      .running-ad-image {
+        border-radius: 18px;
+      }
+      .floating-help {
+        bottom: 94px;
+      }
+      .mobile-bottom-dock {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        z-index: 85;
+        padding: 10px;
+        border-radius: 24px;
+        background: rgba(255,255,255,0.95);
+        border: 1px solid rgba(226,232,240,0.95);
+        backdrop-filter: blur(18px);
+        box-shadow: 0 18px 44px rgba(15, 23, 42, 0.18);
+      }
+      .mobile-product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 12px !important;
+      }
+      .mobile-product-card {
+        padding: 12px !important;
+        border-radius: 20px;
+      }
+      .mobile-product-card .product-thumb {
+        height: 102px !important;
+        border-radius: 18px !important;
+        margin-bottom: 12px !important;
+      }
+      .mobile-product-card h3 {
+        font-size: 13px;
+        min-height: 40px !important;
+      }
+      .mobile-product-card .product-price {
+        font-size: 12px;
+      }
+      .mobile-product-card .product-action {
+        padding: 9px 10px !important;
+        font-size: 11px !important;
+      }
+      .mobile-company-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .mobile-section-gap {
+        gap: 14px !important;
+      }
+      .mobile-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 12px !important;
+      }
+      header.sticky {
+        backdrop-filter: blur(14px);
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -466,7 +629,7 @@
           <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20bertanya%20tentang%20layanan%20BisnisHUB." target="_blank" class="rounded-2xl bg-green-500 hover:bg-green-600 text-green-950 font-black p-4 text-center no-underline">
             <i class="fa-brands fa-whatsapp mr-2"></i>Chat Admin WhatsApp
           </a>
-          <a href="mailto:kalimajasuryaalam@gmail.com?subject=Bantuan%20BisnisHUB&body=Halo%20Admin%20BisnisHUB%2C%0A%0ASaya%20ingin%20bertanya%20tentang%3A%0A" class="rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black p-4 text-center no-underline">
+          <a href="mailto:adminbishub@gmail.com?subject=Bantuan%20BisnisHUB&body=Halo%20Admin%20BisnisHUB%2C%0A%0ASaya%20ingin%20bertanya%20tentang%3A%0A" class="rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black p-4 text-center no-underline">
             <i class="fa-solid fa-envelope mr-2"></i>Email Admin
           </a>
         </div>
@@ -506,7 +669,7 @@
         <div class="rounded-[24px] bg-slate-50 border border-slate-200 p-4">
           <h3 class="font-black mb-2">Kontak Admin BisnisHUB</h3>
           <p class="text-sm text-slate-600"><b>WhatsApp:</b> 0851 1103 3789</p>
-          <p class="text-sm text-slate-600"><b>Email:</b> kalimajasuryaalam@gmail.com</p>
+          <p class="text-sm text-slate-600"><b>Email:</b> adminbishub@gmail.com</p>
         </div>
       </div>
     </div>
@@ -685,10 +848,10 @@
     };
 
     const Users = [
-      ['USR-001', 'Andi Surya', 'andi@company.id', 'Buyer', 'Aktif'],
-      ['USR-002', 'Budi Perkasa', 'budi@vendor.id', 'Seller', 'Verifikasi'],
-      ['USR-003', 'Siti Aminah', 'siti@pabrik.id', 'Buyer', 'Aktif'],
-      ['USR-004', 'Rama Teknik', 'rama@teknik.id', 'Seller', 'Suspend']
+      ['USR-001', 'Andi Surya', 'adminbishub@gmail.com', 'Buyer', 'Aktif'],
+      ['USR-002', 'Budi Perkasa', 'adminbishub@gmail.com', 'Seller', 'Verifikasi'],
+      ['USR-003', 'Siti Aminah', 'adminbishub@gmail.com', 'Buyer', 'Aktif'],
+      ['USR-004', 'Rama Teknik', 'adminbishub@gmail.com', 'Seller', 'Suspend']
     ];
 
     let Products = JSON.parse(localStorage.getItem('bishub_products') || 'null') || [
@@ -912,7 +1075,7 @@
           </aside>
           <main class="flex-1 min-w-0">${content}</main>
         </div>
-        ${renderFloatingHelp()}
+        ${renderFloatingHelp()}${renderMobileBottomDock()}
       `;
     }
 
@@ -1248,7 +1411,7 @@
           </div>
 
           ${companies.length ? `
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mobile-company-grid">
               ${companies.map(company => `
                 <div class="content-card p-5 hover:-translate-y-1 transition">
                   <div class="flex items-start justify-between gap-3 mb-4">
@@ -1329,8 +1492,8 @@
     function renderMarketplace() {
       const filteredProducts = getFilteredMarketplaceProducts();
       const productCards = filteredProducts.map(product => `
-        <div class="content-card p-4 hover:-translate-y-1 transition">
-          <div class="h-36 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+        <div class="content-card mobile-product-card p-4 hover:-translate-y-1 transition">
+          <div class="h-36 product-thumb rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
             <i class="fa-solid ${product.icon} text-4xl text-indigo-400"></i>
           </div>
           <div class="flex items-center justify-between gap-2 mb-2">
@@ -1340,8 +1503,8 @@
           <h3 class="font-black leading-tight min-h-[48px]">${product.name}</h3>
           <p class="text-xs text-slate-500 mt-2"><i class="fa-solid fa-building mr-1"></i>${product.seller}</p>
           <div class="mt-4 flex items-center justify-between gap-3">
-            <b class="text-amber-600">${product.price}</b>
-            <button onclick="showToast('Produk masuk keranjang')" class="bg-indigo-600 text-white rounded-xl px-3 py-2 text-xs font-black">Tambah</button>
+            <b class="text-amber-600 product-price">${product.price}</b>
+            <button onclick="showToast('Produk masuk keranjang')" class="bg-indigo-600 text-white rounded-xl px-3 py-2 text-xs font-black product-action">Tambah</button>
           </div>
         </div>
       `).join('');
@@ -1366,7 +1529,7 @@
         <main class="p-4 md:p-6 max-w-[1500px] mx-auto">
           ${renderRunningAds()}
           ${renderHeroCarousel()}
-          <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+          <section class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6 mobile-kpi-grid">
             ${kpiCard('Produk Aktif', '120+', 'fa-boxes-stacked', 'indigo')}
             ${kpiCard('Vendor', '48', 'fa-store', 'amber')}
             ${kpiCard('Tender Open', '3', 'fa-briefcase', 'emerald')}
@@ -1385,7 +1548,7 @@
               </div>
             </div>
             ${filteredProducts.length ? `
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">${productCards}</div>
+              <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mobile-product-grid">${productCards}</div>
             ` : `
               <div class="content-card p-8 text-center">
                 <i class="fa-solid fa-magnifying-glass text-5xl text-slate-300 mb-4"></i>
@@ -1398,7 +1561,7 @@
           ${renderCompanyDirectory()}
           ${renderFrontFooter()}
         </main>
-        ${renderFloatingHelp()}
+        ${renderFloatingHelp()}${renderMobileBottomDock()}
       `;
     }
 
@@ -1454,12 +1617,12 @@
           <section class="rounded-[32px] bg-gradient-to-br from-slate-950 to-amber-700 text-white p-7 md:p-10 shadow-sm mb-6 overflow-hidden relative">
             <i class="fa-solid fa-file-signature absolute -right-6 -bottom-8 text-[180px] opacity-10"></i>
             <div class="relative z-10 max-w-3xl">
-              <span class="inline-flex bg-white text-amber-700 rounded-full px-3 py-1 text-xs font-black">BURSA TENDER B2B</span>
+              <span class="mobile-pill-title"><i class="fa-solid fa-briefcase"></i> BURSA TENDER B2B</span>
               <h2 class="text-3xl md:text-5xl font-black mt-4 leading-tight">Cari proyek, kirim penawaran, dan pantau peluang pengadaan.</h2>
               <p class="text-amber-100 mt-4 text-sm md:text-base">Pantau peluang proyek, pengadaan, dan penawaran vendor dalam sistem BisnisHUB.</p>
             </div>
           </section>
-          <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+          <section class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6 mobile-kpi-grid">
             ${kpiCard('Tender Aktif', '3', 'fa-briefcase', 'amber')}
             ${kpiCard('Total Bid', '45', 'fa-hand-holding-dollar', 'indigo')}
             ${kpiCard('Nilai HPS', 'Rp 16,6 M', 'fa-wallet', 'emerald')}
@@ -1486,7 +1649,7 @@
             </aside>
           </section>
         </main>
-        ${renderFloatingHelp()}
+        ${renderFloatingHelp()}${renderMobileBottomDock()}
       `;
     }
 
@@ -1846,7 +2009,7 @@
         <section class="hero-carousel mb-6">
           <img src="${active.src}" alt="${active.title || 'BisnisHUB Carousel'}">
           <div class="hero-carousel-content">
-            <span class="inline-flex bg-orange-500 text-white rounded-full px-3 py-1 text-xs font-black">BISNISHUB MARKETPLACE</span>
+            <span class="mobile-pill-title"><i class="fa-solid fa-sparkles"></i> BISNISHUB MARKETPLACE</span>
             <h2 class="text-3xl md:text-5xl font-black mt-4 leading-tight">${active.title || 'Marketplace Industri & Tender B2B'}</h2>
             <p class="text-slate-100 mt-4 text-sm md:text-base">${active.desc || 'Temukan produk, jasa, tender, dan peluang bisnis dalam satu platform.'}</p>
             <div class="mt-6 flex flex-wrap gap-3">
@@ -2725,7 +2888,7 @@
 
     function adminOverview() {
       return `
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
+        <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-5 mobile-kpi-grid">
           ${kpiCard('GMV Platform', 'Rp 1,45 M', 'fa-chart-line', 'emerald', '+18% bulan ini')}
           ${kpiCard('User Aktif', '1.240', 'fa-users', 'indigo', 'Buyer dan seller')}
           ${kpiCard('Vendor', '318', 'fa-store', 'amber', '42 menunggu review')}
@@ -2766,7 +2929,7 @@
 
     function adminSellers() {
       return `
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
+        <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-5 mobile-kpi-grid">
           ${kpiCard('Total Seller', '318', 'fa-store', 'indigo')}
           ${kpiCard('Terverifikasi', '276', 'fa-circle-check', 'emerald')}
           ${kpiCard('Menunggu Review', '42', 'fa-clock', 'amber')}
@@ -2972,7 +3135,7 @@
 
     function userOverview() {
       return `
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
+        <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-5 mobile-kpi-grid">
           ${kpiCard('Pesanan', '12', 'fa-box-open', 'indigo')}
           ${kpiCard('Belanja', 'Rp 155 Jt', 'fa-wallet', 'emerald')}
           ${kpiCard('Draft Produk', '3', 'fa-box', 'amber')}
@@ -3644,10 +3807,10 @@
             <b class="block text-lg">WhatsApp Admin</b>
             <p class="text-sm text-slate-500 mt-1">Chat cepat ke 0851 1103 3789.</p>
           </a>
-          <a href="mailto:kalimajasuryaalam@gmail.com?subject=Bantuan%20BisnisHUB" class="rounded-[22px] bg-slate-50 border border-slate-200 p-5 text-left hover:bg-slate-100 no-underline text-slate-900">
+          <a href="mailto:adminbishub@gmail.com?subject=Bantuan%20BisnisHUB" class="rounded-[22px] bg-slate-50 border border-slate-200 p-5 text-left hover:bg-slate-100 no-underline text-slate-900">
             <i class="fa-solid fa-envelope text-3xl text-slate-700 mb-3"></i>
             <b class="block text-lg">Email Admin</b>
-            <p class="text-sm text-slate-500 mt-1">kalimajasuryaalam@gmail.com</p>
+            <p class="text-sm text-slate-500 mt-1">adminbishub@gmail.com</p>
           </a>
         </div>
         ${tickets.length ? table(['ID', 'Topik', 'Prioritas', 'Status', 'Aksi'], rows) : `
@@ -3878,6 +4041,41 @@
       renderAdminDashboard();
       showToast('Status tiket diperbarui');
     }
+
+
+    function renderMobileBottomDock() {
+      const role = state.role || 'marketplace';
+      const isMarketplace = role === 'marketplace';
+      const isTender = role === 'tender';
+      const isUser = role === 'user';
+      const isAdmin = role === 'admin';
+
+      return `
+        <nav class="mobile-bottom-dock">
+          <button onclick="switchRole('marketplace')" class="dock-item ${isMarketplace ? 'active' : ''}">
+            <i class="fa-solid fa-store"></i>
+            <span>Home</span>
+          </button>
+          <button onclick="switchRole('marketplace'); setTimeout(() => document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth'}), 60)" class="dock-item">
+            <i class="fa-solid fa-box-open"></i>
+            <span>Produk</span>
+          </button>
+          <button onclick="switchRole('tender')" class="dock-item ${isTender ? 'active' : ''}">
+            <i class="fa-solid fa-file-signature"></i>
+            <span>Tender</span>
+          </button>
+          <button onclick="switchRole('user')" class="dock-item ${isUser ? 'active' : ''}">
+            <i class="fa-solid fa-user"></i>
+            <span>Akun</span>
+          </button>
+          <button onclick="${isAdmin ? "switchRole('admin')" : "openSupportModal()"}" class="dock-item ${isAdmin ? 'active' : ''}">
+            <i class="fa-solid ${isAdmin ? 'fa-shield-halved' : 'fa-headset'}"></i>
+            <span>${isAdmin ? 'Admin' : 'Bantuan'}</span>
+          </button>
+        </nav>
+      `;
+    }
+
 
     function renderFloatingHelp() {
       return `
