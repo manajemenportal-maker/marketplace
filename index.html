@@ -242,6 +242,123 @@
       border-color: #f97316;
       box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12);
     }
+
+    .hero-carousel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 32px;
+      min-height: 380px;
+      background: #0f172a;
+      color: #ffffff;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.16);
+    }
+    .hero-carousel img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.42;
+      transition: opacity 0.35s ease;
+    }
+    .hero-carousel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(15,23,42,0.95), rgba(79,70,229,0.68), rgba(249,115,22,0.20));
+    }
+    .hero-carousel-content {
+      position: relative;
+      z-index: 2;
+      max-width: 780px;
+      padding: 42px;
+    }
+    .carousel-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.45);
+      border: 0;
+    }
+    .carousel-dot.active {
+      width: 28px;
+      background: #f97316;
+    }
+    .carousel-preview {
+      width: 100%;
+      height: 150px;
+      border-radius: 20px;
+      object-fit: cover;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+    }
+
+    .running-ad-space {
+      position: relative;
+      overflow: hidden;
+      border-radius: 24px;
+      border: 1px solid rgba(249, 115, 22, 0.25);
+      background: linear-gradient(90deg, #fff7ed, #ffedd5, #ffffff);
+      min-height: 72px;
+      margin-bottom: 18px;
+      box-shadow: 0 12px 28px rgba(249, 115, 22, 0.10);
+    }
+    .running-ad-track {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      white-space: nowrap;
+      min-height: 72px;
+      width: max-content;
+      animation: adMarquee var(--ad-speed, 18s) linear infinite;
+      padding-left: 100%;
+    }
+    .running-ad-track:hover { animation-play-state: paused; }
+    .running-ad-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 900;
+      color: #9a3412;
+    }
+    .running-ad-badge {
+      background: #f97316;
+      color: #ffffff;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+    }
+    .running-ad-image {
+      width: 100%;
+      height: 86px;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(249, 115, 22, 0.22);
+      margin-bottom: 18px;
+      background: #fff7ed;
+      box-shadow: 0 12px 28px rgba(249, 115, 22, 0.10);
+    }
+    .running-ad-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .ads-preview {
+      width: 100%;
+      height: 120px;
+      border-radius: 18px;
+      object-fit: cover;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+    }
+    @keyframes adMarquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-100%); }
+    }
     @media (max-width: 700px) {
       .floating-help {
         right: 12px;
@@ -494,7 +611,7 @@
       orders: ['Transaksi', 'Refund', 'Dispute', 'Invoice'],
       tenders: ['Tender Open', 'Review Tender', 'Bidding', 'Arsip'],
       support: ['Tiket Open', 'SLA', 'Chat Bantuan', 'Riwayat'],
-      cms: ['Hero Banner', 'Menu Mobile', 'Warna Icon', 'Landing'],
+      cms: ['Hero Banner', 'Iklan Berjalan', 'Foto Carousel', 'Menu Mobile', 'Warna Icon', 'Landing'],
       finance: ['Escrow', 'Komisi', 'Pencairan', 'Laporan'],
       settings: ['Status Platform', 'Approval', 'Payment', 'Keamanan Login', 'Integrasi API', 'Backup & Log']
     };
@@ -533,7 +650,8 @@
       { name: 'Mesin Press Hidrolik 50 Ton', seller: 'CV Baja Mandiri', category: 'Hydrolik', price: 'Rp 45.000.000', badge: 'TKDN', icon: 'fa-gears' },
       { name: 'Helm Safety SNI Proyek', seller: 'PT Plastik Indo', category: 'K3 Safety', price: 'Rp 45.000', badge: 'SNI', icon: 'fa-helmet-safety' },
       { name: 'Panel Surya 450Wp Monocrystalline', seller: 'PT Surya Energi', category: 'Energi', price: 'Rp 2.100.000', badge: 'Green', icon: 'fa-solar-panel' },
-      { name: 'Software ERP Inventory Pabrik', seller: 'BisnisHub Digital', category: 'Software', price: 'Rp 15.000.000', badge: 'Digital', icon: 'fa-laptop-code' }
+      { name: 'Software ERP Inventory Pabrik', seller: 'BisnisHub Digital', category: 'Software', price: 'Rp 15.000.000', badge: 'Digital', icon: 'fa-laptop-code' },
+      { name: 'Jasa Survey & Pendataan Lapangan', seller: 'Mitra Jasa BisnisHUB', category: 'Bidang Jasa', price: 'Mulai Rp 750.000', badge: 'Jasa', icon: 'fa-handshake-angle' }
     ];
 
     const Orders = [
@@ -676,6 +794,7 @@
     }
 
     function renderApp() {
+      if (state.role !== 'marketplace') clearInterval(marketplaceCarouselTimer);
       if (state.role === 'admin') {
         renderAdminDashboard();
       } else if (state.role === 'user') {
@@ -880,19 +999,8 @@
           </div>
         </header>
         <main class="p-4 md:p-6 max-w-[1500px] mx-auto">
-          <section class="rounded-[32px] bg-gradient-to-br from-indigo-900 to-slate-950 text-white p-7 md:p-10 shadow-sm mb-6 overflow-hidden relative">
-            <i class="fa-solid fa-store absolute -right-6 -bottom-8 text-[180px] opacity-10"></i>
-            <div class="relative z-10 max-w-3xl">
-              <span class="inline-flex bg-amber-400 text-indigo-950 rounded-full px-3 py-1 text-xs font-black">B2B MARKETPLACE</span>
-              <h2 class="text-3xl md:text-5xl font-black mt-4 leading-tight">Belanja produk industri dan kelola akun dari satu sistem BisnisHUB.</h2>
-              <p class="text-indigo-100 mt-4 text-sm md:text-base">Marketplace industri, tender, seller, dan akun customer dalam satu platform BisnisHUB.</p>
-              <div class="mt-6 flex flex-wrap gap-3">
-                <button onclick="document.getElementById('marketProducts').scrollIntoView({behavior:'smooth'})" class="bg-amber-400 text-indigo-950 rounded-2xl px-5 py-3 font-black">Lihat Produk</button>
-                <button onclick="switchRole('tender')" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Lihat Tender</button>
-                <button onclick="switchRole('user')" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Masuk Akun</button>
-              </div>
-            </div>
-          </section>
+          ${renderRunningAds()}
+          ${renderHeroCarousel()}
           <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
             ${kpiCard('Produk Aktif', '120+', 'fa-boxes-stacked', 'indigo')}
             ${kpiCard('Vendor', '48', 'fa-store', 'amber')}
@@ -1017,6 +1125,516 @@
         content,
         isAdmin: true
       });
+    }
+
+
+
+
+
+    const DEFAULT_ADS_SETTINGS = {
+      mode: 'text',
+      speedSeconds: 18,
+      textItems: [
+        'Promo launching BisnisHUB: tampilkan produk dan jasa Anda di Marketplace B2B',
+        'Pasang iklan banner untuk menjangkau buyer, seller, dan owner proyek',
+        'Buka peluang tender, promosi vendor, dan penawaran layanan langsung dari platform'
+      ],
+      bannerSrc: '',
+      bannerAlt: 'Iklan BisnisHUB'
+    };
+
+    function getAdsSettings() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('bisnishub_ads_settings') || 'null');
+        if (saved && saved.mode) return { ...DEFAULT_ADS_SETTINGS, ...saved };
+      } catch (error) {}
+      return JSON.parse(JSON.stringify(DEFAULT_ADS_SETTINGS));
+    }
+
+    function saveAdsSettings(settings) {
+      const cleanTextItems = (settings.textItems || [])
+        .map(item => String(item || '').trim())
+        .filter(Boolean)
+        .slice(0, 3);
+
+      localStorage.setItem('bisnishub_ads_settings', JSON.stringify({
+        mode: settings.mode || 'text',
+        speedSeconds: Math.max(8, Number(settings.speedSeconds || 18)),
+        textItems: cleanTextItems.length ? cleanTextItems : DEFAULT_ADS_SETTINGS.textItems,
+        bannerSrc: settings.bannerSrc || '',
+        bannerAlt: settings.bannerAlt || 'Iklan BisnisHUB'
+      }));
+    }
+
+    function readAdsBannerFile(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = document.getElementById('adsBannerPreview');
+        const hidden = document.getElementById('adsBannerSrc');
+        if (img) img.src = event.target.result;
+        if (hidden) hidden.value = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveAdminAdsSettings() {
+      const mode = document.getElementById('adsMode')?.value || 'text';
+      const speedSeconds = Number(document.getElementById('adsSpeed')?.value || 18);
+      const textItems = [1, 2, 3].map(index => document.getElementById('adsText' + index)?.value || '');
+      const bannerSrc = document.getElementById('adsBannerSrc')?.value || '';
+      const bannerAlt = document.getElementById('adsBannerAlt')?.value || 'Iklan BisnisHUB';
+
+      if (mode === 'image' && !bannerSrc) {
+        showToast('Untuk mode banner gambar, upload gambar banner dulu');
+        return;
+      }
+
+      saveAdsSettings({ mode, speedSeconds, textItems, bannerSrc, bannerAlt });
+      showToast('Setting iklan berjalan berhasil disimpan');
+
+      if (state.role === 'marketplace') renderMarketplace();
+      if (state.role === 'admin') renderAdminDashboard();
+    }
+
+    function resetAdminAdsSettings() {
+      localStorage.removeItem('bisnishub_ads_settings');
+      showToast('Iklan berjalan dikembalikan ke bawaan');
+      renderAdminDashboard();
+    }
+
+    function adminAdsSettingPanel() {
+      const ads = getAdsSettings();
+
+      return panel('Iklan Berjalan & Banner Promo', 'Atur space iklan di atas carousel. Bisa berupa tulisan berjalan kanan-ke-kiri atau banner gambar promosi user.', `
+        <div class="rounded-[24px] bg-orange-50 border border-orange-100 p-5 mb-5">
+          <div class="grid md:grid-cols-3 gap-4">
+            <div>
+              <label class="text-xs font-black uppercase text-orange-800">Mode Iklan</label>
+              <select id="adsMode" class="mt-1 border rounded-2xl p-3 w-full bg-white">
+                <option value="text" ${ads.mode === 'text' ? 'selected' : ''}>Teks Berjalan</option>
+                <option value="image" ${ads.mode === 'image' ? 'selected' : ''}>Banner Gambar</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-black uppercase text-orange-800">Kecepatan Teks</label>
+              <select id="adsSpeed" class="mt-1 border rounded-2xl p-3 w-full bg-white">
+                ${[8, 12, 15, 18, 22, 28, 35].map(second => `<option value="${second}" ${Number(ads.speedSeconds) === second ? 'selected' : ''}>${second} detik</option>`).join('')}
+              </select>
+            </div>
+            <div class="flex items-end">
+              <button onclick="saveAdminAdsSettings()" class="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">
+                Simpan Iklan
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-5">
+          <div class="border rounded-[24px] p-5 bg-white">
+            <h3 class="font-black text-lg mb-3">Teks Berjalan</h3>
+            <div class="grid gap-3">
+              <input id="adsText1" class="border rounded-2xl p-3" placeholder="Teks iklan 1" value="${ads.textItems[0] || ''}">
+              <input id="adsText2" class="border rounded-2xl p-3" placeholder="Teks iklan 2" value="${ads.textItems[1] || ''}">
+              <input id="adsText3" class="border rounded-2xl p-3" placeholder="Teks iklan 3" value="${ads.textItems[2] || ''}">
+            </div>
+            <div class="mt-4 rounded-2xl bg-slate-50 border p-4 text-sm text-slate-600">
+              Teks akan berjalan dari kanan ke kiri di atas carousel marketplace.
+            </div>
+          </div>
+
+          <div class="border rounded-[24px] p-5 bg-white">
+            <h3 class="font-black text-lg mb-3">Banner Gambar</h3>
+            <img id="adsBannerPreview" class="ads-preview mb-3" src="${ads.bannerSrc || ''}" alt="Preview iklan">
+            <input id="adsBannerSrc" type="hidden" value="${ads.bannerSrc || ''}">
+            <input type="file" accept="image/*" onchange="readAdsBannerFile(this)" class="border rounded-2xl p-3 w-full mb-3 text-sm">
+            <input id="adsBannerAlt" class="border rounded-2xl p-3 w-full" placeholder="Judul banner / alt text" value="${ads.bannerAlt || ''}">
+            <div class="mt-4 rounded-2xl bg-slate-50 border p-4 text-sm text-slate-600">
+              Cocok untuk promosi user, seller premium, paket iklan, atau campaign tender.
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 flex flex-wrap gap-2">
+          <button onclick="saveAdminAdsSettings()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Setting Iklan</button>
+          <button onclick="resetAdminAdsSettings()" class="bg-slate-900 hover:bg-slate-800 text-white rounded-2xl px-5 py-3 font-black">Reset Iklan</button>
+          <button onclick="switchRole('marketplace')" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-5 py-3 font-black">Preview Marketplace</button>
+        </div>
+      `);
+    }
+
+    function renderRunningAds() {
+      const ads = getAdsSettings();
+
+      if (ads.mode === 'image' && ads.bannerSrc) {
+        return `
+          <section class="running-ad-image">
+            <img src="${ads.bannerSrc}" alt="${ads.bannerAlt || 'Iklan BisnisHUB'}">
+          </section>
+        `;
+      }
+
+      const items = ads.textItems && ads.textItems.length ? ads.textItems : DEFAULT_ADS_SETTINGS.textItems;
+      const repeated = [...items, ...items, ...items];
+
+      return `
+        <section class="running-ad-space" style="--ad-speed:${Math.max(8, Number(ads.speedSeconds || 18))}s">
+          <div class="running-ad-track">
+            ${repeated.map((text, index) => `
+              <span class="running-ad-item">
+                <span class="running-ad-badge">${index % 3 === 0 ? 'PROMO' : index % 3 === 1 ? 'IKLAN USER' : 'BISNISHUB'}</span>
+                <span>${text}</span>
+              </span>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+
+    const DEFAULT_CAROUSEL_SETTINGS = {
+      intervalSeconds: 4,
+      images: [
+        {
+          name: 'Slide Utama',
+          src: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=1600',
+          title: 'Marketplace Industri & Tender B2B',
+          desc: 'Temukan produk, jasa, seller, tender, dan peluang proyek dalam satu platform BisnisHUB.'
+        },
+        {
+          name: 'Slide Produk',
+          src: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1600',
+          title: 'Produk dan Jasa Terpercaya',
+          desc: 'Atur kategori, unggah produk, dan tampilkan layanan jasa profesional untuk kebutuhan bisnis.'
+        },
+        {
+          name: 'Slide Tender',
+          src: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=1600',
+          title: 'Bursa Tender dan Penawaran',
+          desc: 'Pantau proyek, kirim penawaran, dan kelola transaksi dengan sistem yang rapi.'
+        }
+      ]
+    };
+
+    function getCarouselSettings() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('bisnishub_carousel_settings') || 'null');
+        if (saved && Array.isArray(saved.images) && saved.images.length) return saved;
+      } catch (error) {}
+      return JSON.parse(JSON.stringify(DEFAULT_CAROUSEL_SETTINGS));
+    }
+
+    function saveCarouselSettings(settings) {
+      const cleanImages = (settings.images || [])
+        .filter(item => item && item.src)
+        .slice(0, 3);
+
+      localStorage.setItem('bisnishub_carousel_settings', JSON.stringify({
+        intervalSeconds: Math.max(2, Number(settings.intervalSeconds || 4)),
+        images: cleanImages.length ? cleanImages : DEFAULT_CAROUSEL_SETTINGS.images
+      }));
+    }
+
+    function readCarouselFile(input, index) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = document.getElementById('carouselPreview' + index);
+        const hidden = document.getElementById('carouselImageSrc' + index);
+        if (img) img.src = event.target.result;
+        if (hidden) hidden.value = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveAdminCarouselSettings() {
+      const interval = Number(document.getElementById('carouselInterval')?.value || 4);
+      const images = [1, 2, 3].map(index => {
+        const src = document.getElementById('carouselImageSrc' + index)?.value || '';
+        const title = document.getElementById('carouselTitle' + index)?.value || `Slide ${index}`;
+        const desc = document.getElementById('carouselDesc' + index)?.value || '';
+        return {
+          name: `Slide ${index}`,
+          src,
+          title,
+          desc
+        };
+      }).filter(item => item.src);
+
+      if (!images.length) {
+        showToast('Minimal masukkan 1 foto carousel');
+        return;
+      }
+
+      saveCarouselSettings({
+        intervalSeconds: interval,
+        images
+      });
+
+      showToast('Setting carousel berhasil disimpan');
+      if (state.role === 'marketplace') renderMarketplace();
+      if (state.role === 'admin') renderAdminDashboard();
+    }
+
+    function resetAdminCarouselSettings() {
+      localStorage.removeItem('bisnishub_carousel_settings');
+      showToast('Carousel dikembalikan ke bawaan');
+      renderAdminDashboard();
+    }
+
+    function adminCarouselSettingPanel() {
+      const settings = getCarouselSettings();
+      const images = [0, 1, 2].map(index => settings.images[index] || {
+        name: `Slide ${index + 1}`,
+        src: '',
+        title: '',
+        desc: ''
+      });
+
+      return panel('Foto Carousel Marketplace', 'Atur 1 sampai 3 foto carousel dan durasi pergantian slide di halaman utama.', `
+        <div class="rounded-[24px] bg-orange-50 border border-orange-100 p-5 mb-5">
+          <div class="grid md:grid-cols-[1fr_220px] gap-4 items-end">
+            <div>
+              <h3 class="font-black text-lg">Pengaturan Carousel</h3>
+              <p class="text-sm text-orange-800 mt-1">Upload maksimal 3 foto. Jika hanya 1 foto, carousel akan tampil tetap tanpa pergantian slide.</p>
+            </div>
+            <div>
+              <label class="text-xs font-black uppercase text-orange-800">Durasi Pergantian</label>
+              <select id="carouselInterval" class="mt-1 border rounded-2xl p-3 w-full bg-white">
+                ${[3,4,5,6,8,10,15].map(second => `<option value="${second}" ${Number(settings.intervalSeconds) === second ? 'selected' : ''}>${second} detik</option>`).join('')}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-4">
+          ${images.map((item, idx) => {
+            const index = idx + 1;
+            return `
+              <div class="border rounded-[24px] p-4 bg-white">
+                <div class="flex items-center justify-between gap-3 mb-3">
+                  <b>Foto ${index}</b>
+                  ${badge(item.src ? 'Terisi' : 'Kosong', item.src ? 'emerald' : 'slate')}
+                </div>
+                <img id="carouselPreview${index}" class="carousel-preview mb-3" src="${item.src || ''}" alt="Preview carousel ${index}">
+                <input id="carouselImageSrc${index}" type="hidden" value="${item.src || ''}">
+                <input type="file" accept="image/*" onchange="readCarouselFile(this, ${index})" class="border rounded-2xl p-3 w-full mb-3 text-sm">
+                <input id="carouselTitle${index}" class="border rounded-2xl p-3 w-full mb-3" placeholder="Judul slide ${index}" value="${item.title || ''}">
+                <textarea id="carouselDesc${index}" class="border rounded-2xl p-3 w-full" rows="3" placeholder="Deskripsi slide ${index}">${item.desc || ''}</textarea>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <div class="mt-5 flex flex-wrap gap-2">
+          <button onclick="saveAdminCarouselSettings()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">
+            Simpan Carousel
+          </button>
+          <button onclick="resetAdminCarouselSettings()" class="bg-slate-900 hover:bg-slate-800 text-white rounded-2xl px-5 py-3 font-black">
+            Reset Carousel
+          </button>
+          <button onclick="switchRole('marketplace')" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-5 py-3 font-black">
+            Preview Marketplace
+          </button>
+        </div>
+      `);
+    }
+
+    let marketplaceCarouselTimer = null;
+    let marketplaceCarouselIndex = 0;
+
+    function renderHeroCarousel() {
+      const settings = getCarouselSettings();
+      const images = settings.images && settings.images.length ? settings.images : DEFAULT_CAROUSEL_SETTINGS.images;
+      marketplaceCarouselIndex = marketplaceCarouselIndex % images.length;
+      const active = images[marketplaceCarouselIndex];
+
+      clearInterval(marketplaceCarouselTimer);
+      if (images.length > 1) {
+        marketplaceCarouselTimer = setInterval(() => {
+          marketplaceCarouselIndex = (marketplaceCarouselIndex + 1) % images.length;
+          renderMarketplace();
+        }, Math.max(2, Number(settings.intervalSeconds || 4)) * 1000);
+      }
+
+      return `
+        <section class="hero-carousel mb-6">
+          <img src="${active.src}" alt="${active.title || 'BisnisHUB Carousel'}">
+          <div class="hero-carousel-content">
+            <span class="inline-flex bg-orange-500 text-white rounded-full px-3 py-1 text-xs font-black">BISNISHUB MARKETPLACE</span>
+            <h2 class="text-3xl md:text-5xl font-black mt-4 leading-tight">${active.title || 'Marketplace Industri & Tender B2B'}</h2>
+            <p class="text-slate-100 mt-4 text-sm md:text-base">${active.desc || 'Temukan produk, jasa, tender, dan peluang bisnis dalam satu platform.'}</p>
+            <div class="mt-6 flex flex-wrap gap-3">
+              <button onclick="document.getElementById('marketProducts').scrollIntoView({behavior:'smooth'})" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">Lihat Produk</button>
+              <button onclick="switchRole('tender')" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Lihat Tender</button>
+              <button onclick="switchRole('user')" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Masuk Akun</button>
+            </div>
+            <div class="mt-8 flex gap-2">
+              ${images.map((image, index) => `
+                <button onclick="marketplaceCarouselIndex=${index}; renderMarketplace();" class="carousel-dot ${index === marketplaceCarouselIndex ? 'active' : ''}" aria-label="Slide ${index + 1}"></button>
+              `).join('')}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+
+    const DEFAULT_PRODUCT_CATEGORIES = [
+      { id: 'KAT-001', name: 'Pertanian & Alsintan', type: 'Produk', status: 'Aktif', icon: 'fa-tractor' },
+      { id: 'KAT-002', name: 'Pompa & Kompresor', type: 'Produk', status: 'Aktif', icon: 'fa-faucet' },
+      { id: 'KAT-003', name: 'Hidrolik & Mesin', type: 'Produk', status: 'Aktif', icon: 'fa-gears' },
+      { id: 'KAT-004', name: 'Perkakas & Tools', type: 'Produk', status: 'Aktif', icon: 'fa-screwdriver-wrench' },
+      { id: 'KAT-005', name: 'Alat Berat & Konstruksi', type: 'Produk', status: 'Aktif', icon: 'fa-truck-monster' },
+      { id: 'KAT-006', name: 'Kelistrikan & Genset', type: 'Produk', status: 'Aktif', icon: 'fa-bolt' },
+      { id: 'KAT-007', name: 'Keamanan Kerja K3', type: 'Produk', status: 'Aktif', icon: 'fa-helmet-safety' },
+      { id: 'KAT-008', name: 'Software Industri', type: 'Produk Digital', status: 'Aktif', icon: 'fa-laptop-code' },
+      { id: 'KAT-009', name: 'Bidang Jasa', type: 'Jasa', status: 'Aktif', icon: 'fa-handshake-angle' }
+    ];
+
+    function getProductCategories() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('bisnishub_product_categories') || 'null');
+        if (Array.isArray(saved) && saved.length) return saved;
+      } catch (error) {}
+      return [...DEFAULT_PRODUCT_CATEGORIES];
+    }
+
+    function saveProductCategories(categories) {
+      localStorage.setItem('bisnishub_product_categories', JSON.stringify(categories));
+    }
+
+    function categoryOptions(selectedName = '') {
+      return getProductCategories()
+        .filter(category => category.status === 'Aktif')
+        .map(category => `<option ${category.name === selectedName ? 'selected' : ''}>${category.name}</option>`)
+        .join('');
+    }
+
+    function renderCategoryCards() {
+      return `
+        <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          ${getProductCategories().map(category => `
+            <div class="border rounded-[24px] p-5 bg-white">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center mb-3">
+                    <i class="fa-solid ${category.icon || 'fa-layer-group'}"></i>
+                  </div>
+                  <h3 class="font-black text-lg">${category.name}</h3>
+                  <p class="text-sm text-slate-500 mt-1">${category.type}</p>
+                </div>
+                ${badge(category.status, category.status === 'Aktif' ? 'emerald' : 'slate')}
+              </div>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button onclick="editProductCategory('${category.id}')" class="bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Edit</button>
+                <button onclick="toggleProductCategory('${category.id}')" class="bg-amber-500 text-white rounded-xl px-4 py-2 text-xs font-black">${category.status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}</button>
+                <button onclick="deleteProductCategory('${category.id}')" class="bg-rose-600 text-white rounded-xl px-4 py-2 text-xs font-black">Hapus</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function addProductCategory() {
+      const name = document.getElementById('catName')?.value?.trim();
+      const type = document.getElementById('catType')?.value || 'Produk';
+      const icon = document.getElementById('catIcon')?.value || 'fa-layer-group';
+
+      if (!name) {
+        showToast('Nama kategori wajib diisi');
+        return;
+      }
+
+      const categories = getProductCategories();
+      const existing = categories.find(category => category.name.toLowerCase() === name.toLowerCase());
+      if (existing) {
+        showToast('Kategori sudah ada');
+        return;
+      }
+
+      categories.unshift({
+        id: 'KAT-' + new Date().getTime().toString().slice(-6),
+        name,
+        type,
+        status: 'Aktif',
+        icon
+      });
+
+      saveProductCategories(categories);
+      renderAdminDashboard();
+      showToast('Kategori produk berhasil ditambahkan');
+    }
+
+    function editProductCategory(id) {
+      const categories = getProductCategories();
+      const category = categories.find(item => item.id === id);
+      if (!category) return;
+
+      const newName = prompt('Edit nama kategori:', category.name);
+      if (!newName || !newName.trim()) return;
+
+      category.name = newName.trim();
+      saveProductCategories(categories);
+      renderAdminDashboard();
+      showToast('Kategori produk diperbarui');
+    }
+
+    function toggleProductCategory(id) {
+      const categories = getProductCategories();
+      const category = categories.find(item => item.id === id);
+      if (!category) return;
+
+      category.status = category.status === 'Aktif' ? 'Nonaktif' : 'Aktif';
+      saveProductCategories(categories);
+      renderAdminDashboard();
+      showToast('Status kategori diperbarui');
+    }
+
+    function deleteProductCategory(id) {
+      const categories = getProductCategories();
+      const category = categories.find(item => item.id === id);
+      if (!category) return;
+
+      if (!confirm('Hapus kategori ' + category.name + '?')) return;
+
+      saveProductCategories(categories.filter(item => item.id !== id));
+      renderAdminDashboard();
+      showToast('Kategori produk dihapus');
+    }
+
+    function productCategoryAdminPanel() {
+      return panel('Kategori Produk & Bidang Jasa', 'Atur kategori produk, produk digital, dan layanan jasa agar seller/customer mudah mengelompokkan listing.', `
+        <div class="rounded-[24px] bg-orange-50 border border-orange-100 p-5 mb-5">
+          <h3 class="font-black text-lg mb-3">Tambah Kategori Baru</h3>
+          <div class="grid md:grid-cols-4 gap-3">
+            <input id="catName" class="border rounded-2xl p-3" placeholder="Nama kategori, contoh: Jasa Survey">
+            <select id="catType" class="border rounded-2xl p-3 bg-white">
+              <option>Produk</option>
+              <option>Produk Digital</option>
+              <option>Jasa</option>
+              <option>Tender / Proyek</option>
+            </select>
+            <select id="catIcon" class="border rounded-2xl p-3 bg-white">
+              <option value="fa-layer-group">Icon Umum</option>
+              <option value="fa-handshake-angle">Jasa</option>
+              <option value="fa-tractor">Alsintan</option>
+              <option value="fa-faucet">Pompa</option>
+              <option value="fa-gears">Hidrolik</option>
+              <option value="fa-screwdriver-wrench">Tools</option>
+              <option value="fa-truck-monster">Alat Berat</option>
+              <option value="fa-laptop-code">Software</option>
+            </select>
+            <button onclick="addProductCategory()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">Tambah</button>
+          </div>
+        </div>
+        ${renderCategoryCards()}
+      `);
     }
 
 
@@ -1146,17 +1764,7 @@
           `);
         }
         if (sub === 'Kategori') {
-          return panel('Kategori Produk', 'Atur kategori marketplace.', `
-            <div class="grid md:grid-cols-3 gap-4">
-              ${['Pompa & Kompresor','Mesin Pertanian','Tools','Hidrolik','Software','Konstruksi'].map(cat => `
-                <div class="border rounded-2xl p-4 bg-white">
-                  <b>${cat}</b>
-                  <p class="text-xs text-slate-500 mt-1">Kategori aktif</p>
-                  <button onclick="showToast('Kategori ${cat} diedit')" class="mt-3 bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Edit</button>
-                </div>
-              `).join('')}
-            </div>
-          `);
+          return productCategoryAdminPanel();
         }
         if (sub === 'Stok & Harga') {
           return panel('Stok & Harga', 'Kontrol stok dan harga produk seller.', `
@@ -1287,6 +1895,12 @@
       }
 
       if (menu === 'cms') {
+        if (sub === 'Iklan Berjalan') {
+          return adminAdsSettingPanel();
+        }
+        if (sub === 'Foto Carousel') {
+          return adminCarouselSettingPanel();
+        }
         if (sub === 'Menu Mobile') {
           return panel('Menu Mobile', 'Atur icon dan urutan menu HP.', `
             <div class="grid md:grid-cols-4 gap-4">
@@ -2058,6 +2672,13 @@
           </select>
           <input class="border rounded-2xl p-3" placeholder="Brand / Merek">
           <input class="border rounded-2xl p-3" placeholder="SKU">
+          <select class="border rounded-2xl p-3 bg-white">
+            <option>Jenis Listing: Produk Fisik</option>
+            <option>Jenis Listing: Bidang Jasa</option>
+            <option>Jenis Listing: Produk Digital</option>
+            <option>Jenis Listing: Tender / Proyek</option>
+          </select>
+          <input class="border rounded-2xl p-3" placeholder="Area layanan untuk jasa, contoh: Jabodetabek">
           <input id="quickProductPrice" class="border rounded-2xl p-3" placeholder="Harga Retail">
           <input class="border rounded-2xl p-3" placeholder="Harga Grosir / B2B">
           <input class="border rounded-2xl p-3" placeholder="Stok">
@@ -2117,11 +2738,7 @@
             <div>
               <label class="text-xs font-black text-slate-500 uppercase">Kategori Utama Toko</label>
               <select class="mt-1 border rounded-2xl p-3 w-full bg-white">
-                <option>Mesin Pertanian</option>
-                <option>Pompa & Kompresor</option>
-                <option>Perkakas & Tools</option>
-                <option>Alat Berat</option>
-                <option>Software Industri</option>
+                ${categoryOptions()}
               </select>
             </div>
             <div class="md:col-span-2">
