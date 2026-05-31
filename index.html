@@ -939,6 +939,7 @@
       { key: 'registration', label: 'Data Registrasi', icon: 'fa-id-card' },
       { key: 'orders', label: 'Pesanan Saya', icon: 'fa-box-open' },
       { key: 'addProduct', label: 'Tambah Produk', icon: 'fa-circle-plus' },
+      { key: 'myProducts', label: 'Produk Saya', icon: 'fa-boxes-stacked' },
       { key: 'store', label: 'Kelola Toko', icon: 'fa-store' },
       { key: 'companyProfile', label: 'Profil Perusahaan', icon: 'fa-building-user' },
       { key: 'riskCheck', label: 'Trust Check', icon: 'fa-shield-check' },
@@ -971,6 +972,7 @@
       registration: ['Data Pribadi', 'Data Perusahaan', 'Alamat', 'Dokumen', 'Preview Submit'],
       orders: ['Semua Pesanan', 'Diproses', 'Dikirim', 'Selesai', 'Komplain'],
       addProduct: ['Info Produk', 'Harga & Stok', 'Gambar & Media', 'Spesifikasi', 'Dokumen', 'Pengiriman', 'Preview'],
+      myProducts: ['Daftar Produk', 'Produk Aktif', 'Produk Nonaktif', 'Produk Review'],
       store: ['Profil Toko', 'Legalitas', 'Rekening', 'Kurir & Gudang', 'Jam Operasional', 'Kebijakan', 'Preview Toko'],
       companyProfile: ['Compro Utama', 'Bidang Usaha', 'Legalitas', 'Portofolio', 'Produk & Jasa', 'Kontak', 'Preview Compro'],
       riskCheck: ['Skor Kepercayaan', 'Cek Produk', 'Cek Tender', 'Cek Legalitas', 'Riwayat Laporan'],
@@ -1547,6 +1549,11 @@
       window.bhSaveAdminProduct = bhSaveAdminProduct;
       window.bhSaveUserProductFromForm = bhSaveUserProductFromForm;
       window.bhProductCardImage = bhProductCardImage;
+      window.userMyProducts = userMyProducts;
+      window.userEditProductFromList = userEditProductFromList;
+      window.userToggleProductStatus = userToggleProductStatus;
+      window.userDeleteProductFromList = userDeleteProductFromList;
+      window.userDuplicateProduct = userDuplicateProduct;
     }
 
 
@@ -6061,6 +6068,7 @@ service cloud.firestore {
       if (key === 'orders') return userOrders();
       if (key === 'registration') return userRegistration();
       if (key === 'addProduct') return userAddProduct();
+      if (key === 'myProducts') return userMyProducts();
       if (key === 'store') return userStore();
       if (key === 'companyProfile') return userCompanyProfile();
       if (key === 'riskCheck') return userRiskCheck();
@@ -6247,6 +6255,238 @@ service cloud.firestore {
       return panel('Pesanan Saya', 'Kelola pesanan user.', table(['Invoice', 'Produk', 'Total', 'Status', 'Aksi'], rows));
     }
 
+
+    function getUnifiedUserProducts() {
+      const data = getUserData();
+      const localProducts = Array.isArray(data.products) ? data.products : [];
+      const savedProducts = typeof bhGetAllSavedProducts === 'function'
+        ? bhGetAllSavedProducts().filter(p => p.source === 'user' || p.ownerUserId === BISNISHUB_ACTIVE_USER_ID || p.seller === data.store?.name)
+        : [];
+
+      const merged = [...localProducts, ...savedProducts];
+      const seen = new Set();
+
+      return merged.filter(product => {
+        const key = product.id || product.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function syncUserProductEverywhere(product, mode = 'upsert') {
+      const data = getUserData();
+      data.products = Array.isArray(data.products) ? data.products : [];
+
+      if (mode === 'delete') {
+        data.products = data.products.filter(item => item.id !== product.id);
+      } else {
+        const idx = data.products.findIndex(item => item.id === product.id);
+        if (idx >= 0) data.products[idx] = { ...data.products[idx], ...product };
+        else data.products.unshift(product);
+      }
+
+      saveUserData(data);
+
+      if (typeof bhGetAllSavedProducts === 'function' && typeof bhSaveAllProducts === 'function') {
+        let all = bhGetAllSavedProducts();
+        if (mode === 'delete') {
+          all = all.filter(item => item.id !== product.id);
+        } else {
+          const idx = all.findIndex(item => item.id === product.id);
+          if (idx >= 0) all[idx] = { ...all[idx], ...product };
+          else all.unshift(product);
+        }
+        bhSaveAllProducts(all);
+      }
+
+      if (typeof firebaseIsReady === 'function' && firebaseIsReady() && typeof firebaseSetDocument === 'function' && mode !== 'delete') {
+        firebaseSetDocument(`${firebasePaths().products}/${product.id}`, {
+          ...product,
+          tenantId: BISNISHUB_TENANT_ID,
+          ownerUserId: BISNISHUB_ACTIVE_USER_ID,
+          seller: product.seller || getUserData().store.name || 'Seller BisnisHUB'
+        }).catch(error => console.error('Sinkron produk user gagal:', error));
+      }
+
+      if (typeof firebaseDeleteDocument === 'function' && typeof firebaseIsReady === 'function' && firebaseIsReady() && mode === 'delete') {
+        firebaseDeleteDocument(`${firebasePaths().products}/${product.id}`).catch(error => console.error('Hapus produk Firebase gagal:', error));
+      }
+    }
+
+    function userEditProductFromList(id) {
+      const product = getUnifiedUserProducts().find(item => item.id === id);
+      if (!product) {
+        showToast('Produk tidak ditemukan');
+        return;
+      }
+
+      state.editProductId = id;
+      state.userMenu = 'addProduct';
+      state.userSub = 'Info Produk';
+      saveState();
+      renderUserDashboard();
+
+      setTimeout(() => {
+        const fields = {
+          quickProductName: product.name,
+          quickProductCategory: product.category,
+          quickProductPrice: product.price,
+          quickProductStock: product.stock,
+          quickProductUnit: product.unit,
+          quickProductBrand: product.brand,
+          quickProductSku: product.sku,
+          quickProductListingType: product.listingType,
+          quickProductServiceArea: product.serviceArea,
+          quickProductDescription: product.description,
+          quickProductSpecs: product.specs,
+          quickProductDelivery: product.delivery,
+          quickProductImage: product.image
+        };
+
+        Object.entries(fields).forEach(([fieldId, value]) => {
+          const el = document.getElementById(fieldId);
+          if (el) el.value = value || '';
+        });
+
+        const preview = document.getElementById('quickProductImagePreview');
+        if (preview && product.image) preview.src = product.image;
+      }, 80);
+    }
+
+    function userToggleProductStatus(id) {
+      const product = getUnifiedUserProducts().find(item => item.id === id);
+      if (!product) {
+        showToast('Produk tidak ditemukan');
+        return;
+      }
+
+      const updated = { ...product, status: product.status === 'Nonaktif' ? 'Aktif' : 'Nonaktif' };
+      syncUserProductEverywhere(updated, 'upsert');
+      showToast(updated.status === 'Aktif' ? 'Produk diaktifkan' : 'Produk dinonaktifkan');
+      renderUserDashboard();
+    }
+
+    function userDeleteProductFromList(id) {
+      const product = getUnifiedUserProducts().find(item => item.id === id);
+      if (!product) {
+        showToast('Produk tidak ditemukan');
+        return;
+      }
+
+      if (!confirm(`Hapus produk "${product.name}"?`)) return;
+
+      syncUserProductEverywhere(product, 'delete');
+      showToast('Produk dihapus');
+      renderUserDashboard();
+    }
+
+    function userDuplicateProduct(id) {
+      const product = getUnifiedUserProducts().find(item => item.id === id);
+      if (!product) {
+        showToast('Produk tidak ditemukan');
+        return;
+      }
+
+      const clone = {
+        ...product,
+        id: 'PRD-' + Date.now(),
+        name: product.name + ' - Copy',
+        status: 'Aktif',
+        createdAt: new Date().toLocaleString('id-ID')
+      };
+
+      syncUserProductEverywhere(clone, 'upsert');
+      showToast('Produk berhasil diduplikasi');
+      renderUserDashboard();
+    }
+
+    function productStatusFilter(product, sub) {
+      const status = product.status || 'Aktif';
+      if (sub === 'Produk Aktif') return status === 'Aktif' || status === 'Tayang';
+      if (sub === 'Produk Nonaktif') return status === 'Nonaktif';
+      if (sub === 'Produk Review') return status === 'Review' || status === 'Menunggu Review';
+      return true;
+    }
+
+    function renderUserProductManagementList(products) {
+      if (!products.length) {
+        return `
+          <div class="rounded-[24px] border bg-white p-8 text-center">
+            <i class="fa-solid fa-box-open text-5xl text-slate-300 mb-4"></i>
+            <h3 class="font-black text-lg">Belum ada produk</h3>
+            <p class="text-sm text-slate-500 mt-2">Tambahkan produk dulu agar bisa diedit, dinonaktifkan, atau dihapus.</p>
+            <button onclick="syncUserDashboardView('addProduct','Info Produk')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Tambah Produk</button>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="grid lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          ${products.map(product => `
+            <div class="rounded-[26px] border bg-white p-4 shadow-sm">
+              <div class="h-40 rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center mb-4">
+                ${typeof bhProductCardImage === 'function' ? bhProductCardImage(product) : (product.image ? `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name}">` : `<i class="fa-solid fa-box-open text-5xl text-indigo-500"></i>`)}
+              </div>
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <h3 class="font-black text-lg leading-tight">${product.name}</h3>
+                  <p class="text-xs font-black text-orange-600 mt-1">${product.category || '-'}</p>
+                </div>
+                ${badge(product.status || 'Aktif', product.status === 'Nonaktif' ? 'slate' : product.status === 'Review' ? 'amber' : 'emerald')}
+              </div>
+              <p class="text-sm text-slate-500 mt-3 line-clamp-2">${product.description || 'Belum ada deskripsi.'}</p>
+              <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Harga</b><p class="text-slate-500 mt-1">${product.price || '-'}</p></div>
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Stok</b><p class="text-slate-500 mt-1">${product.stock || '-'}</p></div>
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Seller</b><p class="text-slate-500 mt-1">${product.seller || '-'}</p></div>
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Foto</b><p class="text-slate-500 mt-1">${product.image ? 'Ada' : 'Belum ada'}</p></div>
+              </div>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button onclick="userEditProductFromList('${product.id}')" class="bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Edit</button>
+                <button onclick="userToggleProductStatus('${product.id}')" class="bg-amber-500 text-white rounded-xl px-4 py-2 text-xs font-black">${product.status === 'Nonaktif' ? 'Aktifkan' : 'Nonaktifkan'}</button>
+                <button onclick="userDuplicateProduct('${product.id}')" class="bg-slate-900 text-white rounded-xl px-4 py-2 text-xs font-black">Duplikat</button>
+                <button onclick="userDeleteProductFromList('${product.id}')" class="bg-rose-600 text-white rounded-xl px-4 py-2 text-xs font-black">Hapus</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function userMyProducts() {
+      const sub = state.userSub || 'Daftar Produk';
+      const allProducts = getUnifiedUserProducts();
+      const products = allProducts.filter(product => productStatusFilter(product, sub));
+
+      const activeCount = allProducts.filter(product => (product.status || 'Aktif') === 'Aktif' || product.status === 'Tayang').length;
+      const nonActiveCount = allProducts.filter(product => product.status === 'Nonaktif').length;
+      const reviewCount = allProducts.filter(product => product.status === 'Review' || product.status === 'Menunggu Review').length;
+
+      return panel('Produk Saya', 'Daftar semua produk yang sudah diupload. Dari sini user bisa edit, nonaktifkan, duplikat, atau hapus produk.', `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+          ${kpiCard('Total Produk', String(allProducts.length), 'fa-boxes-stacked', 'indigo')}
+          ${kpiCard('Aktif', String(activeCount), 'fa-circle-check', 'emerald')}
+          ${kpiCard('Nonaktif', String(nonActiveCount), 'fa-circle-pause', 'slate')}
+          ${kpiCard('Review', String(reviewCount), 'fa-clock', 'amber')}
+        </div>
+
+        <div class="rounded-[24px] bg-orange-50 border border-orange-100 p-4 mb-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h3 class="font-black text-orange-800">Kelola produk dari satu tempat</h3>
+            <p class="text-sm text-orange-700 mt-1">Produk yang aktif akan ikut tampil di Marketplace B2B.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="syncUserDashboardView('addProduct','Info Produk')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black text-sm">Tambah Produk Baru</button>
+            <button onclick="switchRole('marketplace')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black text-sm">Cek Marketplace</button>
+          </div>
+        </div>
+
+        ${renderUserProductManagementList(products)}
+      `);
+    }
+
+
     function userAddProduct() {
       const active = state.userSub || 'Info Produk';
       const data = getUserData();
@@ -6341,7 +6581,7 @@ service cloud.firestore {
       }
 
       if (active === 'Preview') {
-        return panel('Produk Saya di Marketplace', 'Produk yang tersimpan di sini otomatis ditarik ke Marketplace B2B.', `
+        return panel('Produk Saya di Marketplace', 'Produk yang tersimpan di sini otomatis ditarik ke Marketplace B2B. Untuk edit/hapus, buka menu Produk Saya.', `
           ${renderUserProductList()}
           <div class="mt-5 flex flex-wrap gap-2">
             <button onclick="state.editProductId=null; openUserSub('Info Produk')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Tambah Produk Baru</button>
