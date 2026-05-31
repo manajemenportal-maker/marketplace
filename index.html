@@ -160,6 +160,8 @@
     }
     .toast.show { display: block; }
 
+    .menu-button[data-menu-key="addProduct"] { display: none !important; }
+
     /* Produk Saya professional menu: old addProduct menu hidden but engine remains active */
     .menu-button[data-menu-key="addProduct"] {
       display: none !important;
@@ -996,7 +998,7 @@
       registration: ['Data Pribadi', 'Data Perusahaan', 'Alamat', 'Dokumen', 'Preview Submit'],
       orders: ['Semua Pesanan', 'Diproses', 'Dikirim', 'Selesai', 'Komplain'],
       addProduct: ['Info Produk', 'Harga & Stok', 'Gambar & Media', 'Spesifikasi', 'Dokumen', 'Pengiriman', 'Preview'],
-      myProducts: ['Daftar Produk', 'Produk Aktif', 'Produk Nonaktif', 'Produk Review'],
+      myProducts: ['Upload Produk', 'Daftar Produk', 'Produk Aktif', 'Produk Nonaktif', 'Produk Review'],
       store: ['Profil Toko', 'Legalitas', 'Rekening', 'Kurir & Gudang', 'Jam Operasional', 'Kebijakan', 'Preview Toko'],
       companyProfile: ['Compro Utama', 'Bidang Usaha', 'Legalitas', 'Portofolio', 'Produk & Jasa', 'Kontak', 'Preview Compro'],
       riskCheck: ['Skor Kepercayaan', 'Cek Produk', 'Cek Tender', 'Cek Legalitas', 'Riwayat Laporan'],
@@ -3068,6 +3070,383 @@
     }
 
 
+
+    // === BISNISHUB UPLOAD PRODUK MANDIRI FINAL ===
+    window.__mandiriProductImage = '';
+
+    function mandiriToast(msg) {
+      if (typeof showToast === 'function') showToast(msg);
+      else console.log(msg);
+    }
+
+    function mandiriCompressImage(file, callback) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+
+        img.onload = function() {
+          const maxW = 900;
+          const maxH = 700;
+          let w = img.width || maxW;
+          let h = img.height || maxH;
+          const ratio = Math.min(maxW / w, maxH / h, 1);
+
+          w = Math.max(1, Math.round(w * ratio));
+          h = Math.max(1, Math.round(h * ratio));
+
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+
+          let q = 0.78;
+          let dataUrl = canvas.toDataURL('image/jpeg', q);
+          while (dataUrl.length > 420000 && q > 0.35) {
+            q -= 0.07;
+            dataUrl = canvas.toDataURL('image/jpeg', q);
+          }
+
+          callback(dataUrl);
+        };
+
+        img.onerror = function() {
+          alert('Gambar tidak terbaca. Gunakan JPG, PNG, atau WebP. Foto HEIC/iPhone perlu diubah ke JPG dulu.');
+        };
+
+        img.src = event.target.result;
+      };
+
+      reader.onerror = function() {
+        alert('Gagal membaca file foto.');
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    function mandiriReadImage(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      if (!file.type || !file.type.startsWith('image/')) {
+        alert('File harus gambar JPG, PNG, atau WebP.');
+        return;
+      }
+
+      mandiriToast('Membaca foto produk...');
+
+      mandiriCompressImage(file, function(dataUrl) {
+        window.__mandiriProductImage = dataUrl;
+
+        const preview = document.getElementById('mandiriProductPreview');
+        const hidden = document.getElementById('mandiriProductImage');
+        const label = document.getElementById('mandiriProductImageStatus');
+
+        if (preview) preview.src = dataUrl;
+        if (hidden) hidden.value = dataUrl;
+        if (label) label.textContent = 'Foto siap disimpan';
+
+        mandiriToast('Foto berhasil masuk preview');
+      });
+    }
+
+    function mandiriGetProducts() {
+      const data = getUserData();
+      const a = Array.isArray(data.products) ? data.products : [];
+      const b = typeof bhGetAllSavedProducts === 'function'
+        ? bhGetAllSavedProducts().filter(p => p.source === 'user' || p.ownerUserId === BISNISHUB_ACTIVE_USER_ID || p.seller === data.store?.name)
+        : [];
+
+      const merged = [...a, ...b];
+      const seen = new Set();
+
+      return merged.filter(p => {
+        const key = p.id || p.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function mandiriRenderImage(product) {
+      if (product?.image) {
+        return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">`;
+      }
+      if (product?.imageKey) {
+        return `<img data-mandiri-image-key="${product.imageKey}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}"><span class="text-xs text-slate-400">Memuat foto...</span>`;
+      }
+      return `<i class="fa-solid ${product?.icon || 'fa-box-open'} text-5xl text-indigo-500"></i>`;
+    }
+
+    async function mandiriHydrateImages() {
+      if (typeof bhIdbGetProductImage !== 'function') return;
+
+      const imgs = document.querySelectorAll('img[data-mandiri-image-key]');
+      for (const img of imgs) {
+        const key = img.getAttribute('data-mandiri-image-key');
+        if (!key || img.dataset.loaded === 'true') continue;
+
+        try {
+          const dataUrl = await bhIdbGetProductImage(key);
+          if (dataUrl) {
+            img.src = dataUrl;
+            img.dataset.loaded = 'true';
+          }
+        } catch (error) {
+          console.warn('Gagal load foto mandiri:', error);
+        }
+      }
+    }
+
+    function mandiriForm(editId = null) {
+      const data = getUserData();
+      const editing = editId ? mandiriGetProducts().find(p => p.id === editId) : null;
+      window.__mandiriEditId = editId || '';
+      window.__mandiriProductImage = editing?.image || '';
+
+      return panel(editing ? 'Edit Produk' : 'Upload Produk', 'Form upload produk mandiri. Foto langsung preview dan tersimpan ke produk.', `
+        <div class="grid lg:grid-cols-[280px_1fr] gap-5">
+          <div class="rounded-[28px] border bg-white p-5">
+            <label class="text-xs font-black uppercase text-slate-500">Foto Produk</label>
+            <div class="mt-3 h-52 rounded-[24px] bg-slate-100 border overflow-hidden flex items-center justify-center">
+              <img id="mandiriProductPreview" src="${editing?.image || ''}" class="w-full h-full object-cover" alt="">
+            </div>
+            <input id="mandiriProductImage" type="hidden" value="${editing?.image || ''}">
+            <input id="mandiriPhotoInput" type="file" accept="image/*" onchange="window.mandiriReadImage(this)" class="mt-4 border rounded-2xl p-3 w-full bg-white">
+            <p id="mandiriProductImageStatus" class="text-xs text-slate-500 mt-2">${editing?.image ? 'Foto lama terbaca' : 'Pilih foto produk JPG/PNG/WebP'}</p>
+          </div>
+
+          <div class="rounded-[28px] border bg-white p-5">
+            <div class="grid md:grid-cols-2 gap-4">
+              <input id="mandiriName" class="border rounded-2xl p-3" placeholder="Nama produk" value="${editing?.name || ''}">
+              <select id="mandiriCategory" class="border rounded-2xl p-3 bg-white">
+                ${typeof categoryOptions === 'function' ? categoryOptions(editing?.category || '') : `<option>${editing?.category || 'Produk Industri'}</option>`}
+              </select>
+              <input id="mandiriPrice" class="border rounded-2xl p-3" placeholder="Harga" value="${editing?.price || ''}">
+              <input id="mandiriStock" class="border rounded-2xl p-3" placeholder="Stok" value="${editing?.stock || ''}">
+              <input id="mandiriUnit" class="border rounded-2xl p-3" placeholder="Satuan" value="${editing?.unit || 'Unit'}">
+              <select id="mandiriType" class="border rounded-2xl p-3 bg-white">
+                ${['Produk Fisik','Bidang Jasa Industri','Jasa Keteknikan','Jasa Survey / Lapangan','Sewa / Rental Alat','Produk Digital','Tender / Proyek'].map(type => `<option ${editing?.listingType === type ? 'selected' : ''}>${type}</option>`).join('')}
+              </select>
+              <input id="mandiriBrand" class="border rounded-2xl p-3" placeholder="Brand / Merek" value="${editing?.brand || ''}">
+              <input id="mandiriSku" class="border rounded-2xl p-3" placeholder="SKU / Kode" value="${editing?.sku || ''}">
+              <input id="mandiriDelivery" class="border rounded-2xl p-3 md:col-span-2" placeholder="Pengiriman / area layanan" value="${editing?.delivery || ''}">
+              <textarea id="mandiriDescription" class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Deskripsi produk">${editing?.description || ''}</textarea>
+              <textarea id="mandiriSpecs" class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Spesifikasi teknis">${editing?.specs || ''}</textarea>
+            </div>
+
+            <div class="mt-5 flex flex-wrap gap-2">
+              <button onclick="window.mandiriSaveProduct()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">${editing ? 'Update Produk' : 'Simpan Produk'}</button>
+              <button onclick="syncUserDashboardView('myProducts','Daftar Produk')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Daftar Produk</button>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    async function mandiriSaveProduct() {
+      try {
+        const name = document.getElementById('mandiriName')?.value?.trim() || '';
+        if (!name) {
+          mandiriToast('Nama produk wajib diisi');
+          return;
+        }
+
+        const data = getUserData();
+        data.products = Array.isArray(data.products) ? data.products : [];
+
+        const id = window.__mandiriEditId || ('PRD-' + Date.now());
+        const listingType = document.getElementById('mandiriType')?.value || 'Produk Fisik';
+        const image = document.getElementById('mandiriProductImage')?.value || window.__mandiriProductImage || '';
+
+        const product = {
+          id,
+          name,
+          category: document.getElementById('mandiriCategory')?.value?.trim() || 'Produk Industri',
+          price: document.getElementById('mandiriPrice')?.value?.trim() || 'Hubungi Seller',
+          stock: document.getElementById('mandiriStock')?.value?.trim() || 'Ready',
+          unit: document.getElementById('mandiriUnit')?.value?.trim() || 'Unit',
+          brand: document.getElementById('mandiriBrand')?.value?.trim() || '',
+          sku: document.getElementById('mandiriSku')?.value?.trim() || '',
+          listingType,
+          delivery: document.getElementById('mandiriDelivery')?.value?.trim() || '',
+          description: document.getElementById('mandiriDescription')?.value?.trim() || '',
+          specs: document.getElementById('mandiriSpecs')?.value?.trim() || '',
+          image,
+          imageKey: image ? id : '',
+          seller: data.store?.name || 'Seller BisnisHUB',
+          badge: listingType.includes('Jasa') ? 'Jasa' : 'User',
+          icon: listingType.includes('Jasa') ? 'fa-handshake-angle' : 'fa-box-open',
+          status: 'Aktif',
+          source: 'user',
+          ownerUserId: typeof BISNISHUB_ACTIVE_USER_ID !== 'undefined' ? BISNISHUB_ACTIVE_USER_ID : 'user-demo-main',
+          createdAt: new Date().toLocaleString('id-ID')
+        };
+
+        if (image && typeof bhIdbPutProductImage === 'function') {
+          await bhIdbPutProductImage(id, image);
+          // Jaga localStorage tetap ringan
+          product.image = '';
+        }
+
+        const idx = data.products.findIndex(p => p.id === id);
+        if (idx >= 0) data.products[idx] = { ...data.products[idx], ...product };
+        else data.products.unshift(product);
+
+        localStorage.setItem('bisnishub_user_data', JSON.stringify(data));
+
+        if (typeof bhGetAllSavedProducts === 'function' && typeof bhSaveAllProducts === 'function') {
+          let all = bhGetAllSavedProducts();
+          const gidx = all.findIndex(p => p.id === id);
+          if (gidx >= 0) all[gidx] = { ...all[gidx], ...product };
+          else all.unshift(product);
+          bhSaveAllProducts(all);
+        }
+
+        if (typeof firebaseIsReady === 'function' && firebaseIsReady() && typeof firebaseSetDocument === 'function') {
+          firebaseSetDocument(`${firebasePaths().products}/${id}`, {
+            ...product,
+            tenantId: BISNISHUB_TENANT_ID,
+            ownerUserId: BISNISHUB_ACTIVE_USER_ID,
+            seller: product.seller
+          }).catch(err => console.error('Firebase mandiri save failed:', err));
+        }
+
+        window.__mandiriProductImage = '';
+        window.__mandiriEditId = '';
+        state.userMenu = 'myProducts';
+        state.userSub = 'Daftar Produk';
+        saveState();
+
+        mandiriToast('Produk berhasil disimpan');
+        renderUserDashboard();
+        setTimeout(mandiriHydrateImages, 200);
+      } catch (error) {
+        console.error('Mandiri save product error:', error);
+        alert('Gagal simpan produk: ' + (error.message || error));
+      }
+    }
+
+    function mandiriEdit(id) {
+      state.userMenu = 'myProducts';
+      state.userSub = 'Upload Produk';
+      state.editProductId = id;
+      saveState();
+      renderUserDashboard();
+      setTimeout(mandiriHydrateImages, 200);
+    }
+
+    function mandiriProductStatusFilter(product, sub) {
+      const status = product.status || 'Aktif';
+      if (sub === 'Produk Aktif') return status === 'Aktif' || status === 'Tayang';
+      if (sub === 'Produk Nonaktif') return status === 'Nonaktif';
+      if (sub === 'Produk Review') return status === 'Review' || status === 'Menunggu Review';
+      return true;
+    }
+
+    function mandiriList() {
+      const sub = state.userSub || 'Daftar Produk';
+      const all = mandiriGetProducts();
+      const products = all.filter(p => mandiriProductStatusFilter(p, sub));
+
+      if (!products.length) {
+        return `
+          <div class="rounded-[24px] border bg-white p-8 text-center">
+            <i class="fa-solid fa-box-open text-5xl text-slate-300 mb-4"></i>
+            <h3 class="font-black text-lg">Belum ada produk</h3>
+            <p class="text-sm text-slate-500 mt-2">Klik Upload Produk untuk menambah produk dan foto.</p>
+            <button onclick="syncUserDashboardView('myProducts','Upload Produk')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Upload Produk</button>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="grid lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          ${products.map(product => `
+            <div class="rounded-[26px] border bg-white p-4 shadow-sm">
+              <div class="h-40 rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center mb-4">
+                ${mandiriRenderImage(product)}
+              </div>
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h3 class="font-black text-lg leading-tight">${product.name}</h3>
+                  <p class="text-xs font-black text-orange-600 mt-1">${product.category || '-'}</p>
+                </div>
+                ${badge(product.status || 'Aktif', product.status === 'Nonaktif' ? 'slate' : 'emerald')}
+              </div>
+              <p class="text-sm text-slate-500 mt-3 line-clamp-2">${product.description || 'Belum ada deskripsi.'}</p>
+              <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Harga</b><p class="text-slate-500 mt-1">${product.price || '-'}</p></div>
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Stok</b><p class="text-slate-500 mt-1">${product.stock || '-'}</p></div>
+              </div>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button onclick="mandiriEdit('${product.id}')" class="bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Edit</button>
+                <button onclick="userToggleProductStatus('${product.id}')" class="bg-amber-500 text-white rounded-xl px-4 py-2 text-xs font-black">${product.status === 'Nonaktif' ? 'Aktifkan' : 'Nonaktifkan'}</button>
+                <button onclick="userDeleteProductFromList('${product.id}')" class="bg-rose-600 text-white rounded-xl px-4 py-2 text-xs font-black">Hapus</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function userMyProductsMandiri() {
+      const sub = state.userSub || 'Daftar Produk';
+
+      if (sub === 'Upload Produk') {
+        return mandiriForm(state.editProductId || null);
+      }
+
+      const all = mandiriGetProducts();
+      const activeCount = all.filter(p => (p.status || 'Aktif') === 'Aktif' || p.status === 'Tayang').length;
+      const nonActiveCount = all.filter(p => p.status === 'Nonaktif').length;
+      const reviewCount = all.filter(p => p.status === 'Review' || p.status === 'Menunggu Review').length;
+
+      return panel('Produk Saya', 'Upload, kelola, edit, nonaktifkan, dan hapus produk dari satu menu.', `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+          ${kpiCard('Total Produk', String(all.length), 'fa-boxes-stacked', 'indigo')}
+          ${kpiCard('Aktif', String(activeCount), 'fa-circle-check', 'emerald')}
+          ${kpiCard('Nonaktif', String(nonActiveCount), 'fa-circle-pause', 'slate')}
+          ${kpiCard('Review', String(reviewCount), 'fa-clock', 'amber')}
+        </div>
+
+        <div class="rounded-[24px] bg-orange-50 border border-orange-100 p-4 mb-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h3 class="font-black text-orange-800">Produk seller</h3>
+            <p class="text-sm text-orange-700 mt-1">Foto disimpan terpisah agar upload lebih stabil.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="syncUserDashboardView('myProducts','Upload Produk')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black text-sm">Upload Produk</button>
+            <button onclick="switchRole('marketplace')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black text-sm">Cek Marketplace</button>
+          </div>
+        </div>
+
+        ${mandiriList()}
+      `);
+    }
+
+    function installMandiriProductModule() {
+      window.mandiriReadImage = mandiriReadImage;
+      window.mandiriSaveProduct = mandiriSaveProduct;
+      window.mandiriEdit = mandiriEdit;
+      window.userMyProducts = userMyProductsMandiri;
+      window.mandiriHydrateImages = mandiriHydrateImages;
+
+      // Renderer untuk marketplace/list lama
+      window.bhRenderProductImageIndexedDB = mandiriRenderImage;
+      window.bhRenderProductImageLocalFirst = mandiriRenderImage;
+      window.bhFinalProductImage = mandiriRenderImage;
+      window.productImageRenderHard = mandiriRenderImage;
+      window.globalProductImage = mandiriRenderImage;
+      window.safeProductImage = mandiriRenderImage;
+      window.bhProductCardImage = mandiriRenderImage;
+      window.productImageOrIcon = mandiriRenderImage;
+    }
+
+
     function renderApp() {
       try {
         if (state.role !== 'marketplace' && typeof marketplaceCarouselTimer !== 'undefined') {
@@ -3095,6 +3474,7 @@
         }
 
         if (typeof scrubWrongRoleButtons === 'function') setTimeout(scrubWrongRoleButtons, 0);
+        if (typeof mandiriHydrateImages === 'function') setTimeout(mandiriHydrateImages, 100);
         if (typeof bhHydrateProductImages === 'function') setTimeout(bhHydrateProductImages, 0);
         if (typeof bhEnsureIndexedDBUploadBlock === 'function') setTimeout(bhEnsureIndexedDBUploadBlock, 0);
         setTimeout(bhFinalEnsureUploadBlock, 0);
@@ -8016,198 +8396,8 @@ service cloud.firestore {
 
 
     function userMyProducts() {
-      let sub = state.userSub || 'Daftar Produk';
-
-      if (sub === 'Tambah Produk') {
-        sub = 'Daftar Produk';
-        state.userSub = 'Daftar Produk';
-        saveState();
-      }
-
-      const allProducts = getUnifiedUserProducts();
-      const products = allProducts.filter(product => productStatusFilter(product, sub));
-
-      const activeCount = allProducts.filter(product => (product.status || 'Aktif') === 'Aktif' || product.status === 'Tayang').length;
-      const nonActiveCount = allProducts.filter(product => product.status === 'Nonaktif').length;
-      const reviewCount = allProducts.filter(product => product.status === 'Review' || product.status === 'Menunggu Review').length;
-
-      return panel('Produk Saya', 'Daftar semua produk yang sudah diupload. Dari sini user bisa edit, nonaktifkan, duplikat, atau hapus produk.', `
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-          ${kpiCard('Total Produk', String(allProducts.length), 'fa-boxes-stacked', 'indigo')}
-          ${kpiCard('Aktif', String(activeCount), 'fa-circle-check', 'emerald')}
-          ${kpiCard('Nonaktif', String(nonActiveCount), 'fa-circle-pause', 'slate')}
-          ${kpiCard('Review', String(reviewCount), 'fa-clock', 'amber')}
-        </div>
-
-        <div class="rounded-[24px] bg-orange-50 border border-orange-100 p-4 mb-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div>
-            <h3 class="font-black text-orange-800">Kelola produk dari satu tempat</h3>
-            <p class="text-sm text-orange-700 mt-1">Produk yang aktif akan ikut tampil di Marketplace B2B.</p>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            
-            <button onclick="switchRole('marketplace')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black text-sm">Cek Marketplace</button>
-          </div>
-        </div>
-
-        ${renderUserProductManagementList(products)}
-      `);
+      return userMyProductsMandiri();
     }
-
-
-
-    function safeProductImageCompress(file, callback) {
-      const reader = new FileReader();
-
-      reader.onload = function(event) {
-        const img = new Image();
-
-        img.onload = function() {
-          let w = img.width;
-          let h = img.height;
-          const ratio = Math.min(900 / w, 700 / h, 1);
-
-          w = Math.round(w * ratio);
-          h = Math.round(h * ratio);
-
-          const canvas = document.createElement('canvas');
-          canvas.width = w;
-          canvas.height = h;
-
-          const ctx = canvas.getContext('2d');
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, w, h);
-          ctx.drawImage(img, 0, 0, w, h);
-
-          let q = 0.76;
-          let dataUrl = canvas.toDataURL('image/jpeg', q);
-
-          while (dataUrl.length > 360000 && q > 0.35) {
-            q -= 0.08;
-            dataUrl = canvas.toDataURL('image/jpeg', q);
-          }
-
-          callback(dataUrl);
-        };
-
-        img.onerror = function() {
-          callback(event.target.result);
-        };
-
-        img.src = event.target.result;
-      };
-
-      reader.onerror = function() {
-        showToast('Gagal membaca foto produk');
-      };
-
-      reader.readAsDataURL(file);
-    }
-
-    function safeReadUserProductImage(input) {
-      const file = input.files && input.files[0];
-      if (!file) return;
-
-      showToast('Mengompres foto produk...');
-
-      safeProductImageCompress(file, function(dataUrl) {
-        const hidden = document.getElementById('quickProductImage');
-        const preview = document.getElementById('quickProductImagePreview');
-
-        if (hidden) hidden.value = dataUrl;
-        if (preview) preview.src = dataUrl;
-
-        showToast('Foto produk siap disimpan');
-      });
-    }
-
-    function safeProductImage(product) {
-      if (product && product.image) {
-        return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">`;
-      }
-      return `<i class="fa-solid ${product.icon || 'fa-box-open'} text-5xl text-indigo-500"></i>`;
-    }
-
-    function safeBuildUserProductFromForm() {
-      const data = getUserData();
-
-      const name = document.getElementById('quickProductName')?.value?.trim() || '';
-      if (!name) {
-        showToast('Nama produk wajib diisi');
-        return null;
-      }
-
-      const listingType = document.getElementById('quickProductListingType')?.value?.trim() || 'Produk Fisik';
-
-      return {
-        id: state.editProductId || ('PRD-' + Date.now()),
-        name,
-        category: document.getElementById('quickProductCategory')?.value?.trim() || 'Produk Industri',
-        price: document.getElementById('quickProductPrice')?.value?.trim() || 'Hubungi Seller',
-        stock: document.getElementById('quickProductStock')?.value?.trim() || 'Ready',
-        unit: document.getElementById('quickProductUnit')?.value?.trim() || 'Unit',
-        brand: document.getElementById('quickProductBrand')?.value?.trim() || '',
-        sku: document.getElementById('quickProductSku')?.value?.trim() || '',
-        listingType,
-        serviceArea: document.getElementById('quickProductServiceArea')?.value?.trim() || '',
-        description: document.getElementById('quickProductDescription')?.value?.trim() || '',
-        specs: document.getElementById('quickProductSpecs')?.value?.trim() || '',
-        delivery: document.getElementById('quickProductDelivery')?.value?.trim() || '',
-        image: getProductPhotoValue('quick'),
-        seller: data.store?.name || 'Seller BisnisHUB',
-        badge: listingType.includes('Jasa') ? 'Jasa' : 'User',
-        icon: listingType.includes('Jasa') ? 'fa-handshake-angle' : 'fa-box-open',
-        status: 'Aktif',
-        source: 'user',
-        createdAt: new Date().toLocaleString('id-ID')
-      };
-    }
-
-    function safeSaveUserProductFromForm() {
-      try {
-        const product = safeBuildUserProductFromForm();
-        if (!product) return;
-
-        const data = getUserData();
-        data.products = Array.isArray(data.products) ? data.products : [];
-
-        const idx = data.products.findIndex(item => item.id === product.id);
-        if (idx >= 0) data.products[idx] = { ...data.products[idx], ...product };
-        else data.products.unshift(product);
-
-        saveUserData(data);
-
-        if (typeof bhGetAllSavedProducts === 'function' && typeof bhSaveAllProducts === 'function') {
-          const all = bhGetAllSavedProducts();
-          const globalIdx = all.findIndex(item => item.id === product.id);
-          if (globalIdx >= 0) all[globalIdx] = { ...all[globalIdx], ...product };
-          else all.unshift(product);
-          bhSaveAllProducts(all);
-        }
-
-        if (typeof firebaseIsReady === 'function' && firebaseIsReady() && typeof firebaseSetDocument === 'function') {
-          firebaseSetDocument(`${firebasePaths().products}/${product.id}`, {
-            ...product,
-            tenantId: BISNISHUB_TENANT_ID,
-            ownerUserId: BISNISHUB_ACTIVE_USER_ID,
-            seller: product.seller
-          }).catch(error => console.error('Firebase produk gagal:', error));
-          showToast('Produk disimpan ke Firebase dan masuk Marketplace');
-        } else {
-          showToast('Produk tersimpan sementara dan tampil di daftar. Firebase belum aktif.');
-        }
-
-        state.editProductId = null;
-        state.userMenu = 'myProducts';
-        state.userSub = 'Daftar Produk';
-        saveState();
-        renderUserDashboard();
-      } catch (error) {
-        console.error('Gagal simpan produk:', error);
-        alert('Gagal simpan produk: ' + (error.message || error));
-      }
-    }
-
 
     function userAddProduct() {
       const active = state.userSub || 'Info Produk';
@@ -8863,7 +9053,9 @@ service cloud.firestore {
     if (typeof bhFinalInstallUploadCapture === 'function') bhFinalInstallUploadCapture();
     if (typeof bhInstallLocalFirstUploadFix === 'function') bhInstallLocalFirstUploadFix();
     if (typeof bhInstallIndexedDBPhotoFix === 'function') bhInstallIndexedDBPhotoFix();
+    if (typeof installMandiriProductModule === 'function') installMandiriProductModule();
     renderApp();
+    setTimeout(mandiriHydrateImages, 300);
     setTimeout(bhHydrateProductImages, 300);
   </script>
 </body>
