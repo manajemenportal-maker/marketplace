@@ -160,6 +160,11 @@
     }
     .toast.show { display: block; }
 
+    /* Safe hide old separate Tambah Produk menu button */
+    .menu-button[data-menu-key="addProduct"] {
+      display: none !important;
+    }
+
     .user-admin-entry,
     [data-admin-entry="true"],
     .hide-from-user {
@@ -938,6 +943,7 @@
       { key: 'overview', label: 'Ringkasan', icon: 'fa-gauge' },
       { key: 'registration', label: 'Data Registrasi', icon: 'fa-id-card' },
       { key: 'orders', label: 'Pesanan Saya', icon: 'fa-box-open' },
+      { key: 'addProduct', label: 'Tambah Produk', icon: 'fa-circle-plus' },
       { key: 'myProducts', label: 'Produk Saya', icon: 'fa-boxes-stacked' },
       { key: 'store', label: 'Kelola Toko', icon: 'fa-store' },
       { key: 'companyProfile', label: 'Profil Perusahaan', icon: 'fa-building-user' },
@@ -1556,6 +1562,19 @@
     }
 
 
+
+    function hideOldTambahProdukMenu() {
+      if (state.role !== 'user') return;
+      document.querySelectorAll('button').forEach(btn => {
+        const text = (btn.textContent || '').trim();
+        const click = btn.getAttribute('onclick') || '';
+        if (text === 'Tambah Produk' && click.includes("openUserMenu('addProduct')")) {
+          btn.style.display = 'none';
+        }
+      });
+    }
+
+
     function renderApp() {
       if (state.role !== 'marketplace') clearInterval(marketplaceCarouselTimer);
       if (state.role === 'admin') {
@@ -1572,6 +1591,7 @@
         renderMarketplace();
       }
       setTimeout(scrubWrongRoleButtons, 0);
+      setTimeout(hideOldTambahProdukMenu, 0);
     }
 
     function renderHeader(title, subtitle, isAdmin) {
@@ -5023,7 +5043,7 @@ service cloud.firestore {
       state.userMenu = 'myProducts';
       state.userSub = 'Daftar Produk';
       saveState();
-      showToast(firebaseIsReady && firebaseIsReady() ? 'Produk disimpan ke Firebase dan Marketplace' : 'Produk tersimpan dan tampil sementara. Firebase belum aktif, isi Koneksi Firebase di dashboard admin agar masuk database pusat.');
+      showToast(firebaseIsReady && firebaseIsReady() ? 'Produk disimpan ke Firebase dan Marketplace' : 'Produk tersimpan dan tampil sementara. Firebase belum aktif.');
       renderUserDashboard();
     }
 
@@ -5811,7 +5831,7 @@ service cloud.firestore {
         }).catch(error => console.error('Produk gagal dikirim ke Firebase:', error));
       }
       state.editProductId = null;
-      showToast(firebaseIsReady() ? 'Produk disimpan ke Firebase dan masuk Marketplace' : 'Produk tersimpan sementara. Firebase belum aktif, isi Koneksi Firebase di dashboard admin agar masuk database pusat.');
+      showToast(firebaseIsReady() ? 'Produk disimpan ke Firebase dan masuk Marketplace' : 'Produk tersimpan sementara. Isi Koneksi Firebase di dashboard admin agar masuk database pusat.');
       state.userMenu = 'myProducts';
       state.userSub = 'Daftar Produk';
       saveState();
@@ -5900,8 +5920,8 @@ service cloud.firestore {
       if (!product) return;
 
       state.editProductId = id;
-      state.userMenu = 'myProducts';
-      state.userSub = 'Tambah Produk';
+      state.userMenu = 'addProduct';
+      state.userSub = 'Info Produk';
       saveState();
       renderUserDashboard();
 
@@ -6321,8 +6341,8 @@ service cloud.firestore {
       }
 
       state.editProductId = id;
-      state.userMenu = 'myProducts';
-      state.userSub = 'Tambah Produk';
+      state.userMenu = 'addProduct';
+      state.userSub = 'Info Produk';
       saveState();
       renderUserDashboard();
 
@@ -6454,19 +6474,19 @@ service cloud.firestore {
     }
 
 
-    function userAddProductAsProdukSaya() {
+    function userAddProductInsideMyProducts() {
       const oldMenu = state.userMenu;
       const oldSub = state.userSub;
 
-      state.userMenu = 'myProducts';
-      state.userSub = 'Tambah Produk';
+      state.userMenu = 'addProduct';
+      state.userSub = 'Info Produk';
 
-      const content = userAddProduct();
+      let content = userAddProduct();
 
       state.userMenu = oldMenu;
       state.userSub = oldSub;
 
-      return content.replaceAll("syncUserDashboardView('myProducts','Tambah Produk')", "syncUserDashboardView('myProducts','Tambah Produk')");
+      return content;
     }
 
 
@@ -6474,7 +6494,7 @@ service cloud.firestore {
       const sub = state.userSub || 'Daftar Produk';
 
       if (sub === 'Tambah Produk') {
-        return userAddProductAsProdukSaya();
+        return userAddProductInsideMyProducts();
       }
 
       const allProducts = getUnifiedUserProducts();
