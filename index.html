@@ -1106,10 +1106,13 @@
               <button onclick="openSupportModal()" class="px-4 py-2 rounded-xl text-xs font-black bg-orange-500 text-white">
                 Bantuan
               </button>
-              ${!isAdmin ? `<button onclick="exitUserDashboard()" class="px-4 py-2 rounded-xl text-xs font-black bg-slate-100 text-slate-700">Akun Awal</button>` : ''}
-              <button onclick="resetCurrentDashboard()" class="px-4 py-2 rounded-xl text-xs font-black bg-amber-400 text-slate-950">
-                Reset Halaman Ini
+              <button onclick="logoutToMarketplace()" class="px-4 py-2 rounded-xl text-xs font-black bg-rose-600 text-white">
+                Keluar
               </button>
+
+              ${isAdmin ? `<button onclick="resetCurrentDashboard()" class="px-4 py-2 rounded-xl text-xs font-black bg-amber-400 text-slate-950">
+                Reset Halaman Ini
+              </button>` : ''}
             </div>
           </div>
         </header>
@@ -1151,6 +1154,18 @@
       saveState();
       renderApp();
       showToast(role === 'marketplace' ? 'Masuk Marketplace B2B' : role === 'tender' ? 'Masuk Bursa Tender' : `Masuk sebagai ${role.toUpperCase()}`);
+    }
+
+    function logoutToMarketplace() {
+      state.role = 'marketplace';
+      state.userGate = 'entry';
+      state.adminMenu = 'overview';
+      state.adminSub = 'Ringkasan';
+      state.userMenu = 'overview';
+      state.userSub = 'Ringkasan';
+      saveState();
+      renderMarketplace();
+      showToast('Keluar ke Marketplace');
     }
 
     function resetCurrentDashboard() {
@@ -4416,9 +4431,9 @@
             <i class="fa-solid fa-user"></i>
             <span>Akun</span>
           </button>
-          <button onclick="${isAdmin ? "switchRole('admin')" : "openSupportModal()"}" class="dock-item ${isAdmin ? 'active' : ''}">
-            <i class="fa-solid ${isAdmin ? 'fa-shield-halved' : 'fa-headset'}"></i>
-            <span>${isAdmin ? 'Admin' : 'Bantuan'}</span>
+          <button onclick="${(isAdmin || isUser) ? "logoutToMarketplace()" : "openSupportModal()"}" class="dock-item ${isAdmin ? 'active' : ''}">
+            <i class="fa-solid ${(isAdmin || isUser) ? 'fa-right-from-bracket' : 'fa-headset'}"></i>
+            <span>${(isAdmin || isUser) ? 'Keluar' : 'Bantuan'}</span>
           </button>
         </nav>
       `;
