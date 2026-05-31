@@ -4209,6 +4209,66 @@
     }
 
 
+
+    // === BISNISHUB APPROVED PRODUCTS TO MARKETPLACE BRIDGE ===
+    function getApprovedUserProductsForMarketplace() {
+      const data = typeof getUserData === 'function' ? getUserData() : { products: [], store: {} };
+      const userProducts = Array.isArray(data.products) ? data.products : [];
+      const savedProducts = typeof bhGetAllSavedProducts === 'function' ? bhGetAllSavedProducts() : [];
+
+      const merged = [...savedProducts, ...userProducts];
+      const seen = new Set();
+
+      return merged
+        .filter(product => {
+          const key = product.id || product.name;
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+
+          const status = product.status || '';
+          return ['Aktif', 'Tayang', 'Admin'].includes(status);
+        })
+        .map(product => ({
+          ...product,
+          id: product.id || ('PRD-' + String(product.name || '').replace(/\s+/g, '-')),
+          name: product.name || 'Produk User',
+          seller: product.seller || data.store?.name || 'Seller BisnisHUB',
+          category: product.category || 'Produk Industri',
+          price: product.price || 'Hubungi Seller',
+          badge: product.badge || (product.listingType && product.listingType.includes('Jasa') ? 'Jasa' : 'User'),
+          icon: product.icon || (product.listingType && product.listingType.includes('Jasa') ? 'fa-handshake-angle' : 'fa-box-open'),
+          image: product.image || '',
+          imageKey: product.imageKey || product.id || '',
+          status: product.status || 'Aktif',
+          source: product.source || 'approved-user'
+        }));
+    }
+
+    function mergeApprovedProductsIntoMarketplace(products) {
+      const approved = getApprovedUserProductsForMarketplace();
+      const base = Array.isArray(products) ? products : [];
+      const seen = new Set();
+
+      return [...approved, ...base].filter(product => {
+        const key = product.id || product.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function openMarketplaceAfterApproval() {
+      state.role = 'marketplace';
+      state.selectedCompanyId = null;
+      saveState();
+      renderMarketplace();
+      setTimeout(() => {
+        if (typeof mandiriHydrateImages === 'function') mandiriHydrateImages();
+        if (typeof bhHydrateProductImages === 'function') bhHydrateProductImages();
+      }, 300);
+    }
+
+
     function renderMarketplace() {
       if (firebaseIsReady() && !window.bisnisHubMarketplaceLoadedOnce) {
         window.bisnisHubMarketplaceLoadedOnce = true;
@@ -4287,6 +4347,7 @@
         </main>
         ${renderFloatingHelp()}${renderMobileBottomDock()}
       `;
+      setTimeout(() => { if (typeof mandiriHydrateImages === 'function') mandiriHydrateImages(); if (typeof bhHydrateProductImages === 'function') bhHydrateProductImages(); }, 250);
     }
 
 
@@ -6815,7 +6876,7 @@ service cloud.firestore {
       if (product && product.image) {
         return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">`;
       }
-      return `${bhRenderProductImageIndexedDB(product)}`;
+      return `${mandiriRenderImage(product)}`;
     }
 
     function bhBuildProductFromForm(prefix = 'admin', source = 'admin') {
@@ -6981,7 +7042,7 @@ service cloud.firestore {
       const rows = products.map(product => `
         <tr>
           <td>
-            <div class="w-16 h-12 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center">${bhRenderProductImageIndexedDB(product)}</div>
+            <div class="w-16 h-12 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center">${mandiriRenderImage(product)}</div>
           </td>
           <td><b>${product.name}</b><br><span class="text-xs text-slate-400">${product.category}</span></td>
           <td>${product.seller || '-'}</td>
@@ -7792,7 +7853,7 @@ service cloud.firestore {
         return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk BisnisHUB'}">`;
       }
 
-      return `${bhRenderProductImageIndexedDB(product)}`;
+      return `${mandiriRenderImage(product)}`;
     }
 
 
@@ -7901,7 +7962,7 @@ service cloud.firestore {
           ${products.map(product => `
             <div class="rounded-[24px] border bg-white p-5">
               <div class="h-36 rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center mb-4">
-                ${bhRenderProductImageIndexedDB(product)}
+                ${mandiriRenderImage(product)}
               </div>
               <div class="flex items-start justify-between gap-3">
                 <div>
