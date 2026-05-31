@@ -1525,6 +1525,29 @@
         }
       ];
 
+      const userCompany = normalizeCompanyProfile(null);
+      const userHasCompany = userCompany.companyName && userCompany.companyName !== 'Perusahaan BisnisHUB' && userCompany.companyName !== 'Company Profile BisnisHUB';
+      if (userHasCompany) {
+        const item = {
+          id: 'CMP-USER',
+          companyName: userCompany.companyName,
+          category: userCompany.category,
+          industry: userCompany.industry,
+          city: userCompany.city,
+          website: userCompany.website,
+          description: userCompany.description,
+          email: userCompany.email,
+          phone: userCompany.phone,
+          pic: userCompany.pic,
+          legal: userCompany.legal,
+          portfolio: userCompany.portfolio,
+          products: userCompany.products,
+          services: userCompany.services,
+          status: 'Tayang'
+        };
+        return [item, ...(savedProfiles.length ? savedProfiles : defaultProfiles).filter(company => company.id !== 'CMP-USER')];
+      }
+
       return savedProfiles.length ? savedProfiles : defaultProfiles;
     }
 
@@ -1558,6 +1581,162 @@
       setTimeout(() => document.getElementById('companyDirectory')?.scrollIntoView({ behavior: 'smooth' }), 80);
       showToast('Filter direktori perusahaan direset');
     }
+
+
+    function getCompanyById(companyId) {
+      return getMarketplaceCompanyDirectory().find(company => String(company.id) === String(companyId)) || null;
+    }
+
+    function normalizeCompanyProfile(company) {
+      const userCompany = getUserData().company || {};
+      const store = getUserData().store || {};
+
+      return {
+        id: company?.id || 'CMP-USER',
+        companyName: company?.companyName || userCompany.name || store.name || 'Perusahaan BisnisHUB',
+        category: company?.category || userCompany.category || 'Database Perusahaan & Company Profile',
+        industry: company?.industry || userCompany.industry || store.category || 'Bidang Industri',
+        city: company?.city || userCompany.city || store.city || '-',
+        website: company?.website || userCompany.website || '-',
+        email: company?.email || userCompany.email || store.email || 'adminbishub@gmail.com',
+        phone: company?.phone || userCompany.phone || store.phone || '-',
+        pic: company?.pic || userCompany.pic || '-',
+        description: company?.description || userCompany.description || store.description || 'Profil perusahaan tersedia di database BisnisHUB.',
+        legal: company?.legal || userCompany.legal || `NIB: ${store.nib || '-'} • NPWP: ${store.npwp || '-'}`,
+        portfolio: company?.portfolio || userCompany.portfolio || 'Portofolio dapat dilengkapi oleh perusahaan melalui dashboard customer.',
+        products: company?.products || userCompany.products || store.category || 'Produk industri dan kebutuhan B2B',
+        services: company?.services || userCompany.services || 'Jasa industri, keteknikan, support proyek, dan layanan B2B',
+        status: company?.status || 'Tayang'
+      };
+    }
+
+    function openCompanyProfile(companyId) {
+      state.selectedCompanyId = companyId;
+      saveState();
+      renderCompanyProfilePage(companyId);
+      setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+    }
+
+    function closeCompanyProfile() {
+      state.selectedCompanyId = null;
+      saveState();
+      renderMarketplace();
+      setTimeout(() => document.getElementById('companyDirectory')?.scrollIntoView({ behavior: 'smooth' }), 80);
+    }
+
+    function renderCompanyProfilePage(companyId) {
+      const company = normalizeCompanyProfile(getCompanyById(companyId));
+
+      document.getElementById('app').innerHTML = `
+        <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
+          <div class="px-4 md:px-6 py-3 flex items-center justify-between gap-3 max-w-[1500px] mx-auto">
+            <div class="flex items-center gap-3">
+              <img src="${document.querySelector('.brand-logo')?.src || ''}" alt="BisnisHUB Logo" class="brand-logo market" onclick="switchRole('marketplace')">
+              <div>
+                <h1 class="text-lg md:text-2xl font-black leading-tight text-slate-950">Company Profile</h1>
+                <p class="text-xs text-slate-500">Compro standar BisnisHUB untuk perusahaan terdaftar.</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="closeCompanyProfile()" class="px-4 py-2 rounded-xl text-xs font-black bg-slate-100 text-slate-700">Kembali</button>
+              <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menghubungi%20${encodeURIComponent(company.companyName)}" target="_blank" class="px-4 py-2 rounded-xl text-xs font-black bg-green-500 text-green-950 no-underline">Hubungi</a>
+            </div>
+          </div>
+        </header>
+
+        <main class="p-4 md:p-8 bg-slate-50 min-h-screen">
+          <section class="max-w-[1180px] mx-auto">
+            <div class="rounded-[34px] overflow-hidden bg-white border shadow-sm">
+              <div class="relative min-h-[310px] bg-gradient-to-br from-slate-950 via-indigo-950 to-orange-600 text-white p-6 md:p-10">
+                <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle, white 1px, transparent 1px); background-size: 22px 22px;"></div>
+                <div class="relative z-10 max-w-3xl">
+                  <span class="inline-flex bg-orange-500 text-white rounded-full px-4 py-2 text-xs font-black uppercase tracking-widest">BisnisHUB Verified Company</span>
+                  <h2 class="text-3xl md:text-5xl font-black mt-5 leading-tight">${company.companyName}</h2>
+                  <p class="text-orange-100 font-bold mt-3">${company.category}</p>
+                  <p class="text-slate-100 mt-4 leading-relaxed">${company.description}</p>
+                  <div class="mt-6 flex flex-wrap gap-2">
+                    ${badge(company.status, 'emerald')}
+                    <span class="bg-white/10 border border-white/20 rounded-full px-4 py-2 text-xs font-black">${company.industry}</span>
+                    <span class="bg-white/10 border border-white/20 rounded-full px-4 py-2 text-xs font-black">${company.city}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-5 md:p-8">
+                <div class="grid md:grid-cols-4 gap-4 mb-7">
+                  ${kpiCard('Kategori', company.category, 'fa-layer-group', 'orange')}
+                  ${kpiCard('Bidang', company.industry, 'fa-industry', 'indigo')}
+                  ${kpiCard('Domisili', company.city, 'fa-location-dot', 'emerald')}
+                  ${kpiCard('Status', company.status, 'fa-circle-check', 'rose')}
+                </div>
+
+                <div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-5">
+                  <div class="grid gap-5">
+                    <section class="rounded-[28px] border bg-white p-5">
+                      <p class="text-xs font-black uppercase tracking-widest text-orange-600">Tentang Perusahaan</p>
+                      <h3 class="text-2xl font-black mt-2">${company.companyName}</h3>
+                      <p class="text-sm text-slate-600 mt-3 leading-relaxed">${company.description}</p>
+                    </section>
+
+                    <section class="rounded-[28px] border bg-white p-5">
+                      <p class="text-xs font-black uppercase tracking-widest text-orange-600">Produk & Jasa</p>
+                      <div class="grid md:grid-cols-2 gap-4 mt-4">
+                        <div class="rounded-2xl bg-slate-50 border p-4">
+                          <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center mb-3">
+                            <i class="fa-solid fa-boxes-stacked"></i>
+                          </div>
+                          <b>Produk Utama</b>
+                          <p class="text-sm text-slate-600 mt-2">${company.products}</p>
+                        </div>
+                        <div class="rounded-2xl bg-slate-50 border p-4">
+                          <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3">
+                            <i class="fa-solid fa-handshake-angle"></i>
+                          </div>
+                          <b>Jasa / Layanan</b>
+                          <p class="text-sm text-slate-600 mt-2">${company.services}</p>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section class="rounded-[28px] border bg-white p-5">
+                      <p class="text-xs font-black uppercase tracking-widest text-orange-600">Portofolio & Pengalaman</p>
+                      <p class="text-sm text-slate-600 mt-3 leading-relaxed">${company.portfolio}</p>
+                    </section>
+                  </div>
+
+                  <aside class="grid gap-5">
+                    <section class="rounded-[28px] border bg-white p-5">
+                      <p class="text-xs font-black uppercase tracking-widest text-orange-600">Kontak Resmi</p>
+                      <div class="mt-4 grid gap-3 text-sm">
+                        <div class="rounded-2xl bg-slate-50 border p-4"><b>PIC</b><p class="text-slate-500 mt-1">${company.pic}</p></div>
+                        <div class="rounded-2xl bg-slate-50 border p-4"><b>WhatsApp</b><p class="text-slate-500 mt-1">${company.phone}</p></div>
+                        <div class="rounded-2xl bg-slate-50 border p-4"><b>Email</b><p class="text-slate-500 mt-1">${company.email}</p></div>
+                        <div class="rounded-2xl bg-slate-50 border p-4"><b>Website</b><p class="text-slate-500 mt-1">${company.website}</p></div>
+                      </div>
+                    </section>
+
+                    <section class="rounded-[28px] border bg-white p-5">
+                      <p class="text-xs font-black uppercase tracking-widest text-orange-600">Legalitas</p>
+                      <p class="text-sm text-slate-600 mt-3 leading-relaxed">${company.legal}</p>
+                    </section>
+
+                    <section class="rounded-[28px] border bg-orange-50 border-orange-100 p-5">
+                      <h3 class="font-black text-orange-800">Tertarik bekerja sama?</h3>
+                      <p class="text-sm text-orange-700 mt-2">Hubungi admin BisnisHUB untuk mempertemukan Anda dengan perusahaan ini.</p>
+                      <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menghubungi%20${encodeURIComponent(company.companyName)}" target="_blank" class="mt-4 inline-flex bg-green-500 text-green-950 rounded-2xl px-5 py-3 font-black no-underline">
+                        Hubungi via WhatsApp
+                      </a>
+                    </section>
+                  </aside>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+        ${renderMobileBottomDock()}
+      `;
+    }
+
 
     function renderCompanyDirectory() {
       const companies = getFilteredCompanies();
@@ -1626,7 +1805,7 @@
                     </div>
                   </div>
                   <div class="mt-4 flex flex-wrap gap-2">
-                    <button onclick="showToast('Company profile ${company.companyName} dibuka')" class="bg-slate-900 text-white rounded-xl px-4 py-2 text-xs font-black">Lihat Compro</button>
+                    <button onclick="openCompanyProfile('${company.id}')" class="bg-slate-900 text-white rounded-xl px-4 py-2 text-xs font-black">Lihat Compro</button>
                     <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menghubungi%20${encodeURIComponent(company.companyName)}" target="_blank" class="bg-green-500 text-green-950 rounded-xl px-4 py-2 text-xs font-black no-underline">Hubungi</a>
                   </div>
                 </div>
