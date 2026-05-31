@@ -2272,7 +2272,7 @@
         seller: data.store?.name || 'Seller BisnisHUB',
         badge: listingType.includes('Jasa') ? 'Jasa' : 'User',
         icon: listingType.includes('Jasa') ? 'fa-handshake-angle' : 'fa-box-open',
-        status: 'Aktif',
+        status: 'Menunggu Review',
         source: 'user',
         createdAt: new Date().toLocaleString('id-ID')
       };
@@ -3280,7 +3280,7 @@
           seller: data.store?.name || 'Seller BisnisHUB',
           badge: listingType.includes('Jasa') ? 'Jasa' : 'User',
           icon: listingType.includes('Jasa') ? 'fa-handshake-angle' : 'fa-box-open',
-          status: 'Aktif',
+          status: 'Menunggu Review',
           source: 'user',
           ownerUserId: typeof BISNISHUB_ACTIVE_USER_ID !== 'undefined' ? BISNISHUB_ACTIVE_USER_ID : 'user-demo-main',
           createdAt: new Date().toLocaleString('id-ID')
@@ -7003,7 +7003,115 @@ service cloud.firestore {
     }
 
 
+
+    function adminGetAllReviewProducts() {
+      const data = getUserData();
+      const localProducts = Array.isArray(data.products) ? data.products : [];
+      const savedProducts = typeof bhGetAllSavedProducts === 'function' ? bhGetAllSavedProducts() : [];
+      const merged = [...savedProducts, ...localProducts];
+      const seen = new Set();
+
+      return merged.filter(product => {
+        const key = product.id || product.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function adminSaveProductStatus(productId, status) {
+      const stamp = new Date().toLocaleString('id-ID');
+      const updateStatus = product => product.id === productId ? {
+        ...product,
+        status,
+        approvedAt: status === 'Aktif' ? stamp : product.approvedAt,
+        rejectedAt: status === 'Ditolak' ? stamp : product.rejectedAt
+      } : product;
+
+      const data = getUserData();
+      data.products = (Array.isArray(data.products) ? data.products : []).map(updateStatus);
+      saveUserData(data);
+
+      if (typeof bhGetAllSavedProducts === 'function' && typeof bhSaveAllProducts === 'function') {
+        const all = bhGetAllSavedProducts().map(updateStatus);
+        bhSaveAllProducts(all);
+      }
+
+      const product = adminGetAllReviewProducts().find(p => p.id === productId);
+      if (product && typeof firebaseIsReady === 'function' && firebaseIsReady() && typeof firebaseSetDocument === 'function') {
+        firebaseSetDocument(`${firebasePaths().products}/${productId}`, {
+          ...product,
+          status,
+          approvedAt: status === 'Aktif' ? stamp : product.approvedAt,
+          rejectedAt: status === 'Ditolak' ? stamp : product.rejectedAt
+        }).catch(error => console.error('Update status produk Firebase gagal:', error));
+      }
+
+      showToast(status === 'Aktif' ? 'Produk disetujui dan tampil di Marketplace' : 'Produk ditolak');
+      renderAdminDashboard();
+      setTimeout(() => {
+        if (typeof mandiriHydrateImages === 'function') mandiriHydrateImages();
+        if (typeof bhHydrateProductImages === 'function') bhHydrateProductImages();
+      }, 200);
+    }
+
+    function adminApproveProduct(productId) {
+      adminSaveProductStatus(productId, 'Aktif');
+    }
+
+    function adminRejectProduct(productId) {
+      adminSaveProductStatus(productId, 'Ditolak');
+    }
+
+    function adminReviewProductsPanel() {
+      const all = adminGetAllReviewProducts();
+      const reviewProducts = all.filter(product => ['Menunggu Review','Review'].includes(product.status || ''));
+
+      if (!reviewProducts.length) {
+        return panel('Review Produk User', 'Produk upload user akan masuk ke sini sebelum tampil di Marketplace.', `
+          <div class="rounded-[24px] border bg-white p-8 text-center">
+            <i class="fa-solid fa-clipboard-check text-5xl text-emerald-400 mb-4"></i>
+            <h3 class="font-black text-lg">Tidak ada produk menunggu review</h3>
+            <p class="text-sm text-slate-500 mt-2">Saat user upload produk baru, datanya akan tampil di panel ini.</p>
+          </div>
+        `);
+      }
+
+      return panel('Review Produk User', 'Verifikasi produk user sebelum ditayangkan di Marketplace B2B.', `
+        <div class="grid lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          ${reviewProducts.map(product => `
+            <div class="rounded-[26px] border bg-white p-4 shadow-sm">
+              <div class="h-40 rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center mb-4">
+                ${typeof mandiriRenderImage === 'function' ? mandiriRenderImage(product) : (typeof bhRenderProductImageIndexedDB === 'function' ? bhRenderProductImageIndexedDB(product) : `<i class="fa-solid fa-box-open text-5xl text-indigo-500"></i>`)}
+              </div>
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h3 class="font-black text-lg leading-tight">${product.name}</h3>
+                  <p class="text-xs font-black text-orange-600 mt-1">${product.category || '-'}</p>
+                </div>
+                ${badge(product.status || 'Review', 'amber')}
+              </div>
+              <p class="text-sm text-slate-500 mt-3 line-clamp-2">${product.description || 'Belum ada deskripsi.'}</p>
+              <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Seller</b><p class="text-slate-500 mt-1">${product.seller || '-'}</p></div>
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Harga</b><p class="text-slate-500 mt-1">${product.price || '-'}</p></div>
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Stok</b><p class="text-slate-500 mt-1">${product.stock || '-'}</p></div>
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Foto</b><p class="text-slate-500 mt-1">${product.imageKey || product.image ? 'Ada' : 'Belum ada'}</p></div>
+              </div>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button onclick="adminApproveProduct('${product.id}')" class="bg-emerald-600 text-white rounded-xl px-4 py-2 text-xs font-black">Setujui</button>
+                <button onclick="adminRejectProduct('${product.id}')" class="bg-rose-600 text-white rounded-xl px-4 py-2 text-xs font-black">Tolak</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `);
+    }
+
+
     function adminProducts() {
+      const __reviewSub = state.adminSub || 'Semua Produk';
+      if (__reviewSub === 'Review Produk') return adminReviewProductsPanel();
       const rows = Products.map((product, index) => `
         <tr>
           <td><b>${product[0]}</b><br><span class="text-xs text-slate-400">${product[1]}</span></td>
@@ -7758,7 +7866,7 @@ service cloud.firestore {
       });
 
       return unique
-        .filter(product => product.status !== 'Draft' && product.status !== 'Nonaktif')
+        .filter(product => ['Aktif','Tayang','Admin'].includes(product.status || 'Aktif'))
         .map(product => ({
           name: product.name,
           seller: product.seller || data.store.name || 'Seller BisnisHUB',
@@ -7767,6 +7875,8 @@ service cloud.firestore {
           badge: product.badge || 'User',
           icon: product.icon || 'fa-box-open',
           image: product.image || '',
+          imageKey: product.imageKey || product.id || '',
+          status: product.status || 'Aktif',
           source: product.ownerUserId ? 'firebase' : 'user',
           id: product.id
         }));
