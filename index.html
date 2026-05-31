@@ -1195,6 +1195,65 @@
     // === BISNISHUB SAFE ADS ENGINE - GUARANTEED GLOBAL ===
     window.BH_ADS_KEY = 'bisnishub_ads_live_v2';
 
+
+    window.bhClearOldAdStorage = function() {
+      [
+        'bisnishub_real_ads',
+        'bisnishub_admin_ads',
+        'bisnishub_ads_live_v2_backup',
+        'bisnishub_ads_settings_backup'
+      ].forEach(key => {
+        try { localStorage.removeItem(key); } catch (error) {}
+      });
+    };
+
+    window.bhCompressImageFile = function(file, callback) {
+      const reader = new FileReader();
+
+      reader.onload = function(event) {
+        const img = new Image();
+
+        img.onload = function() {
+          const maxW = 1200;
+          const maxH = 400;
+          let w = img.width;
+          let h = img.height;
+
+          const ratio = Math.min(maxW / w, maxH / h, 1);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+
+          let quality = 0.78;
+          let result = canvas.toDataURL('image/jpeg', quality);
+
+          while (result.length > 450000 && quality > 0.38) {
+            quality -= 0.08;
+            result = canvas.toDataURL('image/jpeg', quality);
+          }
+
+          callback(result);
+        };
+
+        img.onerror = function() {
+          callback(event.target.result);
+        };
+
+        img.src = event.target.result;
+      };
+
+      reader.readAsDataURL(file);
+    };
+
+
     window.bhGetAds = function() {
       try {
         const saved = JSON.parse(localStorage.getItem(window.BH_ADS_KEY) || '[]');
@@ -1204,7 +1263,33 @@
     };
 
     window.bhSaveAds = function(ads) {
-      localStorage.setItem(window.BH_ADS_KEY, JSON.stringify(Array.isArray(ads) ? ads : []));
+      const cleanAds = (Array.isArray(ads) ? ads : []).slice(0, 12);
+      const payload = JSON.stringify(cleanAds);
+
+      try {
+        window.bhClearOldAdStorage();
+        localStorage.setItem(window.BH_ADS_KEY, payload);
+      } catch (error) {
+        console.warn('Quota localStorage penuh, membersihkan data iklan lama:', error);
+        try {
+          localStorage.removeItem(window.BH_ADS_KEY);
+          localStorage.removeItem('bisnishub_ads_settings');
+          window.bhClearOldAdStorage();
+
+          const lighterAds = cleanAds.map(ad => ({
+            ...ad,
+            image: ad.image && ad.image.length > 450000 ? '' : ad.image
+          }));
+
+          localStorage.setItem(window.BH_ADS_KEY, JSON.stringify(lighterAds));
+          showToast('Iklan tersimpan. Gambar terlalu besar dibersihkan, upload ulang versi kecil bila perlu.');
+        } catch (secondError) {
+          console.error('Tetap gagal simpan iklan:', secondError);
+          alert('Storage browser penuh. Klik Reset iklan dulu atau pakai gambar lebih kecil.');
+          return false;
+        }
+      }
+
       window.bhApplyAdsToTicker();
       return true;
     };
@@ -1212,14 +1297,18 @@
     window.bhReadAdImage = function(input) {
       const file = input.files && input.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(event) {
+
+      showToast('Mengompres gambar banner...');
+
+      window.bhCompressImageFile(file, function(compressedDataUrl) {
         const hidden = document.getElementById('bhAdImageValue');
         const preview = document.getElementById('bhAdImagePreview');
-        if (hidden) hidden.value = event.target.result;
-        if (preview) preview.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
+
+        if (hidden) hidden.value = compressedDataUrl;
+        if (preview) preview.src = compressedDataUrl;
+
+        showToast('Gambar siap disimpan');
+      });
     };
 
     window.bhApplyAdsToTicker = function() {
@@ -1242,7 +1331,7 @@
           mode: banner ? 'image' : 'text',
           speedSeconds: Number(document.getElementById('bhAdSpeed')?.value || old.speedSeconds || 18),
           textItems: finalTexts,
-          bannerSrc: banner ? banner.image : '',
+          bannerSrc: banner && banner.image && banner.image.length < 500000 ? banner.image : '',
           bannerAlt: banner ? banner.title : 'Iklan BisnisHUB'
         });
       }
@@ -1384,7 +1473,7 @@
                 <h3 class="text-xl font-black">${ads.length} iklan tersimpan</h3>
                 <p class="text-sm text-slate-500 mt-1">Aktif/nonaktifkan, hapus, atau jadikan banner utama.</p>
               </div>
-              <button type="button" onclick="localStorage.removeItem(window.BH_ADS_KEY); window.bhApplyAdsToTicker(); renderAdminDashboard(); showToast('Iklan direset')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black text-sm">
+              <button type="button" onclick="localStorage.removeItem(window.BH_ADS_KEY); localStorage.removeItem('bisnishub_ads_settings'); window.bhClearOldAdStorage(); window.bhApplyAdsToTicker(); renderAdminDashboard(); showToast('Iklan direset dan storage dibersihkan')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black text-sm">
                 Reset
               </button>
             </div>
@@ -5889,6 +5978,7 @@
       showToast('Email atau password admin tidak sesuai');
     }
 
+    if (window.bhClearOldAdStorage) window.bhClearOldAdStorage();
     if (typeof exposeRealAdsFunctions === 'function') exposeRealAdsFunctions();
     renderApp();
   </script>
