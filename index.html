@@ -2369,38 +2369,55 @@
     }
 
     function tambahIklanReal() {
-      const tipe = document.getElementById('realAdType')?.value || 'teks';
-      const judul = document.getElementById('realAdTitle')?.value?.trim() || '';
-      const teks = document.getElementById('realAdText')?.value?.trim() || '';
-      const gambar = document.getElementById('realAdImageValue')?.value || '';
+      try {
+        const tipeEl = document.getElementById('realAdType');
+        const titleEl = document.getElementById('realAdTitle');
+        const textEl = document.getElementById('realAdText');
+        const imageEl = document.getElementById('realAdImageValue');
 
-      if (!judul) {
-        showToast('Judul iklan wajib diisi');
-        return;
-      }
-      if (tipe === 'teks' && !teks) {
-        showToast('Teks iklan wajib diisi');
-        return;
-      }
-      if (tipe === 'gambar' && !gambar) {
-        showToast('Upload gambar banner dulu');
-        return;
-      }
+        if (!tipeEl || !titleEl || !textEl || !imageEl) {
+          alert('Form iklan belum terbaca. Buka ulang menu Admin → CMS Tampilan → Iklan Berjalan.');
+          return;
+        }
 
-      const ads = getRealAds();
-      ads.unshift({
-        id: 'AD-' + Date.now().toString().slice(-6),
-        tipe,
-        judul,
-        teks,
-        gambar,
-        status: 'Aktif'
-      });
+        const tipe = tipeEl.value || 'teks';
+        const judul = titleEl.value.trim() || '';
+        const teks = textEl.value.trim() || '';
+        const gambar = imageEl.value || '';
 
-      saveRealAds(ads);
-      realAdsToRunningSettings();
-      showToast('Iklan tersimpan dan aktif di marketplace');
-      renderAdminDashboard();
+        if (!judul) {
+          showToast('Judul iklan wajib diisi');
+          titleEl.focus();
+          return;
+        }
+        if (tipe === 'teks' && !teks) {
+          showToast('Teks iklan wajib diisi');
+          textEl.focus();
+          return;
+        }
+        if (tipe === 'gambar' && !gambar) {
+          showToast('Upload gambar banner dulu');
+          return;
+        }
+
+        const ads = getRealAds();
+        ads.unshift({
+          id: 'AD-' + Date.now().toString().slice(-6),
+          tipe,
+          judul,
+          teks,
+          gambar,
+          status: 'Aktif'
+        });
+
+        saveRealAds(ads);
+        realAdsToRunningSettings();
+        showToast('Iklan tersimpan dan aktif di marketplace');
+        renderAdminDashboard();
+      } catch (error) {
+        console.error('Gagal simpan iklan:', error);
+        alert('Gagal simpan iklan: ' + (error.message || error));
+      }
     }
 
     function toggleIklanReal(id) {
@@ -2452,14 +2469,28 @@
               </div>
               ${ad.gambar ? `<img src="${ad.gambar}" class="mt-4 w-full h-28 object-cover rounded-2xl border" alt="${ad.judul}">` : ''}
               <div class="mt-4 flex flex-wrap gap-2">
-                <button onclick="toggleIklanReal('${ad.id}')" class="bg-amber-500 text-white rounded-xl px-4 py-2 text-xs font-black">${ad.status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}</button>
-                ${ad.tipe === 'gambar' ? `<button onclick="jadikanBannerReal('${ad.id}')" class="bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Jadikan Banner</button>` : ''}
-                <button onclick="hapusIklanReal('${ad.id}')" class="bg-rose-600 text-white rounded-xl px-4 py-2 text-xs font-black">Hapus</button>
+                <button onclick="window.toggleIklanReal('${ad.id}')" class="bg-amber-500 text-white rounded-xl px-4 py-2 text-xs font-black">${ad.status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}</button>
+                ${ad.tipe === 'gambar' ? `<button onclick="window.jadikanBannerReal('${ad.id}')" class="bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Jadikan Banner</button>` : ''}
+                <button onclick="window.hapusIklanReal('${ad.id}')" class="bg-rose-600 text-white rounded-xl px-4 py-2 text-xs font-black">Hapus</button>
               </div>
             </div>
           `).join('')}
         </div>
       `;
+    }
+
+
+    function exposeRealAdsFunctions() {
+      window.getRealAds = getRealAds;
+      window.saveRealAds = saveRealAds;
+      window.realAdsToRunningSettings = realAdsToRunningSettings;
+      window.readRealAdImage = readRealAdImage;
+      window.tambahIklanReal = tambahIklanReal;
+      window.toggleIklanReal = toggleIklanReal;
+      window.hapusIklanReal = hapusIklanReal;
+      window.jadikanBannerReal = jadikanBannerReal;
+      window.renderRealAdsList = renderRealAdsList;
+      window.adminPasangIklanRealPanel = adminPasangIklanRealPanel;
     }
 
     function adminPasangIklanRealPanel() {
@@ -2483,7 +2514,7 @@
                 <label class="text-xs font-black uppercase text-orange-800">Upload banner gambar</label>
                 <img id="realAdImagePreview" class="mt-2 w-full h-28 object-cover rounded-2xl border bg-white" alt="">
                 <input id="realAdImageValue" type="hidden">
-                <input type="file" accept="image/*" onchange="readRealAdImage(this)" class="mt-2 border rounded-2xl p-3 w-full bg-white">
+                <input type="file" accept="image/*" onchange="window.readRealAdImage(this)" class="mt-2 border rounded-2xl p-3 w-full bg-white">
               </div>
 
               <div>
@@ -2493,7 +2524,7 @@
                 </select>
               </div>
 
-              <button onclick="tambahIklanReal()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">
+              <button onclick="window.tambahIklanReal()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">
                 Simpan & Tampilkan
               </button>
 
@@ -5602,8 +5633,7 @@
       showToast('Email atau password admin tidak sesuai');
     }
 
-
-
+    if (typeof exposeRealAdsFunctions === 'function') exposeRealAdsFunctions();
     renderApp();
   </script>
 </body>
