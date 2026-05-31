@@ -914,6 +914,7 @@
       { key: 'users', label: 'Akun & Role', icon: 'fa-users' },
       { key: 'sellers', label: 'Seller / Vendor', icon: 'fa-store' },
       { key: 'companies', label: 'Database Perusahaan', icon: 'fa-building-user' },
+      { key: 'risk', label: 'Analisis Risiko', icon: 'fa-shield-halved' },
       { key: 'products', label: 'Produk', icon: 'fa-boxes-stacked' },
       { key: 'orders', label: 'Order & Refund', icon: 'fa-receipt' },
       { key: 'tenders', label: 'Tender', icon: 'fa-briefcase' },
@@ -930,6 +931,7 @@
       { key: 'addProduct', label: 'Tambah Produk', icon: 'fa-circle-plus' },
       { key: 'store', label: 'Kelola Toko', icon: 'fa-store' },
       { key: 'companyProfile', label: 'Profil Perusahaan', icon: 'fa-building-user' },
+      { key: 'riskCheck', label: 'Trust Check', icon: 'fa-shield-check' },
       { key: 'wishlist', label: 'Wishlist', icon: 'fa-heart' },
       { key: 'address', label: 'Alamat Proyek', icon: 'fa-location-dot' },
       { key: 'support', label: 'Bantuan / Tiket', icon: 'fa-headset' },
@@ -943,6 +945,7 @@
       users: ['Daftar User', 'Role & Akses', 'Verifikasi', 'Segmentasi'],
       sellers: ['Ringkasan Seller', 'Verifikasi Seller', 'Audit Vendor', 'Withdraw'],
       companies: ['Daftar Perusahaan', 'Review Compro', 'Kategori Perusahaan', 'Publikasi'],
+      risk: ['Overview Risiko', 'Analisis Produk', 'Analisis Tender', 'Legalitas Perusahaan', 'Laporan Fraud'],
       products: ['Review Produk', 'Produk Aktif', 'Kategori', 'Stok & Harga', 'Dokumen'],
       orders: ['Transaksi', 'Refund', 'Dispute', 'Invoice'],
       tenders: ['Tender Open', 'Review Tender', 'Bidding', 'Arsip'],
@@ -959,6 +962,7 @@
       addProduct: ['Info Produk', 'Harga & Stok', 'Gambar & Media', 'Spesifikasi', 'Dokumen', 'Pengiriman', 'Preview'],
       store: ['Profil Toko', 'Legalitas', 'Rekening', 'Kurir & Gudang', 'Jam Operasional', 'Kebijakan', 'Preview Toko'],
       companyProfile: ['Compro Utama', 'Bidang Usaha', 'Legalitas', 'Portofolio', 'Produk & Jasa', 'Kontak', 'Preview Compro'],
+      riskCheck: ['Skor Kepercayaan', 'Cek Produk', 'Cek Tender', 'Cek Legalitas', 'Riwayat Laporan'],
       wishlist: ['Produk Disimpan', 'Supplier Favorit', 'Riwayat Dilihat'],
       address: ['Alamat Utama', 'Gudang', 'Proyek', 'Tambah Alamat'],
       support: ['Buat Tiket', 'Tiket Saya', 'Chat Admin', 'FAQ'],
@@ -4291,6 +4295,7 @@
       if (key === 'users') return adminUsers();
       if (key === 'sellers') return adminSellers();
       if (key === 'companies') return adminCompanies();
+      if (key === 'risk') return adminRiskAnalysis();
       if (key === 'products') return adminProducts();
       if (key === 'orders') return adminOrders();
       if (key === 'tenders') return adminTenders();
@@ -4359,6 +4364,295 @@
           </tr>
         `)))}
       `;
+    }
+
+
+
+    function riskScoreText(score) {
+      if (score >= 80) return { label: 'Aman', color: 'emerald', note: 'Risiko rendah, data relatif lengkap.' };
+      if (score >= 60) return { label: 'Perlu Review', color: 'amber', note: 'Ada data yang perlu dilengkapi atau diverifikasi.' };
+      return { label: 'Risiko Tinggi', color: 'rose', note: 'Perlu verifikasi manual sebelum transaksi/proyek dilanjutkan.' };
+    }
+
+    function analyzeStoreRisk(store = getUserData().store) {
+      let score = 100;
+      const issues = [];
+      const checks = [
+        ['Nama toko/perusahaan', store.name && !String(store.name).includes('BisnisHUB Anda'), 15],
+        ['Kategori usaha', store.category, 8],
+        ['WhatsApp aktif', store.phone, 12],
+        ['Email resmi', store.email, 8],
+        ['Kota/domisili', store.city, 8],
+        ['Alamat/gudang', store.address || store.warehouse, 10],
+        ['NIB', store.nib, 15],
+        ['NPWP', store.npwp, 10],
+        ['Kebijakan transaksi', store.policy, 8],
+        ['Jam operasional', store.hours, 6]
+      ];
+
+      checks.forEach(([label, ok, penalty]) => {
+        if (!ok) {
+          score -= penalty;
+          issues.push(label + ' belum lengkap');
+        }
+      });
+
+      return { score: Math.max(0, score), issues };
+    }
+
+    function analyzeProductRisk(product = {}) {
+      let score = 100;
+      const issues = [];
+
+      const priceText = String(product.price || '').toLowerCase();
+      const desc = String(product.description || '').trim();
+      const category = String(product.category || '').trim();
+
+      if (!product.name) { score -= 20; issues.push('Nama produk belum ada'); }
+      if (!category) { score -= 12; issues.push('Kategori produk belum dipilih'); }
+      if (!product.price || priceText.includes('hubungi')) { score -= 12; issues.push('Harga belum jelas'); }
+      if (!desc || desc.length < 30) { score -= 14; issues.push('Deskripsi terlalu pendek'); }
+      if (!product.stock) { score -= 8; issues.push('Stok belum diisi'); }
+      if (!product.seller) { score -= 10; issues.push('Seller belum terhubung'); }
+      if (!product.specs && !String(product.badge || '').toLowerCase().includes('jasa')) { score -= 10; issues.push('Spesifikasi teknis belum lengkap'); }
+
+      return { score: Math.max(0, score), issues };
+    }
+
+    function analyzeTenderRisk(tender = {}) {
+      let score = 100;
+      const issues = [];
+
+      if (!tender.title && !tender.name) { score -= 18; issues.push('Judul tender/proyek belum jelas'); }
+      if (!tender.owner && !tender.instansi) { score -= 14; issues.push('Pemilik proyek/instansi belum jelas'); }
+      if (!tender.value && !tender.budget) { score -= 14; issues.push('Nilai proyek belum ada'); }
+      if (!tender.deadline && !tender.date) { score -= 10; issues.push('Deadline belum diisi'); }
+      if (!tender.location && !tender.city) { score -= 8; issues.push('Lokasi proyek belum jelas'); }
+      if (!tender.documents) { score -= 16; issues.push('Dokumen tender belum tersedia'); }
+      if (!tender.requirements) { score -= 10; issues.push('Persyaratan teknis belum lengkap'); }
+      if (!tender.contact) { score -= 10; issues.push('Kontak penanggung jawab belum ada'); }
+
+      return { score: Math.max(0, score), issues };
+    }
+
+    function analyzeLegalRisk(company = getUserData().company, store = getUserData().store) {
+      let score = 100;
+      const issues = [];
+
+      if (!company.name || company.name.includes('Company Profile')) { score -= 15; issues.push('Nama perusahaan belum valid'); }
+      if (!company.category) { score -= 8; issues.push('Kategori perusahaan belum dipilih'); }
+      if (!company.city && !store.city) { score -= 8; issues.push('Domisili perusahaan belum jelas'); }
+      if (!company.email && !store.email) { score -= 8; issues.push('Email resmi belum ada'); }
+      if (!company.phone && !store.phone) { score -= 10; issues.push('Nomor kontak/WA belum ada'); }
+      if (!store.nib && !String(company.legal || '').toLowerCase().includes('nib')) { score -= 20; issues.push('NIB belum ada/terkonfirmasi'); }
+      if (!store.npwp && !String(company.legal || '').toLowerCase().includes('npwp')) { score -= 14; issues.push('NPWP belum ada/terkonfirmasi'); }
+      if (!company.description || company.description.length < 40) { score -= 10; issues.push('Profil perusahaan terlalu singkat'); }
+      if (!company.portfolio) { score -= 7; issues.push('Portofolio belum tersedia'); }
+
+      return { score: Math.max(0, score), issues };
+    }
+
+    function riskCard(title, result, icon = 'fa-shield-halved') {
+      const status = riskScoreText(result.score);
+      return `
+        <div class="rounded-[24px] border bg-white p-5">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="w-12 h-12 rounded-2xl bg-${status.color}-50 text-${status.color}-600 flex items-center justify-center text-xl mb-3">
+                <i class="fa-solid ${icon}"></i>
+              </div>
+              <h3 class="font-black text-lg">${title}</h3>
+              <p class="text-sm text-slate-500 mt-1">${status.note}</p>
+            </div>
+            ${badge(status.label, status.color)}
+          </div>
+          <div class="mt-4">
+            <div class="flex items-center justify-between text-xs font-black mb-2">
+              <span>Risk Trust Score</span>
+              <span>${result.score}/100</span>
+            </div>
+            <div class="h-3 rounded-full bg-slate-100 overflow-hidden">
+              <div class="h-full bg-${status.color}-500" style="width:${result.score}%"></div>
+            </div>
+          </div>
+          <div class="mt-4 rounded-2xl bg-slate-50 border p-4">
+            <b class="text-sm">Catatan Review</b>
+            <ul class="mt-2 text-sm text-slate-600 list-disc pl-5">
+              ${(result.issues.length ? result.issues : ['Tidak ada catatan besar. Tetap lakukan verifikasi manual sebelum transaksi.']).map(item => `<li>${item}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+      `;
+    }
+
+    function getAllProductsForRisk() {
+      const local = (getUserData().products || []).map(p => ({ ...p, source: 'User' }));
+      const market = (typeof marketplaceProducts !== 'undefined' ? marketplaceProducts : []).map(p => ({ ...p, source: 'Marketplace' }));
+      const cloud = Array.isArray(window.bisnisHubCloudProducts) ? window.bisnisHubCloudProducts.map(p => ({ ...p, source: 'Firebase' })) : [];
+      const all = [...local, ...cloud, ...market];
+      const seen = new Set();
+      return all.filter(item => {
+        const key = item.id || item.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function getTenderSamplesForRisk() {
+      return [
+        { id: 'TDR-001', title: 'Pengadaan Pompa Irigasi', owner: 'Buyer Proyek', value: 'Rp 250.000.000', deadline: '30 hari', location: 'Jabodetabek', documents: true, requirements: true, contact: true },
+        { id: 'TDR-002', title: 'Jasa Survey Lapangan', owner: '', value: '', deadline: '14 hari', location: '', documents: false, requirements: true, contact: false },
+        { id: 'TDR-003', title: 'Supply Sparepart Industri', owner: 'Perusahaan Swasta', value: 'Hubungi Owner', deadline: '', location: 'Tangerang', documents: false, requirements: false, contact: true }
+      ];
+    }
+
+    function adminRiskAnalysis() {
+      const sub = state.adminSub || 'Overview Risiko';
+      const storeRisk = analyzeStoreRisk();
+      const legalRisk = analyzeLegalRisk();
+      const products = getAllProductsForRisk();
+      const tenders = getTenderSamplesForRisk();
+
+      if (sub === 'Overview Risiko') {
+        return panel('Analisis Risiko Platform', 'Panel pengawasan untuk meminimalkan penipuan, order zonk, produk fake, dan legalitas meragukan.', `
+          <div class="grid md:grid-cols-3 gap-4 mb-5">
+            ${riskCard('Legalitas Perusahaan', legalRisk, 'fa-file-shield')}
+            ${riskCard('Profil Seller / Toko', storeRisk, 'fa-store')}
+            ${riskCard('Produk & Listing', products.length ? analyzeProductRisk(products[0]) : { score: 55, issues: ['Belum ada produk yang dapat dianalisis'] }, 'fa-box-open')}
+          </div>
+          <div class="rounded-[24px] border bg-white p-5">
+            <h3 class="font-black text-lg">Aturan Screening BisnisHUB</h3>
+            <div class="grid md:grid-cols-2 gap-3 mt-4 text-sm">
+              ${[
+                'Produk tanpa harga/deskripsi jelas masuk status perlu review.',
+                'Seller tanpa NIB/NPWP diberi indikator risiko legalitas.',
+                'Tender tanpa owner, dokumen, nilai, atau kontak diberi risiko tinggi.',
+                'Riwayat laporan customer menjadi bahan audit admin.',
+                'Produk/jasa bernilai tinggi perlu verifikasi manual sebelum transaksi.',
+                'Company profile yang minim data tidak langsung dianggap verified.'
+              ].map(item => `<div class="rounded-2xl bg-slate-50 border p-4"><i class="fa-solid fa-check text-emerald-500 mr-2"></i>${item}</div>`).join('')}
+            </div>
+          </div>
+        `);
+      }
+
+      if (sub === 'Analisis Produk') {
+        return panel('Analisis Risiko Produk', 'Review produk marketplace berdasarkan kelengkapan harga, deskripsi, seller, stok, dan spesifikasi.', `
+          <div class="grid lg:grid-cols-2 gap-4">
+            ${products.map(product => riskCard(product.name || 'Produk Tanpa Nama', analyzeProductRisk(product), product.badge === 'Jasa' ? 'fa-handshake-angle' : 'fa-box-open')).join('')}
+          </div>
+        `);
+      }
+
+      if (sub === 'Analisis Tender') {
+        return panel('Analisis Risiko Tender / Proyek', 'Screening awal proyek untuk mengurangi fake tender, proyek zonk, dan pemilik proyek tidak jelas.', `
+          <div class="grid lg:grid-cols-2 gap-4">
+            ${tenders.map(tender => riskCard(tender.title, analyzeTenderRisk(tender), 'fa-file-signature')).join('')}
+          </div>
+        `);
+      }
+
+      if (sub === 'Legalitas Perusahaan') {
+        return panel('Analisis Legalitas Perusahaan', 'Cek kelengkapan legalitas seller/perusahaan sebelum dipercaya tampil sebagai verified.', `
+          ${riskCard('Status Legalitas', legalRisk, 'fa-file-shield')}
+          <div class="mt-5 rounded-[24px] border bg-white p-5">
+            <h3 class="font-black text-lg">Checklist Legalitas</h3>
+            <div class="grid md:grid-cols-2 gap-3 mt-4">
+              ${['NIB', 'NPWP', 'Alamat kantor/gudang', 'Email resmi', 'Nomor WhatsApp aktif', 'Company profile', 'Portofolio', 'Dokumen pendukung'].map(item => `
+                <label class="flex items-center justify-between rounded-2xl bg-slate-50 border p-4">
+                  <span class="font-bold">${item}</span>
+                  <input type="checkbox" class="accent-orange-500">
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `);
+      }
+
+      if (sub === 'Laporan Fraud') {
+        return panel('Laporan Fraud / Order Zonk', 'Tempat admin memantau laporan user terkait transaksi bermasalah, seller fake, dan order zonk.', `
+          ${table(['ID', 'Jenis Laporan', 'Pihak Terlapor', 'Status', 'Aksi'], [
+            `<tr><td>FRD-001</td><td>Order Zonk</td><td>Seller belum verifikasi</td><td>${badge('Review', 'amber')}</td><td>${actionButton('Investigasi', 'rose')}</td></tr>`,
+            `<tr><td>FRD-002</td><td>Produk Tidak Sesuai</td><td>Vendor Produk Industri</td><td>${badge('Open', 'rose')}</td><td>${actionButton('Tindak Lanjut', 'rose')}</td></tr>`,
+            `<tr><td>FRD-003</td><td>Dokumen Meragukan</td><td>Company Profile Baru</td><td>${badge('Cek Legalitas', 'amber')}</td><td>${actionButton('Cek Dokumen', 'indigo')}</td></tr>`
+          ])}
+        `);
+      }
+
+      return userGenericPanel();
+    }
+
+    function userRiskCheck() {
+      const sub = state.userSub || 'Skor Kepercayaan';
+      const storeRisk = analyzeStoreRisk();
+      const legalRisk = analyzeLegalRisk();
+      const products = getUserData().products || [];
+
+      if (sub === 'Skor Kepercayaan') {
+        return panel('Trust Check Akun', 'Skor kepercayaan akun/toko Anda berdasarkan kelengkapan data dan legalitas.', `
+          <div class="grid md:grid-cols-2 gap-4 mb-5">
+            ${riskCard('Skor Toko / Seller', storeRisk, 'fa-store')}
+            ${riskCard('Skor Legalitas', legalRisk, 'fa-file-shield')}
+          </div>
+          <div class="rounded-[24px] bg-orange-50 border border-orange-100 p-5">
+            <h3 class="font-black text-lg text-orange-800">Cara menaikkan skor trust</h3>
+            <p class="text-sm text-orange-700 mt-2">Lengkapi nama toko, alamat, WhatsApp, NIB, NPWP, company profile, portofolio, produk/jasa, dan kebijakan transaksi.</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button onclick="syncUserDashboardView('store','Profil Toko')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Lengkapi Toko</button>
+              <button onclick="syncUserDashboardView('companyProfile','Compro Utama')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Lengkapi Compro</button>
+            </div>
+          </div>
+        `);
+      }
+
+      if (sub === 'Cek Produk') {
+        return panel('Cek Risiko Produk Saya', 'Produk yang lengkap akan lebih dipercaya buyer dan lebih aman dari status review admin.', `
+          ${products.length ? `<div class="grid lg:grid-cols-2 gap-4">${products.map(product => riskCard(product.name, analyzeProductRisk(product), 'fa-box-open')).join('')}</div>` : `
+            <div class="rounded-[24px] border bg-white p-8 text-center">
+              <i class="fa-solid fa-box-open text-5xl text-slate-300 mb-4"></i>
+              <h3 class="font-black text-lg">Belum ada produk</h3>
+              <p class="text-sm text-slate-500 mt-2">Tambahkan produk agar bisa dianalisis risikonya.</p>
+              <button onclick="syncUserDashboardView('addProduct','Info Produk')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Tambah Produk</button>
+            </div>
+          `}
+        `);
+      }
+
+      if (sub === 'Cek Tender') {
+        return panel('Cek Risiko Tender / Proyek', 'Gunakan checklist ini sebelum mengikuti tender/proyek agar tidak terjebak proyek fake.', `
+          ${riskCard('Checklist Tender', analyzeTenderRisk({ title: 'Tender yang akan diikuti', owner: '', value: '', deadline: '', location: '', documents: false, requirements: false, contact: false }), 'fa-file-signature')}
+          <div class="mt-5 rounded-[24px] border bg-white p-5">
+            <h3 class="font-black text-lg">Yang wajib dicek sebelum ikut proyek</h3>
+            <ul class="mt-3 text-sm text-slate-600 list-disc pl-5">
+              <li>Identitas owner proyek dan kontak penanggung jawab.</li>
+              <li>Nilai proyek, termin pembayaran, dan sumber dana.</li>
+              <li>Dokumen pengadaan, ruang lingkup, dan spesifikasi teknis.</li>
+              <li>Alamat/lokasi pekerjaan dan bukti kebutuhan proyek.</li>
+              <li>Hindari transfer biaya awal tanpa bukti/legalitas jelas.</li>
+            </ul>
+          </div>
+        `);
+      }
+
+      if (sub === 'Cek Legalitas') {
+        return panel('Cek Legalitas Akun', 'Periksa kelengkapan legalitas agar toko/perusahaan lebih dipercaya.', `
+          ${riskCard('Legalitas Anda', legalRisk, 'fa-file-shield')}
+        `);
+      }
+
+      if (sub === 'Riwayat Laporan') {
+        return panel('Riwayat Laporan', 'Riwayat laporan transaksi dan keamanan akun.', `
+          <div class="rounded-[24px] border bg-white p-6 text-center">
+            <i class="fa-solid fa-clipboard-check text-5xl text-emerald-400 mb-4"></i>
+            <h3 class="font-black text-lg">Belum ada laporan fraud</h3>
+            <p class="text-sm text-slate-500 mt-2">Jika ada order zonk, produk palsu, atau proyek mencurigakan, buat tiket bantuan agar admin dapat menindaklanjuti.</p>
+            <button onclick="syncUserDashboardView('support','Buat Tiket')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Buat Tiket</button>
+          </div>
+        `);
+      }
+
+      return userGenericPanel();
     }
 
 
@@ -5313,6 +5607,7 @@
       if (key === 'addProduct') return userAddProduct();
       if (key === 'store') return userStore();
       if (key === 'companyProfile') return userCompanyProfile();
+      if (key === 'riskCheck') return userRiskCheck();
       if (key === 'wishlist') return userWishlist();
       if (key === 'address') return userAddress();
       if (key === 'support') return userSupport();
