@@ -689,7 +689,16 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-    const firebaseConfig = window.BISNISHUB_FIREBASE_CONFIG || {
+    let firebaseConfig = window.BISNISHUB_FIREBASE_CONFIG || null;
+
+    try {
+      const savedFirebaseConfig = JSON.parse(localStorage.getItem('bisnishub_firebase_config') || 'null');
+      if (savedFirebaseConfig && savedFirebaseConfig.projectId) {
+        firebaseConfig = savedFirebaseConfig;
+      }
+    } catch (error) {}
+
+    firebaseConfig = firebaseConfig || {
       apiKey: "ISI_API_KEY_FIREBASE",
       authDomain: "ISI_AUTH_DOMAIN_FIREBASE",
       projectId: "ISI_PROJECT_ID_FIREBASE",
@@ -915,6 +924,7 @@
       { key: 'sellers', label: 'Seller / Vendor', icon: 'fa-store' },
       { key: 'companies', label: 'Database Perusahaan', icon: 'fa-building-user' },
       { key: 'risk', label: 'Analisis Risiko', icon: 'fa-shield-halved' },
+      { key: 'firebaseConfig', label: 'Koneksi Firebase', icon: 'fa-database' },
       { key: 'products', label: 'Produk', icon: 'fa-boxes-stacked' },
       { key: 'orders', label: 'Order & Refund', icon: 'fa-receipt' },
       { key: 'tenders', label: 'Tender', icon: 'fa-briefcase' },
@@ -946,6 +956,7 @@
       sellers: ['Ringkasan Seller', 'Verifikasi Seller', 'Audit Vendor', 'Withdraw'],
       companies: ['Daftar Perusahaan', 'Review Compro', 'Kategori Perusahaan', 'Publikasi'],
       risk: ['Overview Risiko', 'Analisis Produk', 'Analisis Tender', 'Legalitas Perusahaan', 'Laporan Fraud'],
+      firebaseConfig: ['Koneksi Firebase', 'Status Koneksi', 'Panduan Rules'],
       products: ['Review Produk', 'Produk Aktif', 'Kategori', 'Stok & Harga', 'Dokumen'],
       orders: ['Transaksi', 'Refund', 'Dispute', 'Invoice'],
       tenders: ['Tender Open', 'Review Tender', 'Bidding', 'Arsip'],
@@ -4296,6 +4307,7 @@
       if (key === 'sellers') return adminSellers();
       if (key === 'companies') return adminCompanies();
       if (key === 'risk') return adminRiskAnalysis();
+      if (key === 'firebaseConfig') return adminFirebaseConfig();
       if (key === 'products') return adminProducts();
       if (key === 'orders') return adminOrders();
       if (key === 'tenders') return adminTenders();
@@ -4507,6 +4519,108 @@
         { id: 'TDR-003', title: 'Supply Sparepart Industri', owner: 'Perusahaan Swasta', value: 'Hubungi Owner', deadline: '', location: 'Tangerang', documents: false, requirements: false, contact: true }
       ];
     }
+
+
+    function getSavedFirebaseConfig() {
+      try {
+        return JSON.parse(localStorage.getItem('bisnishub_firebase_config') || 'null') || {};
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function saveFirebaseConfigFromAdmin() {
+      const config = {
+        apiKey: document.getElementById('fbApiKey')?.value?.trim() || '',
+        authDomain: document.getElementById('fbAuthDomain')?.value?.trim() || '',
+        projectId: document.getElementById('fbProjectId')?.value?.trim() || '',
+        storageBucket: document.getElementById('fbStorageBucket')?.value?.trim() || '',
+        messagingSenderId: document.getElementById('fbMessagingSenderId')?.value?.trim() || '',
+        appId: document.getElementById('fbAppId')?.value?.trim() || '',
+        measurementId: document.getElementById('fbMeasurementId')?.value?.trim() || ''
+      };
+
+      if (!config.apiKey || !config.authDomain || !config.projectId || !config.appId) {
+        showToast('apiKey, authDomain, projectId, dan appId wajib diisi');
+        return;
+      }
+
+      localStorage.setItem('bisnishub_firebase_config', JSON.stringify(config));
+      showToast('Konfigurasi Firebase disimpan. Halaman dimuat ulang agar koneksi aktif.');
+      setTimeout(() => location.reload(), 900);
+    }
+
+    function resetFirebaseConfigFromAdmin() {
+      localStorage.removeItem('bisnishub_firebase_config');
+      showToast('Konfigurasi Firebase dihapus. Halaman dimuat ulang.');
+      setTimeout(() => location.reload(), 900);
+    }
+
+    function adminFirebaseConfig() {
+      const sub = state.adminSub || 'Koneksi Firebase';
+      const cfg = getSavedFirebaseConfig();
+      const ready = firebaseIsReady();
+
+      if (sub === 'Koneksi Firebase') {
+        return panel('Koneksi Firebase', 'Isi konfigurasi Firebase agar data produk, toko, iklan, dan company profile tersimpan ke Firestore.', `
+          <div class="rounded-[24px] border bg-white p-5 mb-5">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-xs font-black uppercase text-orange-600">Status</p>
+                <h3 class="text-xl font-black">${ready ? 'Firebase Aktif' : 'Firebase Belum Aktif'}</h3>
+                <p class="text-sm text-slate-500 mt-1">${ready ? 'Data sudah diarahkan ke Firestore.' : 'Isi konfigurasi Firebase lalu simpan. Setelah reload, koneksi akan aktif.'}</p>
+              </div>
+              ${badge(ready ? 'Terkoneksi' : 'Belum Konek', ready ? 'emerald' : 'rose')}
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <input id="fbApiKey" class="border rounded-2xl p-3" placeholder="apiKey" value="${cfg.apiKey || ''}">
+            <input id="fbAuthDomain" class="border rounded-2xl p-3" placeholder="authDomain" value="${cfg.authDomain || ''}">
+            <input id="fbProjectId" class="border rounded-2xl p-3" placeholder="projectId" value="${cfg.projectId || ''}">
+            <input id="fbStorageBucket" class="border rounded-2xl p-3" placeholder="storageBucket" value="${cfg.storageBucket || ''}">
+            <input id="fbMessagingSenderId" class="border rounded-2xl p-3" placeholder="messagingSenderId" value="${cfg.messagingSenderId || ''}">
+            <input id="fbAppId" class="border rounded-2xl p-3" placeholder="appId" value="${cfg.appId || ''}">
+            <input id="fbMeasurementId" class="border rounded-2xl p-3 md:col-span-2" placeholder="measurementId opsional" value="${cfg.measurementId || ''}">
+          </div>
+
+          <div class="mt-5 flex flex-wrap gap-2">
+            <button onclick="saveFirebaseConfigFromAdmin()" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Simpan Firebase Config</button>
+            <button onclick="resetFirebaseConfigFromAdmin()" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Reset Config</button>
+          </div>
+        `);
+      }
+
+      if (sub === 'Status Koneksi') {
+        return panel('Status Koneksi Firebase', 'Cek status koneksi database pusat BisnisHUB.', `
+          <div class="grid md:grid-cols-3 gap-4">
+            ${kpiCard('Status Firebase', ready ? 'Aktif' : 'Belum Aktif', 'fa-database', ready ? 'emerald' : 'rose')}
+            ${kpiCard('Project ID', cfg.projectId || 'Belum diisi', 'fa-diagram-project', 'indigo')}
+            ${kpiCard('Mode Simpan', ready ? 'Firestore' : 'Cache Sementara', 'fa-cloud', ready ? 'emerald' : 'amber')}
+          </div>
+        `);
+      }
+
+      if (sub === 'Panduan Rules') {
+        return panel('Panduan Firestore Rules', 'Rules awal untuk testing pengembangan.', `
+          <pre class="bg-slate-950 text-slate-100 rounded-[24px] p-5 overflow-auto text-xs"><code>rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /tenants/{tenantId}/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}</code></pre>
+          <div class="mt-4 rounded-2xl bg-orange-50 border border-orange-100 p-4 text-sm text-orange-800">
+            Rules ini untuk testing. Saat launching harus diperketat dengan Authentication dan role admin/user.
+          </div>
+        `);
+      }
+
+      return userGenericPanel();
+    }
+
 
     function adminRiskAnalysis() {
       const sub = state.adminSub || 'Overview Risiko';
@@ -5150,7 +5264,7 @@
     async function refreshUserDataFromFirebase() {
       const cloud = await firebaseLoadUserDataFromCloud();
       if (!cloud) {
-        showToast('Firebase belum aktif, memakai cache sementara');
+        showToast('Firebase belum aktif. Isi Koneksi Firebase di dashboard admin.');
         return;
       }
 
@@ -5398,7 +5512,7 @@
         }).catch(error => console.error('Produk gagal dikirim ke Firebase:', error));
       }
       state.editProductId = null;
-      showToast(firebaseIsReady() ? 'Produk disimpan ke Firebase dan masuk Marketplace' : 'Produk tersimpan sementara, Firebase belum aktif');
+      showToast(firebaseIsReady() ? 'Produk disimpan ke Firebase dan masuk Marketplace' : 'Produk tersimpan sementara. Isi Koneksi Firebase di dashboard admin agar masuk database pusat.');
       state.userMenu = 'addProduct';
       state.userSub = 'Preview';
       saveState();
