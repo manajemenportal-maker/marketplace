@@ -160,9 +160,12 @@
     }
     .toast.show { display: block; }
 
-    /* Safe hide old separate Tambah Produk menu button */
-    .menu-button[data-menu-key="addProduct"] {
-      display: none !important;
+    .blank-recovery {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #fff7ed, #f8fafc);
+      padding: 24px;
     }
 
     .user-admin-entry,
@@ -977,7 +980,7 @@
       registration: ['Data Pribadi', 'Data Perusahaan', 'Alamat', 'Dokumen', 'Preview Submit'],
       orders: ['Semua Pesanan', 'Diproses', 'Dikirim', 'Selesai', 'Komplain'],
       addProduct: ['Info Produk', 'Harga & Stok', 'Gambar & Media', 'Spesifikasi', 'Dokumen', 'Pengiriman', 'Preview'],
-      myProducts: ['Tambah Produk', 'Daftar Produk', 'Produk Aktif', 'Produk Nonaktif', 'Produk Review'],
+      myProducts: ['Daftar Produk', 'Produk Aktif', 'Produk Nonaktif', 'Produk Review'],
       store: ['Profil Toko', 'Legalitas', 'Rekening', 'Kurir & Gudang', 'Jam Operasional', 'Kebijakan', 'Preview Toko'],
       companyProfile: ['Compro Utama', 'Bidang Usaha', 'Legalitas', 'Portofolio', 'Produk & Jasa', 'Kontak', 'Preview Compro'],
       riskCheck: ['Skor Kepercayaan', 'Cek Produk', 'Cek Tender', 'Cek Legalitas', 'Riwayat Laporan'],
@@ -1563,35 +1566,91 @@
 
 
 
-    function hideOldTambahProdukMenu() {
-      if (state.role !== 'user') return;
-      document.querySelectorAll('button').forEach(btn => {
-        const text = (btn.textContent || '').trim();
-        const click = btn.getAttribute('onclick') || '';
-        if (text === 'Tambah Produk' && click.includes("openUserMenu('addProduct')")) {
-          btn.style.display = 'none';
+    function renderBlankRecovery(error) {
+      const message = error && (error.message || String(error)) || 'Terjadi error render.';
+      const app = document.getElementById('app');
+      if (!app) return;
+
+      app.innerHTML = `
+        <main class="blank-recovery">
+          <section class="max-w-[720px] rounded-[32px] bg-white border shadow-xl p-6 md:p-8 text-center">
+            <div class="w-16 h-16 rounded-3xl bg-orange-50 text-orange-600 flex items-center justify-center text-3xl mx-auto mb-4">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-black">BisnisHUB berhasil dicegah dari blank</h1>
+            <p class="text-sm text-slate-500 mt-3">Ada state/menu lama yang bentrok. Klik tombol pemulihan di bawah untuk masuk ulang dengan aman.</p>
+            <pre class="mt-4 text-left bg-slate-950 text-slate-100 rounded-2xl p-4 overflow-auto text-xs">${message}</pre>
+            <div class="mt-5 flex flex-col sm:flex-row justify-center gap-3">
+              <button onclick="safeResetToMarketplace()" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Masuk Marketplace</button>
+              <button onclick="safeResetToUser()" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Masuk Dashboard User</button>
+              <button onclick="clearBisnisHubState()" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Reset State</button>
+            </div>
+          </section>
+        </main>
+      `;
+    }
+
+    function clearBisnisHubState() {
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('bishub_') || key.startsWith('bisnishub_')) {
+          if (!['bisnishub_firebase_config'].includes(key)) localStorage.removeItem(key);
         }
       });
+      location.reload();
+    }
+
+    function safeResetToMarketplace() {
+      state.role = 'marketplace';
+      state.userGate = 'entry';
+      state.userMenu = 'overview';
+      state.userSub = 'Ringkasan';
+      state.adminMenu = 'overview';
+      state.adminSub = 'Ringkasan';
+      saveState();
+      renderMarketplace();
+    }
+
+    function safeResetToUser() {
+      state.role = 'user';
+      state.userGate = 'dashboard';
+      state.userMenu = 'myProducts';
+      state.userSub = 'Daftar Produk';
+      saveState();
+      renderUserDashboard();
     }
 
 
     function renderApp() {
-      if (state.role !== 'marketplace') clearInterval(marketplaceCarouselTimer);
-      if (state.role === 'admin') {
-        renderAdminDashboard();
-      } else if (state.role === 'user') {
-        if (state.userGate === 'dashboard') renderUserDashboard();
-        else if (state.userGate === 'login') renderUserLogin();
-        else renderUserEntry();
-      } else if (state.role === 'companyProfile' && state.selectedCompanyId) {
-        renderCompanyProfilePage(state.selectedCompanyId);
-      } else if (state.role === 'tender') {
-        renderTenderMarketplace();
-      } else {
-        renderMarketplace();
+      try {
+        if (state.role !== 'marketplace' && typeof marketplaceCarouselTimer !== 'undefined') {
+          clearInterval(marketplaceCarouselTimer);
+        }
+
+        if (state.role === 'admin') {
+          renderAdminDashboard();
+        } else if (state.role === 'user') {
+          if (state.userGate === 'dashboard') {
+            renderUserDashboard();
+          } else if (typeof renderUserLogin === 'function' && state.userGate === 'login') {
+            renderUserLogin();
+          } else if (typeof renderUserEntry === 'function') {
+            renderUserEntry();
+          } else {
+            renderUserDashboard();
+          }
+        } else if (state.role === 'companyProfile' && state.selectedCompanyId && typeof renderCompanyProfilePage === 'function') {
+          renderCompanyProfilePage(state.selectedCompanyId);
+        } else if (state.role === 'tender') {
+          renderTenderMarketplace();
+        } else {
+          renderMarketplace();
+        }
+
+        if (typeof scrubWrongRoleButtons === 'function') setTimeout(scrubWrongRoleButtons, 0);
+      } catch (error) {
+        console.error('BisnisHUB renderApp error:', error);
+        renderBlankRecovery(error);
       }
-      setTimeout(scrubWrongRoleButtons, 0);
-      setTimeout(hideOldTambahProdukMenu, 0);
     }
 
     function renderHeader(title, subtitle, isAdmin) {
@@ -4763,7 +4822,7 @@ service cloud.firestore {
               <i class="fa-solid fa-box-open text-5xl text-slate-300 mb-4"></i>
               <h3 class="font-black text-lg">Belum ada produk</h3>
               <p class="text-sm text-slate-500 mt-2">Tambahkan produk agar bisa dianalisis risikonya.</p>
-              <button onclick="syncUserDashboardView('myProducts','Tambah Produk')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Tambah Produk</button>
+              <button onclick="syncUserDashboardView('addProduct','Info Produk')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Tambah Produk</button>
             </div>
           `}
         `);
@@ -5040,8 +5099,8 @@ service cloud.firestore {
       }
 
       state.editProductId = null;
-      state.userMenu = 'myProducts';
-      state.userSub = 'Daftar Produk';
+      state.userMenu = 'addProduct';
+      state.userSub = 'Preview';
       saveState();
       showToast(firebaseIsReady && firebaseIsReady() ? 'Produk disimpan ke Firebase dan Marketplace' : 'Produk tersimpan dan tampil sementara. Firebase belum aktif.');
       renderUserDashboard();
@@ -5470,6 +5529,12 @@ service cloud.firestore {
 
 
     function renderUserDashboard() {
+      const validUserKeys = userMenus.map(item => item.key);
+      if (!validUserKeys.includes(state.userMenu)) {
+        state.userMenu = 'overview';
+        state.userSub = 'Ringkasan';
+        saveState();
+      }
       const sidebar = renderMenuButtons(userMenus, state.userMenu, 'user');
       const content = renderSubTabs(userSubs[state.userMenu] || [], state.userSub, 'setUserSub') + renderUserContent();
 
@@ -5832,8 +5897,8 @@ service cloud.firestore {
       }
       state.editProductId = null;
       showToast(firebaseIsReady() ? 'Produk disimpan ke Firebase dan masuk Marketplace' : 'Produk tersimpan sementara. Isi Koneksi Firebase di dashboard admin agar masuk database pusat.');
-      state.userMenu = 'myProducts';
-      state.userSub = 'Daftar Produk';
+      state.userMenu = 'addProduct';
+      state.userSub = 'Preview';
       saveState();
       renderUserDashboard();
     }
@@ -6435,7 +6500,7 @@ service cloud.firestore {
             <i class="fa-solid fa-box-open text-5xl text-slate-300 mb-4"></i>
             <h3 class="font-black text-lg">Belum ada produk</h3>
             <p class="text-sm text-slate-500 mt-2">Tambahkan produk dulu agar bisa diedit, dinonaktifkan, atau dihapus.</p>
-            <button onclick="syncUserDashboardView('myProducts','Tambah Produk')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Tambah Produk</button>
+            <button onclick="syncUserDashboardView('addProduct','Info Produk')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Tambah Produk</button>
           </div>
         `;
       }
@@ -6473,30 +6538,14 @@ service cloud.firestore {
       `;
     }
 
-
-    function userAddProductInsideMyProducts() {
-      const oldMenu = state.userMenu;
-      const oldSub = state.userSub;
-
-      state.userMenu = 'addProduct';
-      state.userSub = 'Info Produk';
-
-      let content = userAddProduct();
-
-      state.userMenu = oldMenu;
-      state.userSub = oldSub;
-
-      return content;
-    }
-
-
     function userMyProducts() {
-      const sub = state.userSub || 'Daftar Produk';
-
+      let sub = state.userSub || 'Daftar Produk';
       if (sub === 'Tambah Produk') {
-        return userAddProductInsideMyProducts();
+        state.userMenu = 'addProduct';
+        state.userSub = 'Info Produk';
+        saveState();
+        return userAddProduct();
       }
-
       const allProducts = getUnifiedUserProducts();
       const products = allProducts.filter(product => productStatusFilter(product, sub));
 
@@ -6518,7 +6567,7 @@ service cloud.firestore {
             <p class="text-sm text-orange-700 mt-1">Produk yang aktif akan ikut tampil di Marketplace B2B.</p>
           </div>
           <div class="flex flex-wrap gap-2">
-            <button onclick="syncUserDashboardView('myProducts','Tambah Produk')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black text-sm">Tambah Produk Baru</button>
+            <button onclick="syncUserDashboardView('addProduct','Info Produk')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black text-sm">Tambah Produk Baru</button>
             <button onclick="switchRole('marketplace')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black text-sm">Cek Marketplace</button>
           </div>
         </div>
@@ -7160,6 +7209,24 @@ service cloud.firestore {
     if (window.bhClearOldAdStorage) window.bhClearOldAdStorage();
     if (typeof exposeRealAdsFunctions === 'function') exposeRealAdsFunctions();
     if (typeof exposeProductFunctions === 'function') exposeProductFunctions();
+
+    window.addEventListener('error', function(event) {
+      console.error('Global error:', event.error || event.message);
+      const app = document.getElementById('app');
+      if (app && !app.innerHTML.trim()) {
+        renderBlankRecovery(event.error || event.message);
+      }
+    });
+
+    window.addEventListener('unhandledrejection', function(event) {
+      console.error('Unhandled promise:', event.reason);
+      const app = document.getElementById('app');
+      if (app && !app.innerHTML.trim()) {
+        renderBlankRecovery(event.reason);
+      }
+    });
+
+
     renderApp();
   </script>
 </body>
