@@ -3281,8 +3281,9 @@
         };
 
         if (image && typeof bhIdbPutProductImage === 'function') {
+          product.thumb = await cpeMakeThumbAsync(image);
           await bhIdbPutProductImage(id, image);
-          // Jaga localStorage tetap ringan
+          // Jaga localStorage tetap ringan, thumbnail tetap disimpan
           product.image = '';
         }
 
@@ -3704,6 +3705,7 @@
         if (!product) return;
 
         if (window.cpePendingImage) {
+          product.thumb = await cpeMakeThumbAsync(window.cpePendingImage);
           await cpePutImage(product.id, window.cpePendingImage);
         }
 
@@ -3743,13 +3745,7 @@
     }
 
     function cpeImageBox(product, height = 'h-44') {
-      if (!product.imageKey) {
-        return `<div class="${height} rounded-2xl bg-slate-100 border flex items-center justify-center text-slate-400"><i class="fa-solid fa-image text-4xl"></i></div>`;
-      }
-
-      return `<div class="${height} rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center">
-        <img data-cpe-img-key="${product.imageKey}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">
-      </div>`;
+      return cpeImageBoxFixed(product, height);
     }
 
     async function cpeHydrateImages() {
@@ -3938,6 +3934,7 @@
     function cpeMarketplaceProducts() {
       return cpeGetProducts().filter(product => product.status === 'Aktif').map(product => ({
         ...product,
+        thumb: product.thumb || '',
         badge: product.badge || 'User',
         icon: product.icon || 'fa-box-open',
         source: 'clean-product-engine'
@@ -3956,6 +3953,34 @@
       });
     }
 
+
+    async function cpeRepairMissingThumbs() {
+      if (typeof cpeGetProducts !== 'function' || typeof cpeSaveProducts !== 'function') return;
+
+      const products = cpeGetProducts();
+      let changed = false;
+
+      for (const product of products) {
+        if (!product.thumb && product.imageKey && typeof cpeGetImage === 'function') {
+          try {
+            const dataUrl = await cpeGetImage(product.imageKey);
+            if (dataUrl) {
+              product.thumb = await cpeMakeThumbAsync(dataUrl);
+              changed = true;
+            }
+          } catch (error) {
+            console.warn('Repair thumb gagal:', error);
+          }
+        }
+      }
+
+      if (changed) {
+        cpeSaveProducts(products);
+        if (typeof cpeMirrorToLegacyStores === 'function') cpeMirrorToLegacyStores();
+      }
+    }
+
+
     function cpeInstallCleanProductEngine() {
       window.cpeReadPhoto = cpeReadPhoto;
       window.cpeSubmitProduct = cpeSubmitProduct;
@@ -3970,9 +3995,9 @@
       window.cpeMergeMarketplaceProducts = cpeMergeMarketplaceProducts;
 
       // Renderer bridge for old cards if needed
-      window.mandiriRenderImage = function(product) { return cpeImageBox(product, 'h-40'); };
-      window.bhProductCardImage = function(product) { return cpeImageBox(product, 'h-40'); };
-      window.productImageOrIcon = function(product) { return cpeImageBox(product, 'h-40'); };
+      window.mandiriRenderImage = function(product) { return cpeImageBoxFixed(product, 'h-40'); };
+      window.bhProductCardImage = function(product) { return cpeImageBoxFixed(product, 'h-40'); };
+      window.productImageOrIcon = function(product) { return cpeImageBoxFixed(product, 'h-40'); };
     }
 
     function cpeMirrorToLegacyStores() {
@@ -4332,6 +4357,88 @@
       window.adminReportApproveProduct = adminReportApproveProduct;
       window.adminReportRejectProduct = adminReportRejectProduct;
       window.adminReportMirrorProduct = adminReportMirrorProduct;
+    }
+
+
+
+    // === BISNISHUB PRODUCT PHOTO THUMB DISPLAY FIX ===
+    function cpeMakeThumb(dataUrl, callback) {
+      if (!dataUrl || !dataUrl.startsWith('data:image/')) {
+        callback('');
+        return;
+      }
+
+      const img = new Image();
+
+      img.onload = function() {
+        const maxW = 360;
+        const maxH = 260;
+        let w = img.width || maxW;
+        let h = img.height || maxH;
+        const ratio = Math.min(maxW / w, maxH / h, 1);
+
+        w = Math.max(1, Math.round(w * ratio));
+        h = Math.max(1, Math.round(h * ratio));
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+
+        let q = 0.60;
+        let thumb = canvas.toDataURL('image/jpeg', q);
+
+        while (thumb.length > 65000 && q > 0.25) {
+          q -= 0.07;
+          thumb = canvas.toDataURL('image/jpeg', q);
+        }
+
+        callback(thumb);
+      };
+
+      img.onerror = function() {
+        callback('');
+      };
+
+      img.src = dataUrl;
+    }
+
+    function cpeMakeThumbAsync(dataUrl) {
+      return new Promise(resolve => cpeMakeThumb(dataUrl, resolve));
+    }
+
+    function cpeImageBoxFixed(product, height = 'h-44') {
+      if (product?.thumb) {
+        return `<div class="${height} rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center">
+          <img src="${product.thumb}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">
+        </div>`;
+      }
+
+      if (product?.image && product.image.startsWith('data:image/')) {
+        return `<div class="${height} rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center">
+          <img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">
+        </div>`;
+      }
+
+      if (product?.image && (product.image.startsWith('http://') || product.image.startsWith('https://'))) {
+        return `<div class="${height} rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center">
+          <img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">
+        </div>`;
+      }
+
+      if (product?.imageKey) {
+        return `<div class="${height} rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center">
+          <img data-cpe-img-key="${product.imageKey}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">
+        </div>`;
+      }
+
+      return `<div class="${height} rounded-2xl bg-slate-100 border flex items-center justify-center text-slate-400">
+        <i class="fa-solid ${product?.icon || 'fa-image'} text-4xl"></i>
+      </div>`;
     }
 
 
@@ -5126,6 +5233,7 @@
           badge: product.badge || (product.listingType && product.listingType.includes('Jasa') ? 'Jasa' : 'User'),
           icon: product.icon || (product.listingType && product.listingType.includes('Jasa') ? 'fa-handshake-angle' : 'fa-box-open'),
           image: product.image || '',
+          thumb: product.thumb || '',
           imageKey: product.imageKey || product.id || '',
           status: product.status || 'Aktif',
           source: product.source || 'approved-user'
@@ -5192,6 +5300,7 @@
           badge: product.badge || (product.listingType && product.listingType.includes('Jasa') ? 'Jasa' : 'User'),
           icon: product.icon || (product.listingType && product.listingType.includes('Jasa') ? 'fa-handshake-angle' : 'fa-box-open'),
           image: product.image || '',
+          thumb: product.thumb || '',
           imageKey: product.imageKey || product.id || '',
           status: product.status || 'Aktif',
           source: product.source || 'approved-user'
@@ -8940,6 +9049,7 @@ service cloud.firestore {
           badge: product.badge || 'User',
           icon: product.icon || 'fa-box-open',
           image: product.image || '',
+          thumb: product.thumb || '',
           imageKey: product.imageKey || product.id || '',
           status: product.status || 'Aktif',
           source: product.ownerUserId ? 'firebase' : 'user',
@@ -10233,6 +10343,7 @@ service cloud.firestore {
     if (typeof cpeInstallCleanProductEngine === 'function') cpeInstallCleanProductEngine();
     if (typeof installCompanyDatabaseEngine === 'function') installCompanyDatabaseEngine();
     if (typeof installAdminReportBridge === 'function') installAdminReportBridge();
+    if (typeof cpeRepairMissingThumbs === 'function') cpeRepairMissingThumbs().then(() => { if (typeof cpeHydrateImages === 'function') cpeHydrateImages(); });
     renderApp();
     setTimeout(cpeHydrateImages, 300);
     setTimeout(mandiriHydrateImages, 300);
