@@ -3368,7 +3368,7 @@
           ${products.map(product => `
             <div class="rounded-[26px] border bg-white p-4 shadow-sm">
               <div class="h-40 rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center mb-4">
-                ${mandiriRenderImage(product)}
+                ${forceProductImageForMarketplace(product)}
               </div>
               <div class="flex items-start justify-between gap-3">
                 <div>
@@ -4269,12 +4269,111 @@
     }
 
 
+
+    // === FORCE APPROVED PRODUCTS INTO MARKETPLACE FINAL ===
+    function forceReadAllProductsForMarketplace() {
+      const data = typeof getUserData === 'function' ? getUserData() : { products: [], store: {} };
+      const userProducts = Array.isArray(data.products) ? data.products : [];
+      const savedProducts = typeof bhGetAllSavedProducts === 'function' ? bhGetAllSavedProducts() : [];
+      const cloudProducts = Array.isArray(window.bisnisHubCloudProducts) ? window.bisnisHubCloudProducts : [];
+      let mirrorProducts = [];
+      try {
+        mirrorProducts = JSON.parse(localStorage.getItem('bisnishub_approved_marketplace_products') || '[]');
+        if (!Array.isArray(mirrorProducts)) mirrorProducts = [];
+      } catch (error) {
+        mirrorProducts = [];
+      }
+
+      const merged = [...mirrorProducts, ...savedProducts, ...userProducts, ...cloudProducts];
+      const seen = new Set();
+
+      return merged
+        .filter(product => {
+          const key = product.id || product.name;
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return ['Aktif', 'Tayang', 'Admin'].includes(product.status || '');
+        })
+        .map(product => ({
+          ...product,
+          id: product.id || ('APPROVED-' + Date.now()),
+          name: product.name || 'Produk Seller',
+          seller: product.seller || data.store?.name || 'Seller BisnisHUB',
+          category: product.category || 'Produk Industri',
+          price: product.price || 'Hubungi Seller',
+          badge: product.badge || (product.listingType && product.listingType.includes('Jasa') ? 'Jasa' : 'User'),
+          icon: product.icon || (product.listingType && product.listingType.includes('Jasa') ? 'fa-handshake-angle' : 'fa-box-open'),
+          image: product.image || '',
+          imageKey: product.imageKey || product.id || '',
+          status: product.status || 'Aktif',
+          source: product.source || 'approved-user'
+        }));
+    }
+
+    function forceMarketplaceBaseProducts() {
+      let base = [];
+      try {
+        if (Array.isArray(marketplaceProducts)) base = marketplaceProducts;
+      } catch (error) {
+        base = [];
+      }
+
+      const approved = forceReadAllProductsForMarketplace();
+      const seen = new Set();
+
+      return [...approved, ...base].filter(product => {
+        const key = product.id || product.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function forceGetFilteredMarketplaceProducts() {
+      const keyword = String(state.marketSearch || '').toLowerCase().trim();
+      const selectedCategory = state.marketCategory || 'Semua Kategori';
+
+      return forceMarketplaceBaseProducts().filter(product => {
+        const productText = [
+          product.name,
+          product.seller,
+          product.category,
+          product.description,
+          product.badge
+        ].join(' ').toLowerCase();
+
+        const matchKeyword = !keyword || productText.includes(keyword);
+        const matchCategory = selectedCategory === 'Semua Kategori' || product.category === selectedCategory;
+
+        return matchKeyword && matchCategory;
+      });
+    }
+
+    function forceProductImageForMarketplace(product) {
+      if (typeof mandiriRenderImage === 'function') return mandiriRenderImage(product);
+      if (typeof bhRenderProductImageIndexedDB === 'function') return bhRenderProductImageIndexedDB(product);
+
+      if (product?.image) {
+        return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">`;
+      }
+
+      return `<i class="fa-solid ${product?.icon || 'fa-box-open'} text-5xl text-indigo-500"></i>`;
+    }
+
+    function forcePatchMarketplaceFunctions() {
+      window.getFilteredMarketplaceProducts = forceGetFilteredMarketplaceProducts;
+      window.forceGetFilteredMarketplaceProducts = forceGetFilteredMarketplaceProducts;
+      window.forceReadAllProductsForMarketplace = forceReadAllProductsForMarketplace;
+      window.forceProductImageForMarketplace = forceProductImageForMarketplace;
+    }
+
+
     function renderMarketplace() {
       if (firebaseIsReady() && !window.bisnisHubMarketplaceLoadedOnce) {
         window.bisnisHubMarketplaceLoadedOnce = true;
         refreshMarketplaceFromFirebase().then(() => renderMarketplace()).catch(() => {});
       }
-      const filteredProducts = getFilteredMarketplaceProducts();
+      const filteredProducts = forceGetFilteredMarketplaceProducts();
       const productCards = filteredProducts.map(product => `
         <div class="content-card mobile-product-card p-4 hover:-translate-y-1 transition">
           <div class="h-36 product-thumb rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
@@ -6876,7 +6975,7 @@ service cloud.firestore {
       if (product && product.image) {
         return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">`;
       }
-      return `${mandiriRenderImage(product)}`;
+      return `${forceProductImageForMarketplace(product)}`;
     }
 
     function bhBuildProductFromForm(prefix = 'admin', source = 'admin') {
@@ -7042,7 +7141,7 @@ service cloud.firestore {
       const rows = products.map(product => `
         <tr>
           <td>
-            <div class="w-16 h-12 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center">${mandiriRenderImage(product)}</div>
+            <div class="w-16 h-12 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center">${forceProductImageForMarketplace(product)}</div>
           </td>
           <td><b>${product.name}</b><br><span class="text-xs text-slate-400">${product.category}</span></td>
           <td>${product.seller || '-'}</td>
@@ -7108,12 +7207,24 @@ service cloud.firestore {
         }).catch(error => console.error('Update status produk Firebase gagal:', error));
       }
 
+      if (status === 'Aktif' && typeof forceSyncApprovedProductMirror === 'function') forceSyncApprovedProductMirror();
       showToast(status === 'Aktif' ? 'Produk disetujui dan tampil di Marketplace' : 'Produk ditolak');
       renderAdminDashboard();
       setTimeout(() => {
         if (typeof mandiriHydrateImages === 'function') mandiriHydrateImages();
         if (typeof bhHydrateProductImages === 'function') bhHydrateProductImages();
       }, 200);
+    }
+
+
+    function forceSyncApprovedProductMirror() {
+      const approved = forceReadAllProductsForMarketplace();
+      try {
+        localStorage.setItem('bisnishub_approved_marketplace_products', JSON.stringify(approved));
+      } catch (error) {
+        console.warn('Gagal mirror approved products:', error);
+      }
+      return approved;
     }
 
     function adminApproveProduct(productId) {
@@ -7853,7 +7964,7 @@ service cloud.firestore {
         return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk BisnisHUB'}">`;
       }
 
-      return `${mandiriRenderImage(product)}`;
+      return `${forceProductImageForMarketplace(product)}`;
     }
 
 
@@ -7962,7 +8073,7 @@ service cloud.firestore {
           ${products.map(product => `
             <div class="rounded-[24px] border bg-white p-5">
               <div class="h-36 rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center mb-4">
-                ${mandiriRenderImage(product)}
+                ${forceProductImageForMarketplace(product)}
               </div>
               <div class="flex items-start justify-between gap-3">
                 <div>
@@ -9225,6 +9336,7 @@ service cloud.firestore {
     if (typeof bhInstallLocalFirstUploadFix === 'function') bhInstallLocalFirstUploadFix();
     if (typeof bhInstallIndexedDBPhotoFix === 'function') bhInstallIndexedDBPhotoFix();
     if (typeof installMandiriProductModule === 'function') installMandiriProductModule();
+    if (typeof forcePatchMarketplaceFunctions === 'function') forcePatchMarketplaceFunctions();
     renderApp();
     setTimeout(mandiriHydrateImages, 300);
     setTimeout(bhHydrateProductImages, 300);
