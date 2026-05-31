@@ -5023,7 +5023,7 @@ service cloud.firestore {
       state.userMenu = 'myProducts';
       state.userSub = 'Daftar Produk';
       saveState();
-      showToast(firebaseIsReady && firebaseIsReady() ? 'Produk disimpan ke Firebase dan Marketplace' : 'Produk tersimpan dan tampil sementara. Firebase belum aktif.');
+      showToast(firebaseIsReady && firebaseIsReady() ? 'Produk disimpan ke Firebase dan Marketplace' : 'Produk tersimpan dan tampil sementara. Firebase belum aktif, isi Koneksi Firebase di dashboard admin agar masuk database pusat.');
       renderUserDashboard();
     }
 
@@ -5811,7 +5811,7 @@ service cloud.firestore {
         }).catch(error => console.error('Produk gagal dikirim ke Firebase:', error));
       }
       state.editProductId = null;
-      showToast(firebaseIsReady() ? 'Produk disimpan ke Firebase dan masuk Marketplace' : 'Produk tersimpan sementara. Isi Koneksi Firebase di dashboard admin agar masuk database pusat.');
+      showToast(firebaseIsReady() ? 'Produk disimpan ke Firebase dan masuk Marketplace' : 'Produk tersimpan sementara. Firebase belum aktif, isi Koneksi Firebase di dashboard admin agar masuk database pusat.');
       state.userMenu = 'myProducts';
       state.userSub = 'Daftar Produk';
       saveState();
@@ -6453,12 +6453,28 @@ service cloud.firestore {
       `;
     }
 
+
+    function userAddProductAsProdukSaya() {
+      const oldMenu = state.userMenu;
+      const oldSub = state.userSub;
+
+      state.userMenu = 'myProducts';
+      state.userSub = 'Tambah Produk';
+
+      const content = userAddProduct();
+
+      state.userMenu = oldMenu;
+      state.userSub = oldSub;
+
+      return content.replaceAll("syncUserDashboardView('myProducts','Tambah Produk')", "syncUserDashboardView('myProducts','Tambah Produk')");
+    }
+
+
     function userMyProducts() {
       const sub = state.userSub || 'Daftar Produk';
 
       if (sub === 'Tambah Produk') {
-        state.userMenu = 'myProducts';
-        return userAddProduct();
+        return userAddProductAsProdukSaya();
       }
 
       const allProducts = getUnifiedUserProducts();
@@ -6468,7 +6484,7 @@ service cloud.firestore {
       const nonActiveCount = allProducts.filter(product => product.status === 'Nonaktif').length;
       const reviewCount = allProducts.filter(product => product.status === 'Review' || product.status === 'Menunggu Review').length;
 
-      return panel('Produk Saya', 'Kelola produk dari satu menu profesional: tambah produk, lihat daftar, edit, nonaktifkan, duplikat, atau hapus produk.', `
+      return panel('Produk Saya', 'Daftar semua produk yang sudah diupload. Dari sini user bisa edit, nonaktifkan, duplikat, atau hapus produk.', `
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
           ${kpiCard('Total Produk', String(allProducts.length), 'fa-boxes-stacked', 'indigo')}
           ${kpiCard('Aktif', String(activeCount), 'fa-circle-check', 'emerald')}
@@ -6493,7 +6509,7 @@ service cloud.firestore {
 
 
     function userAddProduct() {
-      const active = (state.userMenu === 'myProducts' && state.userSub === 'Tambah Produk') ? 'Info Produk' : (state.userSub || 'Info Produk');
+      const active = state.userSub || 'Info Produk';
       const data = getUserData();
       const editing = state.editProductId ? (data.products || []).find(item => item.id === state.editProductId) : null;
 
