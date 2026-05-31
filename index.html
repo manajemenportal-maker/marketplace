@@ -1191,6 +1191,252 @@
     }
 
 
+
+    // === BISNISHUB SAFE ADS ENGINE - GUARANTEED GLOBAL ===
+    window.BH_ADS_KEY = 'bisnishub_ads_live_v2';
+
+    window.bhGetAds = function() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(window.BH_ADS_KEY) || '[]');
+        if (Array.isArray(saved)) return saved;
+      } catch (error) {}
+      return [];
+    };
+
+    window.bhSaveAds = function(ads) {
+      localStorage.setItem(window.BH_ADS_KEY, JSON.stringify(Array.isArray(ads) ? ads : []));
+      window.bhApplyAdsToTicker();
+      return true;
+    };
+
+    window.bhReadAdImage = function(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const hidden = document.getElementById('bhAdImageValue');
+        const preview = document.getElementById('bhAdImagePreview');
+        if (hidden) hidden.value = event.target.result;
+        if (preview) preview.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.bhApplyAdsToTicker = function() {
+      const ads = window.bhGetAds().filter(ad => ad.status === 'Aktif');
+      const banner = ads.find(ad => ad.type === 'image' && ad.image);
+      const texts = ads
+        .filter(ad => ad.type === 'text')
+        .map(ad => ad.text)
+        .filter(Boolean);
+
+      const old = typeof getAdsSettings === 'function' ? getAdsSettings() : { speedSeconds: 18 };
+      const finalTexts = texts.length ? texts.slice(0, 3) : [
+        'Promo launching BisnisHUB: tampilkan produk dan jasa Anda di Marketplace',
+        'Pasang iklan banner untuk menjangkau buyer, seller, dan owner proyek',
+        'Buka peluang tender, promosi vendor, dan penawaran layanan langsung dari platform'
+      ];
+
+      if (typeof saveAdsSettings === 'function') {
+        saveAdsSettings({
+          mode: banner ? 'image' : 'text',
+          speedSeconds: Number(document.getElementById('bhAdSpeed')?.value || old.speedSeconds || 18),
+          textItems: finalTexts,
+          bannerSrc: banner ? banner.image : '',
+          bannerAlt: banner ? banner.title : 'Iklan BisnisHUB'
+        });
+      }
+    };
+
+    window.bhAddAd = function() {
+      try {
+        const type = document.getElementById('bhAdType')?.value || 'text';
+        const title = (document.getElementById('bhAdTitle')?.value || '').trim();
+        const text = (document.getElementById('bhAdText')?.value || '').trim();
+        const image = document.getElementById('bhAdImageValue')?.value || '';
+
+        if (!title) {
+          showToast('Judul iklan wajib diisi');
+          return false;
+        }
+        if (type === 'text' && !text) {
+          showToast('Teks iklan wajib diisi');
+          return false;
+        }
+        if (type === 'image' && !image) {
+          showToast('Upload gambar banner dulu');
+          return false;
+        }
+
+        const ads = window.bhGetAds();
+        ads.unshift({
+          id: 'AD-' + Date.now(),
+          type,
+          title,
+          text,
+          image,
+          status: 'Aktif',
+          createdAt: new Date().toLocaleString('id-ID')
+        });
+
+        window.bhSaveAds(ads);
+        showToast('Iklan berhasil disimpan dan aktif');
+        if (typeof renderAdminDashboard === 'function') renderAdminDashboard();
+        return true;
+      } catch (error) {
+        console.error('bhAddAd error:', error);
+        alert('Gagal menyimpan iklan: ' + (error.message || error));
+        return false;
+      }
+    };
+
+    window.bhToggleAd = function(id) {
+      const ads = window.bhGetAds().map(ad => ad.id === id ? {
+        ...ad,
+        status: ad.status === 'Aktif' ? 'Nonaktif' : 'Aktif'
+      } : ad);
+      window.bhSaveAds(ads);
+      showToast('Status iklan diperbarui');
+      renderAdminDashboard();
+    };
+
+    window.bhDeleteAd = function(id) {
+      const ads = window.bhGetAds().filter(ad => ad.id !== id);
+      window.bhSaveAds(ads);
+      showToast('Iklan dihapus');
+      renderAdminDashboard();
+    };
+
+    window.bhSetBannerAd = function(id) {
+      const ads = window.bhGetAds().map(ad => ({
+        ...ad,
+        status: ad.id === id ? 'Aktif' : (ad.type === 'image' ? 'Nonaktif' : ad.status)
+      }));
+      window.bhSaveAds(ads);
+      showToast('Banner iklan utama dipasang');
+      renderAdminDashboard();
+    };
+
+    window.renderSafeAdminAdsPanel = function() {
+      const ads = window.bhGetAds();
+      const current = typeof getAdsSettings === 'function' ? getAdsSettings() : { speedSeconds: 18 };
+
+      const rows = ads.length ? ads.map(ad => `
+        <div class="rounded-[24px] border bg-white p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-black uppercase text-orange-600">${ad.type === 'image' ? 'Banner Gambar' : 'Teks Berjalan'}</p>
+              <h3 class="font-black text-lg mt-1">${ad.title}</h3>
+              <p class="text-sm text-slate-500 mt-2">${ad.text || 'Banner gambar'}</p>
+            </div>
+            ${badge(ad.status, ad.status === 'Aktif' ? 'emerald' : 'slate')}
+          </div>
+          ${ad.image ? `<img src="${ad.image}" class="mt-4 w-full h-28 object-cover rounded-2xl border" alt="${ad.title}">` : ''}
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button onclick="window.bhToggleAd('${ad.id}')" class="bg-amber-500 text-white rounded-xl px-4 py-2 text-xs font-black">${ad.status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}</button>
+            ${ad.type === 'image' ? `<button onclick="window.bhSetBannerAd('${ad.id}')" class="bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Jadikan Banner</button>` : ''}
+            <button onclick="window.bhDeleteAd('${ad.id}')" class="bg-rose-600 text-white rounded-xl px-4 py-2 text-xs font-black">Hapus</button>
+          </div>
+        </div>
+      `).join('') : `
+        <div class="rounded-[24px] border bg-white p-8 text-center">
+          <i class="fa-solid fa-bullhorn text-5xl text-slate-300 mb-4"></i>
+          <h3 class="font-black text-lg">Belum ada iklan tersimpan</h3>
+          <p class="text-sm text-slate-500 mt-2">Isi form di kiri lalu klik Simpan & Tampilkan.</p>
+        </div>
+      `;
+
+      return panel('Pasang Iklan Berjalan', 'Iklan yang disimpan di sini langsung dipakai di area iklan berjalan Marketplace B2B.', `
+        <div class="grid lg:grid-cols-[420px_1fr] gap-5">
+          <div class="rounded-[28px] bg-orange-50 border border-orange-100 p-5">
+            <h3 class="text-xl font-black mb-4">Input Iklan</h3>
+            <div class="grid gap-3">
+              <select id="bhAdType" class="border rounded-2xl p-3 bg-white">
+                <option value="text">Teks Berjalan</option>
+                <option value="image">Banner Gambar</option>
+              </select>
+              <input id="bhAdTitle" class="border rounded-2xl p-3" placeholder="Judul iklan">
+              <textarea id="bhAdText" class="border rounded-2xl p-3" rows="3" placeholder="Teks iklan berjalan"></textarea>
+              <div>
+                <label class="text-xs font-black uppercase text-orange-800">Upload banner gambar</label>
+                <img id="bhAdImagePreview" class="mt-2 w-full h-28 object-cover rounded-2xl border bg-white" alt="">
+                <input id="bhAdImageValue" type="hidden">
+                <input type="file" accept="image/*" onchange="window.bhReadAdImage(this)" class="mt-2 border rounded-2xl p-3 w-full bg-white">
+              </div>
+              <div>
+                <label class="text-xs font-black uppercase text-orange-800">Kecepatan teks</label>
+                <select id="bhAdSpeed" class="mt-1 border rounded-2xl p-3 w-full bg-white">
+                  ${[8,12,15,18,22,28,35,40,50,60].map(s => `<option value="${s}" ${Number(current.speedSeconds) === s ? 'selected' : ''}>${s} detik</option>`).join('')}
+                </select>
+              </div>
+              <button type="button" onclick="window.bhAddAd()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">
+                Simpan & Tampilkan
+              </button>
+              <button type="button" onclick="window.bhApplyAdsToTicker(); switchRole('marketplace')" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-5 py-3 font-black">
+                Preview Marketplace
+              </button>
+            </div>
+          </div>
+          <div>
+            <div class="rounded-[28px] border bg-white p-5 mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div>
+                <p class="text-xs font-black uppercase text-orange-600">Daftar Iklan</p>
+                <h3 class="text-xl font-black">${ads.length} iklan tersimpan</h3>
+                <p class="text-sm text-slate-500 mt-1">Aktif/nonaktifkan, hapus, atau jadikan banner utama.</p>
+              </div>
+              <button type="button" onclick="localStorage.removeItem(window.BH_ADS_KEY); window.bhApplyAdsToTicker(); renderAdminDashboard(); showToast('Iklan direset')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black text-sm">
+                Reset
+              </button>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-4">${rows}</div>
+          </div>
+        </div>
+      `);
+    };
+
+
+
+    function scrubWrongRoleButtons() {
+      const role = state.role;
+
+      document.querySelectorAll('button, a, [role="button"]').forEach(el => {
+        const text = (el.textContent || '').trim().toLowerCase();
+        const click = (el.getAttribute('onclick') || '').toLowerCase();
+
+        if (role === 'user') {
+          if (
+            text.includes('masuk admin') ||
+            text.includes('akses admin') ||
+            text.includes('administrator') ||
+            click.includes("switchrole('admin") ||
+            click.includes('showadminhiddenhint') ||
+            click.includes('openadminhiddenlogin')
+          ) {
+            el.remove();
+          }
+        }
+
+        if (role === 'admin') {
+          if (
+            text.includes('masuk user') ||
+            text === 'akun' ||
+            text.includes('akun saya') ||
+            click.includes("switchrole('user")
+          ) {
+            el.remove();
+          }
+        }
+      });
+
+      document.querySelectorAll('[title]').forEach(el => {
+        const title = (el.getAttribute('title') || '').toLowerCase();
+        if ((role === 'user' && title.includes('admin')) || (role === 'admin' && title.includes('user'))) {
+          el.removeAttribute('title');
+        }
+      });
+    }
+
+
     function renderApp() {
       if (state.role !== 'marketplace') clearInterval(marketplaceCarouselTimer);
       if (state.role === 'admin') {
@@ -1206,6 +1452,7 @@
       } else {
         renderMarketplace();
       }
+      setTimeout(scrubWrongRoleButtons, 0);
     }
 
     function renderHeader(title, subtitle, isAdmin) {
@@ -2745,6 +2992,7 @@
     }
 
     function renderRunningAds() {
+      if (window.bhApplyAdsToTicker) window.bhApplyAdsToTicker();
       realAdsToRunningSettings();
       const ads = getAdsSettings();
 
@@ -3466,7 +3714,7 @@
 
       if (menu === 'cms') {
         if (sub === 'Iklan Berjalan') {
-          return adminPasangIklanRealPanel();
+          return window.renderSafeAdminAdsPanel();
         }
         if (sub === 'Foto Carousel') {
           return adminCarouselSettingPanel();
@@ -5496,29 +5744,37 @@
       const isMarketplace = role === 'marketplace';
       const isTender = role === 'tender';
       const isUser = role === 'user';
-      const isDashboard = role === 'user' || role === 'admin';
+      const isAdmin = role === 'admin';
+      const isDashboard = isUser || isAdmin;
+
+      if (isAdmin) {
+        return `
+          <nav class="mobile-bottom-dock">
+            <button onclick="setAdminMenu('overview')" class="dock-item active"><i class="fa-solid fa-chart-line"></i><span>Admin</span></button>
+            <button onclick="setAdminMenu('products')" class="dock-item"><i class="fa-solid fa-boxes-stacked"></i><span>Produk</span></button>
+            <button onclick="setAdminMenu('cms')" class="dock-item"><i class="fa-solid fa-palette"></i><span>CMS</span></button>
+            <button onclick="switchRole('marketplace')" class="dock-item"><i class="fa-solid fa-store"></i><span>Market</span></button>
+            <button onclick="logoutToMarketplace()" class="dock-item"><i class="fa-solid fa-right-from-bracket"></i><span>Keluar</span></button>
+          </nav>
+        `;
+      }
 
       return `
         <nav class="mobile-bottom-dock">
           <button onclick="switchRole('marketplace')" class="dock-item ${isMarketplace ? 'active' : ''}">
-            <i class="fa-solid fa-store"></i>
-            <span>Home</span>
+            <i class="fa-solid fa-store"></i><span>Home</span>
           </button>
           <button onclick="switchRole('marketplace'); setTimeout(() => document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth'}), 60)" class="dock-item">
-            <i class="fa-solid fa-box-open"></i>
-            <span>Produk</span>
+            <i class="fa-solid fa-box-open"></i><span>Produk</span>
           </button>
           <button onclick="switchRole('tender')" class="dock-item ${isTender ? 'active' : ''}">
-            <i class="fa-solid fa-file-signature"></i>
-            <span>Tender</span>
+            <i class="fa-solid fa-file-signature"></i><span>Tender</span>
           </button>
           <button onclick="switchRole('user')" class="dock-item ${isUser ? 'active' : ''}">
-            <i class="fa-solid fa-user"></i>
-            <span>Akun</span>
+            <i class="fa-solid fa-user"></i><span>Akun</span>
           </button>
           <button onclick="${isDashboard ? "logoutToMarketplace()" : "openSupportModal()"}" class="dock-item">
-            <i class="fa-solid ${isDashboard ? 'fa-right-from-bracket' : 'fa-headset'}"></i>
-            <span>${isDashboard ? 'Keluar' : 'Bantuan'}</span>
+            <i class="fa-solid ${isDashboard ? 'fa-right-from-bracket' : 'fa-headset'}"></i><span>${isDashboard ? 'Keluar' : 'Bantuan'}</span>
           </button>
         </nav>
       `;
