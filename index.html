@@ -3368,7 +3368,7 @@
           ${products.map(product => `
             <div class="rounded-[26px] border bg-white p-4 shadow-sm">
               <div class="h-40 rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center mb-4">
-                ${forceProductImageForMarketplace(product)}
+                ${cpeImageBox(product, 'h-full')}
               </div>
               <div class="flex items-start justify-between gap-3">
                 <div>
@@ -3444,6 +3444,549 @@
       window.safeProductImage = mandiriRenderImage;
       window.bhProductCardImage = mandiriRenderImage;
       window.productImageOrIcon = mandiriRenderImage;
+    }
+
+
+
+    // === BISNISHUB CLEAN PRODUCT ENGINE INSERTED INTO MAIN APP ===
+    const CPE_PRODUCTS_KEY = 'bisnishub_clean_products_v2';
+
+    function cpeToast(message) {
+      if (typeof showToast === 'function') showToast(message);
+      else console.log(message);
+    }
+
+    function cpeGetProducts() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(CPE_PRODUCTS_KEY) || '[]');
+        return Array.isArray(saved) ? saved : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function cpeSaveProducts(products) {
+      localStorage.setItem(CPE_PRODUCTS_KEY, JSON.stringify(Array.isArray(products) ? products : []));
+    }
+
+    function cpeUpsertProduct(product) {
+      const products = cpeGetProducts();
+      const index = products.findIndex(item => item.id === product.id);
+      if (index >= 0) products[index] = { ...products[index], ...product };
+      else products.unshift(product);
+      cpeSaveProducts(products);
+      cpeMirrorToLegacyStores();
+    }
+
+    function cpeUpdateProductStatus(productId, status) {
+      const products = cpeGetProducts().map(product => product.id === productId ? {
+        ...product,
+        status,
+        approvedAt: status === 'Aktif' ? new Date().toLocaleString('id-ID') : product.approvedAt,
+        rejectedAt: status === 'Ditolak' ? new Date().toLocaleString('id-ID') : product.rejectedAt
+      } : product);
+
+      cpeSaveProducts(products);
+      cpeMirrorToLegacyStores();
+      cpeToast(status === 'Aktif' ? 'Produk disetujui dan tampil di marketplace' : 'Produk ditolak');
+    }
+
+    function cpeDeleteProduct(productId) {
+      if (!confirm('Hapus produk ini?')) return;
+      cpeSaveProducts(cpeGetProducts().filter(product => product.id !== productId));
+      cpeDeleteImage(productId).catch(() => {});
+      cpeMirrorToLegacyStores();
+      cpeToast('Produk dihapus');
+      if (state.role === 'admin') renderAdminDashboard();
+      else renderUserDashboard();
+    }
+
+    function cpeOpenDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open('bisnishub_clean_media_db', 1);
+
+        request.onupgradeneeded = function(event) {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains('images')) {
+            db.createObjectStore('images', { keyPath: 'id' });
+          }
+        };
+
+        request.onsuccess = function() {
+          resolve(request.result);
+        };
+
+        request.onerror = function() {
+          reject(request.error);
+        };
+      });
+    }
+
+    async function cpePutImage(productId, dataUrl) {
+      if (!productId || !dataUrl) return false;
+      const db = await cpeOpenDB();
+
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('images', 'readwrite');
+        tx.objectStore('images').put({
+          id: productId,
+          dataUrl,
+          updatedAt: Date.now()
+        });
+
+        tx.oncomplete = function() {
+          db.close();
+          resolve(true);
+        };
+
+        tx.onerror = function() {
+          db.close();
+          reject(tx.error);
+        };
+      });
+    }
+
+    async function cpeGetImage(productId) {
+      if (!productId) return '';
+      const db = await cpeOpenDB();
+
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('images', 'readonly');
+        const request = tx.objectStore('images').get(productId);
+
+        request.onsuccess = function() {
+          db.close();
+          resolve(request.result?.dataUrl || '');
+        };
+
+        request.onerror = function() {
+          db.close();
+          reject(request.error);
+        };
+      });
+    }
+
+    async function cpeDeleteImage(productId) {
+      if (!productId) return false;
+      const db = await cpeOpenDB();
+
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('images', 'readwrite');
+        tx.objectStore('images').delete(productId);
+
+        tx.oncomplete = function() {
+          db.close();
+          resolve(true);
+        };
+
+        tx.onerror = function() {
+          db.close();
+          reject(tx.error);
+        };
+      });
+    }
+
+    function cpeCompressImage(file) {
+      return new Promise((resolve, reject) => {
+        if (!file || !file.type || !file.type.startsWith('image/')) {
+          reject(new Error('File harus gambar JPG, PNG, atau WebP'));
+          return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function(event) {
+          const image = new Image();
+
+          image.onload = function() {
+            const maxWidth = 1000;
+            const maxHeight = 800;
+            let width = image.width || maxWidth;
+            let height = image.height || maxHeight;
+            const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+
+            width = Math.max(1, Math.round(width * ratio));
+            height = Math.max(1, Math.round(height * ratio));
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(image, 0, 0, width, height);
+
+            let quality = 0.78;
+            let dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+            while (dataUrl.length > 450000 && quality > 0.35) {
+              quality -= 0.07;
+              dataUrl = canvas.toDataURL('image/jpeg', quality);
+            }
+
+            resolve(dataUrl);
+          };
+
+          image.onerror = function() {
+            reject(new Error('Gambar tidak terbaca. Jika HEIC/iPhone, ubah dulu ke JPG.'));
+          };
+
+          image.src = event.target.result;
+        };
+
+        reader.onerror = function() {
+          reject(new Error('Gagal membaca file gambar.'));
+        };
+
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function cpeReadPhoto(input) {
+      try {
+        const file = input.files && input.files[0];
+        if (!file) return;
+
+        cpeToast('Membaca foto produk...');
+        const dataUrl = await cpeCompressImage(file);
+        window.cpePendingImage = dataUrl;
+
+        const preview = document.getElementById('cpePreview');
+        const status = document.getElementById('cpePhotoStatus');
+
+        if (preview) preview.src = dataUrl;
+        if (status) status.textContent = 'Foto siap disimpan';
+
+        cpeToast('Foto berhasil tampil di preview');
+      } catch (error) {
+        alert(error.message || error);
+      }
+    }
+
+    function cpeGetCurrentSellerName() {
+      const data = typeof getUserData === 'function' ? getUserData() : { store: {} };
+      return data.store?.name || 'Seller BisnisHUB';
+    }
+
+    function cpeBuildProductFromForm() {
+      const productId = document.getElementById('cpeProductId')?.value || ('PRD-' + Date.now());
+      const name = String(document.getElementById('cpeName')?.value || '').trim();
+
+      if (!name) {
+        cpeToast('Nama produk wajib diisi');
+        return null;
+      }
+
+      const hasOldImage = document.getElementById('cpeHasOldImage')?.value || '';
+
+      return {
+        id: productId,
+        name,
+        category: String(document.getElementById('cpeCategory')?.value || 'Produk Industri'),
+        price: String(document.getElementById('cpePrice')?.value || 'Hubungi Seller'),
+        stock: String(document.getElementById('cpeStock')?.value || 'Ready'),
+        unit: String(document.getElementById('cpeUnit')?.value || 'Unit'),
+        brand: String(document.getElementById('cpeBrand')?.value || ''),
+        sku: String(document.getElementById('cpeSku')?.value || ''),
+        listingType: String(document.getElementById('cpeListingType')?.value || 'Produk Fisik'),
+        delivery: String(document.getElementById('cpeDelivery')?.value || ''),
+        description: String(document.getElementById('cpeDescription')?.value || ''),
+        specs: String(document.getElementById('cpeSpecs')?.value || ''),
+        seller: cpeGetCurrentSellerName(),
+        status: 'Menunggu Review',
+        source: 'user',
+        badge: 'User',
+        icon: 'fa-box-open',
+        imageKey: window.cpePendingImage ? productId : hasOldImage,
+        createdAt: new Date().toLocaleString('id-ID')
+      };
+    }
+
+    async function cpeSubmitProduct() {
+      try {
+        const product = cpeBuildProductFromForm();
+        if (!product) return;
+
+        if (window.cpePendingImage) {
+          await cpePutImage(product.id, window.cpePendingImage);
+        }
+
+        cpeUpsertProduct(product);
+        cpeSyncToFirebase(product).catch(() => {});
+        window.cpePendingImage = '';
+
+        state.userMenu = 'myProducts';
+        state.userSub = 'Daftar Produk';
+        saveState();
+        cpeToast('Produk disimpan dan masuk admin review');
+        renderUserDashboard();
+        setTimeout(cpeHydrateImages, 150);
+      } catch (error) {
+        console.error('CPE submit error:', error);
+        alert('Gagal simpan produk: ' + (error.message || error));
+      }
+    }
+
+    async function cpeSyncToFirebase(product) {
+      if (typeof firebaseIsReady !== 'function' || !firebaseIsReady() || typeof firebaseSetDocument !== 'function') return;
+      await firebaseSetDocument(`${firebasePaths().products}/${product.id}`, {
+        ...product,
+        tenantId: BISNISHUB_TENANT_ID,
+        ownerUserId: BISNISHUB_ACTIVE_USER_ID,
+        seller: product.seller
+      });
+    }
+
+    function cpeEditProduct(productId) {
+      state.userMenu = 'myProducts';
+      state.userSub = 'Upload Produk';
+      state.editProductId = productId;
+      saveState();
+      renderUserDashboard();
+      setTimeout(cpeHydrateImages, 150);
+    }
+
+    function cpeImageBox(product, height = 'h-44') {
+      if (!product.imageKey) {
+        return `<div class="${height} rounded-2xl bg-slate-100 border flex items-center justify-center text-slate-400"><i class="fa-solid fa-image text-4xl"></i></div>`;
+      }
+
+      return `<div class="${height} rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center">
+        <img data-cpe-img-key="${product.imageKey}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">
+      </div>`;
+    }
+
+    async function cpeHydrateImages() {
+      const images = Array.from(document.querySelectorAll('img[data-cpe-img-key]'));
+      for (const image of images) {
+        const key = image.getAttribute('data-cpe-img-key');
+        if (!key || image.dataset.loaded === 'true') continue;
+
+        try {
+          const dataUrl = await cpeGetImage(key);
+          if (dataUrl) {
+            image.src = dataUrl;
+            image.dataset.loaded = 'true';
+          }
+        } catch (error) {
+          console.warn('CPE hydrate image failed:', error);
+        }
+      }
+    }
+
+    function cpeRenderUploadForm(productId = null) {
+      const editing = productId ? cpeGetProducts().find(product => product.id === productId) : null;
+      window.cpePendingImage = '';
+
+      return panel(editing ? 'Edit Produk' : 'Upload Produk', 'Upload produk dan foto. Produk masuk review admin sebelum tampil di marketplace.', `
+        <div class="grid lg:grid-cols-[300px_1fr] gap-5">
+          <div class="rounded-[28px] border bg-white p-5">
+            <label class="text-xs font-black uppercase text-slate-500">Foto Produk</label>
+            <div class="mt-3 h-56 rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center">
+              <img id="cpePreview" data-cpe-img-key="${editing?.imageKey || ''}" class="w-full h-full object-cover" alt="">
+            </div>
+            <input type="file" accept="image/*" onchange="cpeReadPhoto(this)" class="mt-4 border rounded-2xl p-3 w-full bg-white">
+            <p id="cpePhotoStatus" class="text-xs text-slate-500 mt-2">${editing?.imageKey ? 'Foto lama akan dipakai jika tidak upload baru' : 'Pilih foto JPG/PNG/WebP'}</p>
+          </div>
+
+          <div class="rounded-[28px] border bg-white p-5">
+            <div class="grid md:grid-cols-2 gap-4">
+              <input id="cpeProductId" type="hidden" value="${editing?.id || ''}">
+              <input id="cpeHasOldImage" type="hidden" value="${editing?.imageKey || ''}">
+              <input id="cpeName" class="border rounded-2xl p-3" placeholder="Nama produk" value="${editing?.name || ''}">
+              <select id="cpeCategory" class="border rounded-2xl p-3 bg-white">
+                ${typeof categoryOptions === 'function' ? categoryOptions(editing?.category || '') : `<option>${editing?.category || 'Produk Industri'}</option>`}
+              </select>
+              <input id="cpePrice" class="border rounded-2xl p-3" placeholder="Harga" value="${editing?.price || ''}">
+              <input id="cpeStock" class="border rounded-2xl p-3" placeholder="Stok" value="${editing?.stock || ''}">
+              <input id="cpeUnit" class="border rounded-2xl p-3" placeholder="Satuan" value="${editing?.unit || 'Unit'}">
+              <select id="cpeListingType" class="border rounded-2xl p-3 bg-white">
+                ${['Produk Fisik','Bidang Jasa Industri','Jasa Keteknikan','Jasa Survey / Lapangan','Sewa / Rental Alat','Produk Digital','Tender / Proyek'].map(type => `<option ${editing?.listingType === type ? 'selected' : ''}>${type}</option>`).join('')}
+              </select>
+              <input id="cpeBrand" class="border rounded-2xl p-3" placeholder="Brand / Merek" value="${editing?.brand || ''}">
+              <input id="cpeSku" class="border rounded-2xl p-3" placeholder="SKU / Kode" value="${editing?.sku || ''}">
+              <input id="cpeDelivery" class="border rounded-2xl p-3 md:col-span-2" placeholder="Pengiriman / area layanan" value="${editing?.delivery || ''}">
+              <textarea id="cpeDescription" class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Deskripsi produk">${editing?.description || ''}</textarea>
+              <textarea id="cpeSpecs" class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Spesifikasi teknis">${editing?.specs || ''}</textarea>
+            </div>
+            <div class="mt-5 flex flex-wrap gap-2">
+              <button onclick="cpeSubmitProduct()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">${editing ? 'Update Produk' : 'Simpan Produk'}</button>
+              <button onclick="syncUserDashboardView('myProducts','Daftar Produk')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Daftar Produk</button>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    function cpeStatusMatch(product, sub) {
+      const status = product.status || 'Menunggu Review';
+      if (sub === 'Produk Aktif') return status === 'Aktif' || status === 'Tayang';
+      if (sub === 'Produk Nonaktif') return status === 'Nonaktif';
+      if (sub === 'Produk Review') return status === 'Menunggu Review' || status === 'Review';
+      return true;
+    }
+
+    function cpeRenderUserProducts() {
+      const sub = state.userSub || 'Daftar Produk';
+
+      if (sub === 'Upload Produk') {
+        return cpeRenderUploadForm(state.editProductId || null);
+      }
+
+      const allProducts = cpeGetProducts();
+      const products = allProducts.filter(product => cpeStatusMatch(product, sub));
+
+      return panel('Produk Saya', 'Upload, edit, dan pantau status review produk Anda.', `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+          ${kpiCard('Total Produk', String(allProducts.length), 'fa-boxes-stacked', 'indigo')}
+          ${kpiCard('Aktif', String(allProducts.filter(p => p.status === 'Aktif').length), 'fa-circle-check', 'emerald')}
+          ${kpiCard('Review', String(allProducts.filter(p => ['Menunggu Review','Review'].includes(p.status)).length), 'fa-clock', 'amber')}
+          ${kpiCard('Ditolak', String(allProducts.filter(p => p.status === 'Ditolak').length), 'fa-circle-xmark', 'rose')}
+        </div>
+
+        <div class="rounded-[24px] bg-orange-50 border border-orange-100 p-4 mb-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h3 class="font-black text-orange-800">Produk seller</h3>
+            <p class="text-sm text-orange-700 mt-1">Produk baru harus disetujui admin sebelum tampil di marketplace.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="state.editProductId=null; syncUserDashboardView('myProducts','Upload Produk')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black text-sm">Upload Produk</button>
+            <button onclick="switchRole('marketplace')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black text-sm">Cek Marketplace</button>
+          </div>
+        </div>
+
+        ${products.length ? `
+          <div class="grid lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            ${products.map(product => `
+              <div class="rounded-[26px] border bg-white p-4 shadow-sm">
+                ${cpeImageBox(product, 'h-40')}
+                <div class="flex items-start justify-between gap-3 mt-4">
+                  <div>
+                    <h3 class="font-black text-lg leading-tight">${product.name}</h3>
+                    <p class="text-xs font-black text-orange-600 mt-1">${product.category || '-'}</p>
+                  </div>
+                  ${badge(product.status || 'Review', product.status === 'Aktif' ? 'emerald' : product.status === 'Ditolak' ? 'rose' : 'amber')}
+                </div>
+                <p class="text-sm text-slate-500 mt-3 line-clamp-2">${product.description || 'Belum ada deskripsi.'}</p>
+                <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                  <div class="rounded-xl bg-slate-50 border p-3"><b>Harga</b><p>${product.price || '-'}</p></div>
+                  <div class="rounded-xl bg-slate-50 border p-3"><b>Stok</b><p>${product.stock || '-'}</p></div>
+                </div>
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <button onclick="cpeEditProduct('${product.id}')" class="bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Edit</button>
+                  <button onclick="cpeDeleteProduct('${product.id}')" class="bg-rose-600 text-white rounded-xl px-4 py-2 text-xs font-black">Hapus</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="rounded-[24px] border bg-white p-8 text-center">
+            <i class="fa-solid fa-box-open text-5xl text-slate-300 mb-4"></i>
+            <h3 class="font-black text-lg">Belum ada produk</h3>
+            <p class="text-sm text-slate-500 mt-2">Klik Upload Produk untuk menambah produk.</p>
+          </div>
+        `}
+      `);
+    }
+
+    function cpeRenderAdminReview() {
+      const reviewProducts = cpeGetProducts().filter(product => product.status === 'Menunggu Review' || product.status === 'Review');
+
+      return panel('Review Produk User', 'Verifikasi produk user sebelum tampil di Marketplace.', `
+        ${reviewProducts.length ? `
+          <div class="grid lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            ${reviewProducts.map(product => `
+              <div class="rounded-[26px] border bg-white p-4 shadow-sm">
+                ${cpeImageBox(product, 'h-40')}
+                <div class="flex items-start justify-between gap-3 mt-4">
+                  <div>
+                    <h3 class="font-black text-lg leading-tight">${product.name}</h3>
+                    <p class="text-xs font-black text-orange-600 mt-1">${product.category || '-'}</p>
+                  </div>
+                  ${badge(product.status || 'Review', 'amber')}
+                </div>
+                <p class="text-sm text-slate-500 mt-3 line-clamp-2">${product.description || 'Belum ada deskripsi.'}</p>
+                <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                  <div class="rounded-xl bg-slate-50 border p-3"><b>Seller</b><p>${product.seller || '-'}</p></div>
+                  <div class="rounded-xl bg-slate-50 border p-3"><b>Harga</b><p>${product.price || '-'}</p></div>
+                </div>
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <button onclick="cpeApproveProduct('${product.id}')" class="bg-emerald-600 text-white rounded-xl px-4 py-2 text-xs font-black">Setujui</button>
+                  <button onclick="cpeRejectProduct('${product.id}')" class="bg-rose-600 text-white rounded-xl px-4 py-2 text-xs font-black">Tolak</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="rounded-[24px] border bg-white p-8 text-center">
+            <i class="fa-solid fa-clipboard-check text-5xl text-emerald-400 mb-4"></i>
+            <h3 class="font-black text-lg">Tidak ada produk menunggu review</h3>
+            <p class="text-sm text-slate-500 mt-2">Produk upload user akan tampil di sini.</p>
+          </div>
+        `}
+      `);
+    }
+
+    function cpeApproveProduct(productId) {
+      cpeUpdateProductStatus(productId, 'Aktif');
+      renderAdminDashboard();
+      setTimeout(cpeHydrateImages, 150);
+    }
+
+    function cpeRejectProduct(productId) {
+      cpeUpdateProductStatus(productId, 'Ditolak');
+      renderAdminDashboard();
+      setTimeout(cpeHydrateImages, 150);
+    }
+
+    function cpeMarketplaceProducts() {
+      return cpeGetProducts().filter(product => product.status === 'Aktif').map(product => ({
+        ...product,
+        badge: product.badge || 'User',
+        icon: product.icon || 'fa-box-open',
+        source: 'clean-product-engine'
+      }));
+    }
+
+    function cpeMergeMarketplaceProducts(baseProducts = []) {
+      const approved = cpeMarketplaceProducts();
+      const seen = new Set();
+
+      return [...approved, ...baseProducts].filter(product => {
+        const key = product.id || product.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function cpeInstallCleanProductEngine() {
+      window.cpeReadPhoto = cpeReadPhoto;
+      window.cpeSubmitProduct = cpeSubmitProduct;
+      window.cpeRenderUserProducts = cpeRenderUserProducts;
+      window.cpeRenderAdminReview = cpeRenderAdminReview;
+      window.cpeApproveProduct = cpeApproveProduct;
+      window.cpeRejectProduct = cpeRejectProduct;
+      window.cpeEditProduct = cpeEditProduct;
+      window.cpeDeleteProduct = cpeDeleteProduct;
+      window.cpeHydrateImages = cpeHydrateImages;
+      window.cpeMarketplaceProducts = cpeMarketplaceProducts;
+      window.cpeMergeMarketplaceProducts = cpeMergeMarketplaceProducts;
+
+      // Renderer bridge for old cards if needed
+      window.mandiriRenderImage = function(product) { return cpeImageBox(product, 'h-40'); };
+      window.bhProductCardImage = function(product) { return cpeImageBox(product, 'h-40'); };
+      window.productImageOrIcon = function(product) { return cpeImageBox(product, 'h-40'); };
+    }
+
+    function cpeMirrorToLegacyStores() {
+      // Keep a mirror for old marketplace/admin code without storing base64.
+      try {
+        localStorage.setItem('bisnishub_approved_marketplace_products', JSON.stringify(cpeMarketplaceProducts()));
+      } catch (error) {
+        console.warn('CPE mirror failed:', error);
+      }
     }
 
 
@@ -3685,7 +4228,7 @@
     function getFilteredMarketplaceProducts() {
       const filters = getMarketplaceFilters();
 
-      return [...getUserMarketplaceProducts(), ...marketplaceProducts].filter(product => {
+      return cpeMergeMarketplaceProducts([...getUserMarketplaceProducts(), ...marketplaceProducts]).filter(product => {
         const text = `${product.name} ${product.seller} ${product.category} ${product.badge}`.toLowerCase();
         const matchQuery = !filters.query || text.includes(filters.query);
         const matchCategory = !filters.category || product.category === filters.category || product.name.includes(filters.category);
@@ -4321,7 +4864,7 @@
       const approved = forceReadAllProductsForMarketplace();
       const seen = new Set();
 
-      return [...approved, ...base].filter(product => {
+      return cpeMergeMarketplaceProducts([...approved, ...base]).filter(product => {
         const key = product.id || product.name;
         if (!key || seen.has(key)) return false;
         seen.add(key);
@@ -4333,7 +4876,7 @@
       const keyword = String(state.marketSearch || '').toLowerCase().trim();
       const selectedCategory = state.marketCategory || 'Semua Kategori';
 
-      return forceMarketplaceBaseProducts().filter(product => {
+      return cpeMergeMarketplaceProducts(forceMarketplaceBaseProducts()).filter(product => {
         const productText = [
           product.name,
           product.seller,
@@ -6975,7 +7518,7 @@ service cloud.firestore {
       if (product && product.image) {
         return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">`;
       }
-      return `${forceProductImageForMarketplace(product)}`;
+      return `${cpeImageBox(product, 'h-full')}`;
     }
 
     function bhBuildProductFromForm(prefix = 'admin', source = 'admin') {
@@ -7141,7 +7684,7 @@ service cloud.firestore {
       const rows = products.map(product => `
         <tr>
           <td>
-            <div class="w-16 h-12 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center">${forceProductImageForMarketplace(product)}</div>
+            <div class="w-16 h-12 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center">${cpeImageBox(product, 'h-full')}</div>
           </td>
           <td><b>${product.name}</b><br><span class="text-xs text-slate-400">${product.category}</span></td>
           <td>${product.seller || '-'}</td>
@@ -7282,6 +7825,8 @@ service cloud.firestore {
 
 
     function adminProducts() {
+      const cpeSub = state.adminSub || 'Semua Produk';
+      if (cpeSub === 'Review Produk') return cpeRenderAdminReview();
       const __reviewSub = state.adminSub || 'Semua Produk';
       if (__reviewSub === 'Review Produk') return adminReviewProductsPanel();
       const rows = Products.map((product, index) => `
@@ -7964,7 +8509,7 @@ service cloud.firestore {
         return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk BisnisHUB'}">`;
       }
 
-      return `${forceProductImageForMarketplace(product)}`;
+      return `${cpeImageBox(product, 'h-full')}`;
     }
 
 
@@ -8073,7 +8618,7 @@ service cloud.firestore {
           ${products.map(product => `
             <div class="rounded-[24px] border bg-white p-5">
               <div class="h-36 rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center mb-4">
-                ${forceProductImageForMarketplace(product)}
+                ${cpeImageBox(product, 'h-full')}
               </div>
               <div class="flex items-start justify-between gap-3">
                 <div>
@@ -8678,7 +9223,7 @@ service cloud.firestore {
 
 
     function userMyProducts() {
-      return userMyProductsMandiri();
+      return cpeRenderUserProducts();
     }
 
     function userAddProduct() {
@@ -9337,7 +9882,9 @@ service cloud.firestore {
     if (typeof bhInstallIndexedDBPhotoFix === 'function') bhInstallIndexedDBPhotoFix();
     if (typeof installMandiriProductModule === 'function') installMandiriProductModule();
     if (typeof forcePatchMarketplaceFunctions === 'function') forcePatchMarketplaceFunctions();
+    if (typeof cpeInstallCleanProductEngine === 'function') cpeInstallCleanProductEngine();
     renderApp();
+    setTimeout(cpeHydrateImages, 300);
     setTimeout(mandiriHydrateImages, 300);
     setTimeout(bhHydrateProductImages, 300);
   </script>
