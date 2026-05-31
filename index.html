@@ -874,7 +874,7 @@
           </div>
           <div>
             <label class="text-xs font-black uppercase text-slate-500">Upload Gambar Utama</label>
-            <input id="editProductImage" type="file" accept="image/*" class="support-input mt-1">
+            <input id="editProductImage" type="file" accept="image/*" class="support-input mt-1" onchange="window.hardReadProductPhoto(this, this.id && this.id.toLowerCase().includes('admin') ? 'admin' : 'quick')">
           </div>
           <div>
             <label class="text-xs font-black uppercase text-slate-500">Upload Dokumen / TKDN</label>
@@ -1734,6 +1734,233 @@
 
     var demoProductsFallbackGuard = true;
     if (typeof window !== 'undefined' && typeof window.demoProducts === 'undefined') window.demoProducts = (typeof marketplaceProducts !== 'undefined' ? marketplaceProducts : []);
+
+
+    // === PRODUCT PHOTO UPLOAD HARD FIX ===
+    function productPhotoToast(message) {
+      if (typeof showToast === 'function') showToast(message);
+      else console.log(message);
+    }
+
+    function compressProductPhotoHard(file, callback) {
+      const reader = new FileReader();
+
+      reader.onload = function(event) {
+        const img = new Image();
+
+        img.onload = function() {
+          const attempts = [
+            { w: 760, h: 560, q: 0.68, max: 220000 },
+            { w: 620, h: 460, q: 0.58, max: 160000 },
+            { w: 480, h: 360, q: 0.48, max: 110000 }
+          ];
+
+          let finalData = '';
+
+          for (const setting of attempts) {
+            let w = img.width || setting.w;
+            let h = img.height || setting.h;
+            const ratio = Math.min(setting.w / w, setting.h / h, 1);
+
+            w = Math.max(1, Math.round(w * ratio));
+            h = Math.max(1, Math.round(h * ratio));
+
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+
+            let q = setting.q;
+            let dataUrl = canvas.toDataURL('image/jpeg', q);
+
+            while (dataUrl.length > setting.max && q > 0.28) {
+              q -= 0.07;
+              dataUrl = canvas.toDataURL('image/jpeg', q);
+            }
+
+            finalData = dataUrl;
+            if (dataUrl.length <= setting.max) break;
+          }
+
+          callback(finalData);
+        };
+
+        img.onerror = function() {
+          alert('Format gambar tidak terbaca browser. Gunakan JPG, PNG, atau WebP. Untuk foto iPhone/HEIC, ubah dulu ke JPG.');
+        };
+
+        img.src = event.target.result;
+      };
+
+      reader.onerror = function() {
+        alert('Gagal membaca file gambar. Coba pilih ulang gambar.');
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    function setProductPhotoToForm(dataUrl, prefix = 'quick') {
+      const hiddenCandidates = [
+        prefix + 'ProductImage',
+        prefix + 'ProductImageValue',
+        'quickProductImage',
+        'adminProductImage',
+        'productImage',
+        'productPhoto'
+      ];
+
+      const previewCandidates = [
+        prefix + 'ProductImagePreview',
+        prefix + 'ProductPhotoPreview',
+        'quickProductImagePreview',
+        'adminProductImagePreview',
+        'productImagePreview',
+        'productPhotoPreview'
+      ];
+
+      hiddenCandidates.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = dataUrl;
+      });
+
+      previewCandidates.forEach(id => {
+        const img = document.getElementById(id);
+        if (img) img.src = dataUrl;
+      });
+
+      window.__lastProductPhotoDataUrl = dataUrl;
+    }
+
+    function hardReadProductPhoto(input, prefix = 'quick') {
+      const file = input && input.files && input.files[0];
+      if (!file) return;
+
+      if (!file.type || !file.type.startsWith('image/')) {
+        alert('File harus gambar: JPG, PNG, atau WebP.');
+        return;
+      }
+
+      productPhotoToast('Mengupload dan mengompres foto produk...');
+
+      compressProductPhotoHard(file, function(dataUrl) {
+        setProductPhotoToForm(dataUrl, prefix);
+
+        // mark nearby input too, useful if the form was generated differently
+        input.dataset.productPhotoReady = 'true';
+        input.dataset.productPhotoSize = String(dataUrl.length);
+
+        productPhotoToast('Foto produk berhasil masuk ke form');
+      });
+    }
+
+    function ensureProductPhotoFields(prefix = 'quick') {
+      const formArea = document.getElementById(prefix + 'ProductName')?.closest('.grid') || document.querySelector('main') || document.body;
+      if (!formArea) return;
+
+      if (!document.getElementById(prefix + 'ProductImage')) {
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.id = prefix + 'ProductImage';
+        hidden.value = window.__lastProductPhotoDataUrl || '';
+        formArea.appendChild(hidden);
+      }
+    }
+
+    function getProductPhotoValue(prefix = 'quick') {
+      const ids = [
+        prefix + 'ProductImage',
+        prefix + 'ProductImageValue',
+        'quickProductImage',
+        'adminProductImage',
+        'productImage',
+        'productPhoto'
+      ];
+
+      for (const id of ids) {
+        const el = document.getElementById(id);
+        if (el && el.value) return el.value;
+      }
+
+      return window.__lastProductPhotoDataUrl || '';
+    }
+
+    function productImageRenderHard(product) {
+      if (product && product.image) {
+        return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">`;
+      }
+      return `<i class="fa-solid ${product?.icon || 'fa-box-open'} text-5xl text-indigo-500"></i>`;
+    }
+
+    function installProductPhotoAutoCapture() {
+      if (window.__productPhotoAutoCaptureInstalled) return;
+      window.__productPhotoAutoCaptureInstalled = true;
+
+      document.addEventListener('change', function(event) {
+        const target = event.target;
+        if (!target || target.type !== 'file') return;
+
+        const accept = String(target.getAttribute('accept') || '').toLowerCase();
+        const labelText = String(target.closest('div')?.textContent || '').toLowerCase();
+        const idText = String(target.id || '').toLowerCase();
+
+        const looksLikeProductPhoto =
+          accept.includes('image') &&
+          (
+            idText.includes('product') ||
+            idText.includes('produk') ||
+            labelText.includes('foto produk') ||
+            labelText.includes('produk') ||
+            labelText.includes('jasa')
+          );
+
+        if (!looksLikeProductPhoto) return;
+
+        const prefix = idText.includes('admin') ? 'admin' : 'quick';
+        hardReadProductPhoto(target, prefix);
+      }, true);
+    }
+
+    function safeSaveProductListToLocal(key, products) {
+      try {
+        localStorage.setItem(key, JSON.stringify(products));
+        return true;
+      } catch (error) {
+        console.warn('Storage penuh saat simpan produk. Meringankan gambar:', error);
+
+        const lightProducts = products.map(item => ({
+          ...item,
+          image: item.image && item.image.length > 160000 ? '' : item.image
+        }));
+
+        try {
+          localStorage.setItem(key, JSON.stringify(lightProducts));
+          productPhotoToast('Produk tersimpan. Beberapa gambar terlalu besar dibersihkan.');
+          return true;
+        } catch (secondError) {
+          alert('Storage browser penuh. Hapus beberapa produk/foto lama atau aktifkan Firebase Storage.');
+          return false;
+        }
+      }
+    }
+
+    function exposeHardProductPhotoUpload() {
+      window.hardReadProductPhoto = hardReadProductPhoto;
+      window.globalReadProductImage = hardReadProductPhoto;
+      window.safeReadUserProductImage = hardReadProductPhoto;
+      window.readUserProductImage = hardReadProductPhoto;
+      window.bhReadProductImage = hardReadProductPhoto;
+      window.productImageRenderHard = productImageRenderHard;
+      window.globalProductImage = productImageRenderHard;
+      window.safeProductImage = productImageRenderHard;
+      window.bhProductCardImage = productImageRenderHard;
+      window.productImageOrIcon = productImageRenderHard;
+      installProductPhotoAutoCapture();
+    }
+
 
     function renderApp() {
       try {
@@ -4357,8 +4584,8 @@
         if (sub === 'Gambar & Media') {
           return panel('Gambar & Media Produk', 'Upload foto utama, galeri, dan video.', `
             <div class="grid md:grid-cols-2 gap-4">
-              <div><label class="text-xs font-black uppercase text-slate-500">Foto Utama</label><input type="file" accept="image/*" class="mt-1 border rounded-2xl p-3 w-full"></div>
-              <div><label class="text-xs font-black uppercase text-slate-500">Galeri Produk</label><input type="file" accept="image/*" multiple class="mt-1 border rounded-2xl p-3 w-full"></div>
+              <div><label class="text-xs font-black uppercase text-slate-500">Foto Utama</label><input type="file" accept="image/*" class="mt-1 border rounded-2xl p-3 w-full" onchange="window.hardReadProductPhoto(this, this.id && this.id.toLowerCase().includes('admin') ? 'admin' : 'quick')"></div>
+              <div><label class="text-xs font-black uppercase text-slate-500">Galeri Produk</label><input type="file" accept="image/*" multiple class="mt-1 border rounded-2xl p-3 w-full" onchange="window.hardReadProductPhoto(this, this.id && this.id.toLowerCase().includes('admin') ? 'admin' : 'quick')"></div>
               <input class="border rounded-2xl p-3 md:col-span-2" placeholder="Link video produk / YouTube">
             </div>
             <button onclick="showToast('Media produk disimpan')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Simpan Media</button>
@@ -5030,25 +5257,7 @@ service cloud.firestore {
     }
 
     function bhSaveAllProducts(products) {
-      const safe = (Array.isArray(products) ? products : []).slice(0, 300);
-      try {
-        localStorage.setItem(bhProductStoreKey(), JSON.stringify(safe));
-        return true;
-      } catch (error) {
-        console.warn('Storage produk penuh, simpan tanpa gambar besar:', error);
-        const light = safe.map(product => ({
-          ...product,
-          image: product.image && product.image.length > 360000 ? '' : product.image
-        }));
-        try {
-          localStorage.setItem(bhProductStoreKey(), JSON.stringify(light));
-          showToast('Produk tersimpan, gambar terlalu besar dibersihkan');
-          return true;
-        } catch (secondError) {
-          alert('Gagal simpan produk. Storage browser penuh, hapus beberapa gambar/produk dulu.');
-          return false;
-        }
-      }
+      return safeSaveProductListToLocal(bhProductStoreKey(), (Array.isArray(products) ? products : []).slice(0, 300));
     }
 
     function bhCompressProductImage(file, callback) {
@@ -5111,7 +5320,7 @@ service cloud.firestore {
       if (product && product.image) {
         return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">`;
       }
-      return `${globalProductImage(product)}`;
+      return `${productImageRenderHard(product)}`;
     }
 
     function bhBuildProductFromForm(prefix = 'admin', source = 'admin') {
@@ -5259,7 +5468,7 @@ service cloud.firestore {
               </div>
               <div>
                 <input id="adminProductImage" type="hidden">
-                <input type="file" accept="image/*" onchange="window.globalReadProductImage(this, 'admin')" class="border rounded-2xl p-3 w-full bg-white">
+                <input type="file" accept="image/*" onchange="window.hardReadProductPhoto(this, this.id && this.id.toLowerCase().includes('admin') ? 'admin' : 'quick')" class="border rounded-2xl p-3 w-full bg-white">
                 <p class="text-xs text-slate-500 mt-2">Foto dikompres otomatis agar ringan dan bisa disimpan.</p>
               </div>
             </div>
@@ -5277,7 +5486,7 @@ service cloud.firestore {
       const rows = products.map(product => `
         <tr>
           <td>
-            <div class="w-16 h-12 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center">${globalProductImage(product)}</div>
+            <div class="w-16 h-12 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center">${productImageRenderHard(product)}</div>
           </td>
           <td><b>${product.name}</b><br><span class="text-xs text-slate-400">${product.category}</span></td>
           <td>${product.seller || '-'}</td>
@@ -5965,7 +6174,7 @@ service cloud.firestore {
         return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk BisnisHUB'}">`;
       }
 
-      return `${globalProductImage(product)}`;
+      return `${productImageRenderHard(product)}`;
     }
 
 
@@ -5985,7 +6194,7 @@ service cloud.firestore {
         description: fieldValue('quickProductDescription', 'Produk/jasa dari seller BisnisHUB.'),
         specs: fieldValue('quickProductSpecs', ''),
         delivery: fieldValue('quickProductDelivery', ''),
-        image: document.getElementById('quickProductImage')?.value || '',
+        image: getProductPhotoValue('quick'),
         seller: data.store.name || 'Seller BisnisHUB',
         badge: fieldValue('quickProductListingType', '').includes('Jasa') ? 'Jasa' : 'Produk',
         icon: fieldValue('quickProductListingType', '').includes('Jasa') ? 'fa-handshake-angle' : 'fa-box-open',
@@ -6072,7 +6281,7 @@ service cloud.firestore {
           ${products.map(product => `
             <div class="rounded-[24px] border bg-white p-5">
               <div class="h-36 rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center mb-4">
-                ${globalProductImage(product)}
+                ${productImageRenderHard(product)}
               </div>
               <div class="flex items-start justify-between gap-3">
                 <div>
@@ -6814,7 +7023,7 @@ service cloud.firestore {
         description: document.getElementById('quickProductDescription')?.value?.trim() || '',
         specs: document.getElementById('quickProductSpecs')?.value?.trim() || '',
         delivery: document.getElementById('quickProductDelivery')?.value?.trim() || '',
-        image: document.getElementById('quickProductImage')?.value || '',
+        image: getProductPhotoValue('quick'),
         seller: data.store?.name || 'Seller BisnisHUB',
         badge: listingType.includes('Jasa') ? 'Jasa' : 'User',
         icon: listingType.includes('Jasa') ? 'fa-handshake-angle' : 'fa-box-open',
@@ -6901,7 +7110,7 @@ service cloud.firestore {
                 </div>
                 <div>
                   <input id="quickProductImage" type="hidden" value="${editing?.image || ''}">
-                  <input type="file" accept="image/*" onchange="window.globalReadProductImage(this, 'quick')" class="border rounded-2xl p-3 w-full bg-white">
+                  <input type="file" accept="image/*" onchange="window.hardReadProductPhoto(this, this.id && this.id.toLowerCase().includes('admin') ? 'admin' : 'quick')" class="border rounded-2xl p-3 w-full bg-white">
                   <p class="text-xs text-slate-500 mt-2">Gambar dikompres otomatis agar ringan dan bisa tampil di marketplace.</p>
                 </div>
               </div>
@@ -6929,8 +7138,8 @@ service cloud.firestore {
       if (active === 'Gambar & Media') {
         return panel('Gambar & Media Produk', 'Upload media produk. Untuk versi HTML lokal, file belum dikirim ke server.', `
           <div class="grid md:grid-cols-2 gap-4">
-            <div><label class="text-xs font-black uppercase text-slate-500">Foto Utama</label><input type="file" accept="image/*" class="mt-1 border rounded-2xl p-3 w-full"></div>
-            <div><label class="text-xs font-black uppercase text-slate-500">Galeri Produk</label><input type="file" accept="image/*" multiple class="mt-1 border rounded-2xl p-3 w-full"></div>
+            <div><label class="text-xs font-black uppercase text-slate-500">Foto Utama</label><input type="file" accept="image/*" class="mt-1 border rounded-2xl p-3 w-full" onchange="window.hardReadProductPhoto(this, this.id && this.id.toLowerCase().includes('admin') ? 'admin' : 'quick')"></div>
+            <div><label class="text-xs font-black uppercase text-slate-500">Galeri Produk</label><input type="file" accept="image/*" multiple class="mt-1 border rounded-2xl p-3 w-full" onchange="window.hardReadProductPhoto(this, this.id && this.id.toLowerCase().includes('admin') ? 'admin' : 'quick')"></div>
             <input class="border rounded-2xl p-3 md:col-span-2" placeholder="Link video produk / YouTube">
           </div>
           <button onclick="userAction('Media produk siap disimpan ke storage saat server aktif')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Simpan Media</button>
@@ -7519,6 +7728,7 @@ service cloud.firestore {
       }
     });
     if (typeof exposeGlobalProductUploadFunctions === 'function') exposeGlobalProductUploadFunctions();
+    if (typeof exposeHardProductPhotoUpload === 'function') exposeHardProductPhotoUpload();
     renderApp();
   </script>
 </body>
