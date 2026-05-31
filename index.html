@@ -3469,6 +3469,7 @@
       if (index >= 0) products[index] = { ...products[index], ...product };
       else products.unshift(product);
       cpeSaveProducts(products);
+      if (typeof adminReportMirrorProduct === 'function') adminReportMirrorProduct(product);
       cpeMirrorToLegacyStores();
     }
 
@@ -3981,6 +3982,356 @@
       } catch (error) {
         console.warn('CPE mirror failed:', error);
       }
+    }
+
+
+
+    // === BISNISHUB ADMIN PRODUCT REPORT + PREVIEW BRIDGE ===
+    const CPE_REPORT_KEY = 'bisnishub_admin_product_reports_v1';
+
+    function adminReportGetProducts() {
+      const reports = (() => {
+        try {
+          const data = JSON.parse(localStorage.getItem(CPE_REPORT_KEY) || '[]');
+          return Array.isArray(data) ? data : [];
+        } catch (error) {
+          return [];
+        }
+      })();
+
+      const cpeProducts = typeof cpeGetProducts === 'function' ? cpeGetProducts() : [];
+      const savedProducts = typeof bhGetAllSavedProducts === 'function' ? bhGetAllSavedProducts() : [];
+
+      const merged = [...reports, ...cpeProducts, ...savedProducts];
+      const seen = new Set();
+
+      return merged.filter(product => {
+        const key = product.id || product.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function adminReportMirrorProduct(product) {
+      if (!product || !product.id) return;
+
+      let reports = [];
+      try {
+        reports = JSON.parse(localStorage.getItem(CPE_REPORT_KEY) || '[]');
+        if (!Array.isArray(reports)) reports = [];
+      } catch (error) {
+        reports = [];
+      }
+
+      const index = reports.findIndex(item => item.id === product.id);
+      const payload = {
+        ...product,
+        reportType: 'Produk User',
+        reportStatus: product.status || 'Menunggu Review',
+        reportedAt: product.reportedAt || new Date().toLocaleString('id-ID')
+      };
+
+      if (index >= 0) reports[index] = { ...reports[index], ...payload };
+      else reports.unshift(payload);
+
+      localStorage.setItem(CPE_REPORT_KEY, JSON.stringify(reports));
+    }
+
+    function adminReportUpdateStatus(productId, status) {
+      const update = product => product.id === productId ? {
+        ...product,
+        status,
+        reportStatus: status,
+        approvedAt: status === 'Aktif' ? new Date().toLocaleString('id-ID') : product.approvedAt,
+        rejectedAt: status === 'Ditolak' ? new Date().toLocaleString('id-ID') : product.rejectedAt
+      } : product;
+
+      // update clean engine
+      if (typeof cpeGetProducts === 'function' && typeof cpeSaveProducts === 'function') {
+        cpeSaveProducts(cpeGetProducts().map(update));
+      }
+
+      // update old saved products
+      if (typeof bhGetAllSavedProducts === 'function' && typeof bhSaveAllProducts === 'function') {
+        bhSaveAllProducts(bhGetAllSavedProducts().map(update));
+      }
+
+      // update report mirror
+      let reports = [];
+      try {
+        reports = JSON.parse(localStorage.getItem(CPE_REPORT_KEY) || '[]');
+        if (!Array.isArray(reports)) reports = [];
+      } catch (error) {
+        reports = [];
+      }
+      localStorage.setItem(CPE_REPORT_KEY, JSON.stringify(reports.map(update)));
+
+      if (typeof cpeMirrorToLegacyStores === 'function') cpeMirrorToLegacyStores();
+
+      const product = adminReportGetProducts().find(item => item.id === productId);
+      if (product && typeof firebaseIsReady === 'function' && firebaseIsReady() && typeof firebaseSetDocument === 'function') {
+        firebaseSetDocument(`${firebasePaths().products}/${productId}`, {
+          ...product,
+          status,
+          reportStatus: status,
+          tenantId: BISNISHUB_TENANT_ID,
+          ownerUserId: BISNISHUB_ACTIVE_USER_ID
+        }).catch(error => console.error('Update product report Firebase gagal:', error));
+      }
+
+      showToast(status === 'Aktif' ? 'Produk disetujui dan tampil di marketplace' : 'Produk ditolak');
+      renderAdminDashboard();
+      setTimeout(() => {
+        if (typeof cpeHydrateImages === 'function') cpeHydrateImages();
+      }, 150);
+    }
+
+    function adminReportApproveProduct(productId) {
+      adminReportUpdateStatus(productId, 'Aktif');
+    }
+
+    function adminReportRejectProduct(productId) {
+      adminReportUpdateStatus(productId, 'Ditolak');
+    }
+
+    function adminProductReportPanel() {
+      const products = adminReportGetProducts().filter(product => ['Menunggu Review', 'Review'].includes(product.status || product.reportStatus || ''));
+
+      return panel('Laporan Produk User', 'Produk yang diupload user masuk ke sini untuk preview dan verifikasi admin sebelum tampil di marketplace.', `
+        ${products.length ? `
+          <div class="grid lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            ${products.map(product => `
+              <div class="rounded-[26px] border bg-white p-4 shadow-sm">
+                ${typeof cpeImageBox === 'function' ? cpeImageBox(product, 'h-40') : `<div class="h-40 rounded-2xl bg-slate-100 border flex items-center justify-center"><i class="fa-solid fa-box-open text-5xl text-indigo-500"></i></div>`}
+                <div class="flex items-start justify-between gap-3 mt-4">
+                  <div>
+                    <h3 class="font-black text-lg leading-tight">${product.name}</h3>
+                    <p class="text-xs font-black text-orange-600 mt-1">${product.category || '-'}</p>
+                  </div>
+                  ${badge(product.status || product.reportStatus || 'Review', 'amber')}
+                </div>
+                <p class="text-sm text-slate-500 mt-3 line-clamp-2">${product.description || 'Belum ada deskripsi.'}</p>
+                <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                  <div class="rounded-xl bg-slate-50 border p-3"><b>Seller</b><p>${product.seller || '-'}</p></div>
+                  <div class="rounded-xl bg-slate-50 border p-3"><b>Harga</b><p>${product.price || '-'}</p></div>
+                  <div class="rounded-xl bg-slate-50 border p-3"><b>Stok</b><p>${product.stock || '-'}</p></div>
+                  <div class="rounded-xl bg-slate-50 border p-3"><b>Foto</b><p>${product.imageKey ? 'Ada' : 'Belum ada'}</p></div>
+                </div>
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <button onclick="adminReportApproveProduct('${product.id}')" class="bg-emerald-600 text-white rounded-xl px-4 py-2 text-xs font-black">Setujui</button>
+                  <button onclick="adminReportRejectProduct('${product.id}')" class="bg-rose-600 text-white rounded-xl px-4 py-2 text-xs font-black">Tolak</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="rounded-[24px] border bg-white p-8 text-center">
+            <i class="fa-solid fa-clipboard-check text-5xl text-emerald-400 mb-4"></i>
+            <h3 class="font-black text-lg">Belum ada produk menunggu review</h3>
+            <p class="text-sm text-slate-500 mt-2">Produk dari dashboard user akan otomatis masuk ke panel ini.</p>
+          </div>
+        `}
+      `);
+    }
+
+
+
+    // === BISNISHUB ACTIVE COMPANY DATABASE ENGINE ===
+    const COMPANY_DB_KEY = 'bisnishub_company_database_v1';
+
+    function companyDbGetAll() {
+      let local = [];
+      try {
+        local = JSON.parse(localStorage.getItem(COMPANY_DB_KEY) || '[]');
+        if (!Array.isArray(local)) local = [];
+      } catch (error) {
+        local = [];
+      }
+
+      const data = typeof getUserData === 'function' ? getUserData() : {};
+      const company = data.company || {};
+      const store = data.store || {};
+
+      if ((company.name && !String(company.name).includes('Company Profile')) || (store.name && !String(store.name).includes('BisnisHUB Anda'))) {
+        local.unshift(companyDbNormalize({
+          id: company.id || store.id || 'COMP-' + (store.name || company.name || 'USER').replace(/\s+/g, '-').toUpperCase(),
+          name: company.name || store.name,
+          category: company.category || store.category || 'Supplier / Vendor',
+          business: company.business || company.sector || store.category || 'Produk dan jasa B2B',
+          description: company.description || store.description || 'Company profile seller BisnisHUB.',
+          city: company.city || store.city || '',
+          website: company.website || store.website || '',
+          email: company.email || store.email || '',
+          phone: company.phone || store.phone || '',
+          address: company.address || store.address || '',
+          status: company.status || 'Menunggu Review',
+          source: 'user-dashboard'
+        }));
+      }
+
+      const seen = new Set();
+      return local.filter(item => {
+        const key = item.id || item.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function companyDbSaveAll(companies) {
+      localStorage.setItem(COMPANY_DB_KEY, JSON.stringify(Array.isArray(companies) ? companies : []));
+    }
+
+    function companyDbNormalize(company) {
+      return {
+        id: company.id || ('COMP-' + Date.now()),
+        name: company.name || 'Perusahaan BisnisHUB',
+        category: company.category || 'Supplier / Vendor',
+        business: company.business || company.field || company.sector || 'Produk dan jasa B2B',
+        description: company.description || 'Company profile belum lengkap.',
+        city: company.city || company.location || '',
+        website: company.website || '',
+        email: company.email || '',
+        phone: company.phone || company.whatsapp || '',
+        address: company.address || '',
+        status: company.status || 'Menunggu Review',
+        source: company.source || 'manual',
+        createdAt: company.createdAt || new Date().toLocaleString('id-ID')
+      };
+    }
+
+    function companyDbUpsert(company) {
+      const payload = companyDbNormalize(company);
+      const companies = companyDbGetAll();
+      const index = companies.findIndex(item => item.id === payload.id || item.name === payload.name);
+
+      if (index >= 0) companies[index] = { ...companies[index], ...payload };
+      else companies.unshift(payload);
+
+      companyDbSaveAll(companies);
+
+      if (typeof firebaseIsReady === 'function' && firebaseIsReady() && typeof firebaseSetDocument === 'function') {
+        firebaseSetDocument(`tenants/${BISNISHUB_TENANT_ID}/companies/${payload.id}`, payload)
+          .catch(error => console.error('Company database Firebase gagal:', error));
+      }
+    }
+
+    function companyDbApprove(companyId) {
+      const companies = companyDbGetAll().map(company => company.id === companyId ? { ...company, status: 'Tayang', approvedAt: new Date().toLocaleString('id-ID') } : company);
+      companyDbSaveAll(companies);
+      showToast('Perusahaan disetujui dan tampil di direktori');
+      renderAdminDashboard();
+    }
+
+    function companyDbReject(companyId) {
+      const companies = companyDbGetAll().map(company => company.id === companyId ? { ...company, status: 'Ditolak', rejectedAt: new Date().toLocaleString('id-ID') } : company);
+      companyDbSaveAll(companies);
+      showToast('Perusahaan ditolak');
+      renderAdminDashboard();
+    }
+
+    function companyDbAdminPanel() {
+      const companies = companyDbGetAll();
+      const waiting = companies.filter(company => ['Menunggu Review', 'Review'].includes(company.status || ''));
+      const shown = companies.filter(company => ['Tayang', 'Aktif'].includes(company.status || ''));
+
+      return panel('Database Perusahaan', 'Kelola perusahaan user, seller, supplier, kontraktor, konsultan, dan vendor jasa sebelum tampil di direktori.', `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+          ${kpiCard('Total Database', String(companies.length), 'fa-building-user', 'indigo')}
+          ${kpiCard('Menunggu Review', String(waiting.length), 'fa-clock', 'amber')}
+          ${kpiCard('Tayang', String(shown.length), 'fa-circle-check', 'emerald')}
+          ${kpiCard('Ditolak', String(companies.filter(c => c.status === 'Ditolak').length), 'fa-circle-xmark', 'rose')}
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-4">
+          ${companies.length ? companies.map(company => `
+            <div class="rounded-[26px] border bg-white p-5 shadow-sm">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h3 class="font-black text-lg">${company.name}</h3>
+                  <p class="text-xs font-black text-orange-600 mt-1">${company.category}</p>
+                </div>
+                ${badge(company.status || 'Review', company.status === 'Tayang' || company.status === 'Aktif' ? 'emerald' : company.status === 'Ditolak' ? 'rose' : 'amber')}
+              </div>
+              <p class="text-sm text-slate-500 mt-3">${company.description}</p>
+              <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Bidang</b><p>${company.business || '-'}</p></div>
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Kota</b><p>${company.city || '-'}</p></div>
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Email</b><p>${company.email || '-'}</p></div>
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Website</b><p>${company.website || '-'}</p></div>
+              </div>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button onclick="companyDbApprove('${company.id}')" class="bg-emerald-600 text-white rounded-xl px-4 py-2 text-xs font-black">Setujui</button>
+                <button onclick="companyDbReject('${company.id}')" class="bg-rose-600 text-white rounded-xl px-4 py-2 text-xs font-black">Tolak</button>
+              </div>
+            </div>
+          `).join('') : `
+            <div class="rounded-[24px] border bg-white p-8 text-center lg:col-span-2">
+              <i class="fa-solid fa-building-user text-5xl text-slate-300 mb-4"></i>
+              <h3 class="font-black text-lg">Database perusahaan belum ada</h3>
+              <p class="text-sm text-slate-500 mt-2">Data dari user dashboard akan masuk ke sini.</p>
+            </div>
+          `}
+        </div>
+      `);
+    }
+
+    function companyDbDirectoryItems() {
+      return companyDbGetAll().filter(company => ['Tayang', 'Aktif'].includes(company.status || '')).map(company => ({
+        id: company.id,
+        name: company.name,
+        category: company.category,
+        business: company.business,
+        description: company.description,
+        city: company.city,
+        website: company.website,
+        email: company.email,
+        phone: company.phone,
+        status: 'Tayang'
+      }));
+    }
+
+
+
+    function installCompanyDatabaseEngine() {
+      window.companyDbGetAll = companyDbGetAll;
+      window.companyDbUpsert = companyDbUpsert;
+      window.companyDbApprove = companyDbApprove;
+      window.companyDbReject = companyDbReject;
+      window.companyDbAdminPanel = companyDbAdminPanel;
+      window.companyDbDirectoryItems = companyDbDirectoryItems;
+
+      try {
+        const data = typeof getUserData === 'function' ? getUserData() : null;
+        if (data && (data.company?.name || data.store?.name)) {
+          companyDbUpsert({
+            id: data.company?.id || 'COMP-' + String(data.company?.name || data.store?.name || 'USER').replace(/\s+/g, '-').toUpperCase(),
+            name: data.company?.name || data.store?.name,
+            category: data.company?.category || data.store?.category || 'Supplier / Vendor',
+            business: data.company?.business || data.company?.sector || data.store?.category || 'Produk dan jasa B2B',
+            description: data.company?.description || data.store?.description || 'Company profile seller BisnisHUB.',
+            city: data.company?.city || data.store?.city || '',
+            website: data.company?.website || data.store?.website || '',
+            email: data.company?.email || data.store?.email || '',
+            phone: data.company?.phone || data.store?.phone || '',
+            address: data.company?.address || data.store?.address || '',
+            status: data.company?.status || 'Menunggu Review',
+            source: 'user-dashboard'
+          });
+        }
+      } catch (error) {
+        console.warn('Install company db sync skipped:', error);
+      }
+    }
+
+
+
+    function installAdminReportBridge() {
+      window.adminProductReportPanel = adminProductReportPanel;
+      window.adminReportApproveProduct = adminReportApproveProduct;
+      window.adminReportRejectProduct = adminReportRejectProduct;
+      window.adminReportMirrorProduct = adminReportMirrorProduct;
     }
 
 
@@ -7403,6 +7754,7 @@ service cloud.firestore {
 
 
     function adminCompanies() {
+      return companyDbAdminPanel();
       const profiles = getCompanyProfiles();
       const rows = (profiles.length ? profiles : [
         { id: 'CMP-001', companyName: 'PT Contoh Industri Nusantara', category: 'Pabrik, Produsen & Manufaktur', industry: 'Manufaktur', city: 'Tangerang', status: 'Tayang' },
@@ -7819,6 +8171,8 @@ service cloud.firestore {
 
 
     function adminProducts() {
+      const __adminProductSub = state.adminSub || 'Semua Produk';
+      if (__adminProductSub === 'Review Produk') return adminProductReportPanel();
       const cpeSub = state.adminSub || 'Semua Produk';
       if (cpeSub === 'Review Produk') return cpeRenderAdminReview();
       const __reviewSub = state.adminSub || 'Semua Produk';
@@ -9877,6 +10231,8 @@ service cloud.firestore {
     if (typeof installMandiriProductModule === 'function') installMandiriProductModule();
     if (typeof forcePatchMarketplaceFunctions === 'function') forcePatchMarketplaceFunctions();
     if (typeof cpeInstallCleanProductEngine === 'function') cpeInstallCleanProductEngine();
+    if (typeof installCompanyDatabaseEngine === 'function') installCompanyDatabaseEngine();
+    if (typeof installAdminReportBridge === 'function') installAdminReportBridge();
     renderApp();
     setTimeout(cpeHydrateImages, 300);
     setTimeout(mandiriHydrateImages, 300);
