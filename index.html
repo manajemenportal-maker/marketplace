@@ -858,7 +858,7 @@
 
     const userMenus = [
       { key: 'overview', label: 'Ringkasan', icon: 'fa-gauge' },
-      { key: 'registration', label: 'Registrasi User', icon: 'fa-id-card' },
+      { key: 'registration', label: 'Data Registrasi', icon: 'fa-id-card' },
       { key: 'orders', label: 'Pesanan Saya', icon: 'fa-box-open' },
       { key: 'addProduct', label: 'Tambah Produk', icon: 'fa-circle-plus' },
       { key: 'store', label: 'Kelola Toko', icon: 'fa-store' },
@@ -3229,50 +3229,166 @@
           <div class="px-4 md:px-6 py-3 flex items-center justify-between gap-3 max-w-[1500px] mx-auto">
             <div class="flex items-center gap-3">
               <img src="${document.querySelector('.brand-logo')?.src || ''}" alt="BisnisHUB Logo" class="brand-logo market" onclick="handleLogoTripleClick()" title="Akses Admin">
-              <div><h1 class="text-lg md:text-2xl font-black leading-tight text-slate-950">Akun BisnisHUB</h1><p class="text-xs text-slate-500">Registrasi, login, dan kelola aktivitas customer.</p></div>
+              <div>
+                <h1 class="text-lg md:text-2xl font-black leading-tight text-slate-950">Registrasi Akun BisnisHUB</h1>
+                <p class="text-xs text-slate-500">Daftar sebagai customer, perusahaan, seller, atau pemilik tender.</p>
+              </div>
             </div>
-            <button onclick="switchRole('marketplace')" class="px-4 py-2 rounded-xl text-xs font-black bg-slate-100 text-slate-700">Marketplace</button>
+            <div class="flex gap-2">
+              <button onclick="switchRole('marketplace')" class="px-4 py-2 rounded-xl text-xs font-black bg-slate-100 text-slate-700">Marketplace</button>
+              <button onclick="openUserLoginEntry()" class="px-4 py-2 rounded-xl text-xs font-black bg-indigo-600 text-white">Login</button>
+            </div>
           </div>
         </header>
+
         <main class="user-entry-shell p-4 md:p-8">
-          <section class="max-w-[1180px] mx-auto user-entry-card">
-            <div class="grid lg:grid-cols-[1.05fr_0.95fr]">
-              <div class="p-6 md:p-10 bg-gradient-to-br from-slate-950 via-indigo-950 to-orange-700 text-white relative overflow-hidden">
-                <i class="fa-solid fa-user-shield absolute -right-8 -bottom-10 text-[220px] opacity-10"></i>
-                <span class="inline-flex rounded-full bg-orange-500 px-4 py-2 text-xs font-black">AKUN CUSTOMER</span>
-                <h2 class="text-3xl md:text-5xl font-black mt-5 leading-tight">Pilih registrasi atau login terlebih dahulu.</h2>
-                <p class="text-slate-200 mt-4 leading-relaxed">Customer/perusahaan mengisi registrasi lebih dulu. Setelah itu baru masuk ke dashboard customer yang berbeda dari admin.</p>
+          <section class="max-w-[1280px] mx-auto grid lg:grid-cols-[0.85fr_1.15fr] gap-5 items-start">
+            <aside class="user-entry-card p-6 md:p-8 bg-gradient-to-br from-slate-950 via-indigo-950 to-orange-700 text-white sticky top-24">
+              <span class="inline-flex rounded-full bg-orange-500 px-4 py-2 text-xs font-black">PINTU MASUK USER</span>
+              <h2 class="text-3xl md:text-4xl font-black mt-5 leading-tight">Isi registrasi di sini dulu, baru masuk dashboard.</h2>
+              <p class="text-slate-200 mt-4 leading-relaxed">
+                Setelah data dikirim, user bisa lanjut ke dashboard customer untuk melengkapi toko, company profile, produk, jasa, tender, dan bantuan.
+              </p>
+              <div class="mt-6 grid grid-cols-2 gap-3">
+                <div class="rounded-2xl bg-white/10 border border-white/15 p-4">
+                  <i class="fa-solid fa-user-check text-orange-300 text-2xl mb-2"></i>
+                  <b class="block">Data User</b>
+                  <span class="text-xs text-slate-300">Customer/perusahaan</span>
+                </div>
+                <div class="rounded-2xl bg-white/10 border border-white/15 p-4">
+                  <i class="fa-solid fa-building-user text-orange-300 text-2xl mb-2"></i>
+                  <b class="block">Compro</b>
+                  <span class="text-xs text-slate-300">Profil perusahaan</span>
+                </div>
               </div>
-              <div class="p-5 md:p-8 grid gap-4">
-                <button onclick="openUserRegistrationEntry()" class="user-choice-card">
-                  <div class="w-14 h-14 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-2xl mb-4"><i class="fa-solid fa-user-plus"></i></div>
-                  <h3 class="text-xl font-black">Registrasi User / Perusahaan</h3>
-                  <p class="text-sm text-slate-500 mt-2">Isi data customer, perusahaan, legalitas, dokumen, dan company profile.</p>
-                  <span class="inline-flex mt-4 bg-orange-500 text-white rounded-xl px-4 py-2 text-xs font-black">Mulai Registrasi</span>
+              <button onclick="openUserLoginEntry()" class="mt-6 w-full bg-white text-slate-950 rounded-2xl px-5 py-3 font-black">
+                Sudah punya akun? Login
+              </button>
+            </aside>
+
+            <section class="user-entry-card p-5 md:p-7">
+              <div class="mb-5">
+                <p class="text-xs font-black uppercase tracking-widest text-orange-600">Form Registrasi</p>
+                <h3 class="text-2xl font-black mt-1">Daftar User / Perusahaan</h3>
+                <p class="text-sm text-slate-500 mt-2">Lengkapi data utama. Setelah klik daftar, user langsung diarahkan ke dashboard customer untuk melanjutkan pengaturan akun.</p>
+              </div>
+
+              <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label class="text-xs font-black uppercase text-slate-500">Nama Lengkap / PIC</label>
+                  <input id="frontRegName" class="mt-1 border rounded-2xl p-3 w-full" placeholder="Nama lengkap">
+                </div>
+                <div>
+                  <label class="text-xs font-black uppercase text-slate-500">Email Aktif</label>
+                  <input id="frontRegEmail" class="mt-1 border rounded-2xl p-3 w-full" placeholder="Email aktif">
+                </div>
+                <div>
+                  <label class="text-xs font-black uppercase text-slate-500">No. WhatsApp</label>
+                  <input id="frontRegPhone" class="mt-1 border rounded-2xl p-3 w-full" placeholder="No. WhatsApp">
+                </div>
+                <div>
+                  <label class="text-xs font-black uppercase text-slate-500">Jenis Akun</label>
+                  <select id="frontRegType" class="mt-1 border rounded-2xl p-3 w-full bg-white">
+                    <option>Customer / Pembeli</option>
+                    <option>Perusahaan / Company Profile</option>
+                    <option>Seller / Vendor</option>
+                    <option>Pemilik Tender / Proyek</option>
+                    <option>Jasa Industri / Keteknikan</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-xs font-black uppercase text-slate-500">Nama Perusahaan</label>
+                  <input id="frontRegCompany" class="mt-1 border rounded-2xl p-3 w-full" placeholder="Nama perusahaan">
+                </div>
+                <div>
+                  <label class="text-xs font-black uppercase text-slate-500">Bidang Usaha</label>
+                  <select id="frontRegCategory" class="mt-1 border rounded-2xl p-3 w-full bg-white">
+                    <option value="">Pilih bidang usaha</option>
+                    ${groupedCategoryOptions('')}
+                  </select>
+                </div>
+                <div>
+                  <label class="text-xs font-black uppercase text-slate-500">Kota / Domisili</label>
+                  <input id="frontRegCity" class="mt-1 border rounded-2xl p-3 w-full" placeholder="Kota / domisili">
+                </div>
+                <div>
+                  <label class="text-xs font-black uppercase text-slate-500">Password</label>
+                  <input id="frontRegPassword" type="password" class="mt-1 border rounded-2xl p-3 w-full" placeholder="Buat password">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="text-xs font-black uppercase text-slate-500">Alamat / Keterangan Singkat</label>
+                  <textarea id="frontRegNote" class="mt-1 border rounded-2xl p-3 w-full" rows="4" placeholder="Alamat, kebutuhan, produk/jasa, atau profil singkat perusahaan."></textarea>
+                </div>
+              </div>
+
+              <div class="mt-5 rounded-2xl bg-orange-50 border border-orange-100 p-4 text-sm text-orange-800 font-bold">
+                Data ini menjadi registrasi awal. Detail legalitas, dokumen, toko, produk, jasa, dan company profile bisa dilengkapi setelah masuk dashboard customer.
+              </div>
+
+              <div class="mt-5 flex flex-col sm:flex-row gap-3">
+                <button onclick="submitFrontUserRegistration()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">
+                  Daftar & Masuk Dashboard
                 </button>
-                <button onclick="openUserLoginEntry()" class="user-choice-card">
-                  <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl mb-4"><i class="fa-solid fa-right-to-bracket"></i></div>
-                  <h3 class="text-xl font-black">Login Akun Customer</h3>
-                  <p class="text-sm text-slate-500 mt-2">Masuk setelah akun customer/perusahaan terdaftar.</p>
-                  <span class="inline-flex mt-4 bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Login User</span>
+                <button onclick="openUserLoginEntry()" class="bg-slate-900 hover:bg-slate-800 text-white rounded-2xl px-5 py-3 font-black">
+                  Login User
+                </button>
+                <button onclick="switchRole('marketplace')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl px-5 py-3 font-black">
+                  Kembali Marketplace
                 </button>
               </div>
-            </div>
+            </section>
           </section>
         </main>
         ${renderMobileBottomDock()}
       `;
     }
 
-    function openUserRegistrationEntry() {
+    function submitFrontUserRegistration() {
+      const name = document.getElementById('frontRegName')?.value?.trim();
+      const email = document.getElementById('frontRegEmail')?.value?.trim();
+      const phone = document.getElementById('frontRegPhone')?.value?.trim();
+      const type = document.getElementById('frontRegType')?.value || 'Customer / Pembeli';
+      const company = document.getElementById('frontRegCompany')?.value?.trim();
+      const category = document.getElementById('frontRegCategory')?.value || '';
+      const city = document.getElementById('frontRegCity')?.value?.trim();
+      const note = document.getElementById('frontRegNote')?.value?.trim();
+
+      if (!name || !email || !phone) {
+        showToast('Nama, email, dan WhatsApp wajib diisi');
+        return;
+      }
+
+      const registration = {
+        id: 'REG-' + new Date().getTime().toString().slice(-6),
+        name,
+        email,
+        phone,
+        type,
+        company,
+        category,
+        city,
+        note,
+        status: 'Menunggu Verifikasi',
+        createdAt: new Date().toLocaleString('id-ID')
+      };
+
+      localStorage.setItem('bisnishub_front_registration', JSON.stringify(registration));
       state.role = 'user';
       state.userGate = 'dashboard';
-      state.userMenu = 'registration';
-      state.userSub = 'Data Pribadi';
-      state.name = state.name || 'Customer BisnisHUB';
+      state.name = name;
+      state.userMenu = 'overview';
+      state.userSub = 'Ringkasan';
       saveState();
       renderUserDashboard();
-      showToast('Silakan isi registrasi akun');
+      showToast('Registrasi berhasil. Silakan lengkapi dashboard customer');
+    }
+
+    function openUserRegistrationEntry() {
+      state.role = 'user';
+      state.userGate = 'entry';
+      saveState();
+      renderUserEntry();
+      showToast('Silakan isi registrasi di halaman depan akun');
     }
 
     function openUserLoginEntry() {
@@ -3414,7 +3530,7 @@
       `;
 
       if (active === 'Data Pribadi') {
-        return panel('Registrasi User', 'Data utama pemilik akun.', `
+        return panel('Data Registrasi', 'Data utama pemilik akun.', `
           ${header}
           <div class="grid md:grid-cols-2 gap-4">
             <input id="regFullName" class="border rounded-2xl p-3" placeholder="Nama lengkap" value="${state.name || ''}">
