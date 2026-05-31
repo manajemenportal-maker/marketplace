@@ -160,6 +160,14 @@
     }
     .toast.show { display: block; }
 
+    .user-admin-entry,
+    [data-admin-entry="true"],
+    .hide-from-user {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
     .floating-help {
       position: fixed;
       right: 18px;
@@ -1067,6 +1075,63 @@
       `;
     }
 
+
+    function scrubAdminEntryFromUser() {
+      if (state.role !== 'user') return;
+
+      const bannedText = /(masuk\s*admin|akses\s*admin|admin\s*tersembunyi|administrator)/i;
+      const bannedClick = /(showAdminHiddenHint|switchRole\(['"]admin['"]\)|openAdminHiddenLogin)/i;
+
+      document.querySelectorAll('button, a, [role="button"]').forEach(el => {
+        const text = (el.textContent || '').trim();
+        const click = el.getAttribute('onclick') || '';
+
+        if (bannedText.test(text) || bannedClick.test(click)) {
+          el.remove();
+        }
+      });
+
+      document.querySelectorAll('[title]').forEach(el => {
+        const title = el.getAttribute('title') || '';
+        if (/admin|administrator/i.test(title)) {
+          el.removeAttribute('title');
+        }
+      });
+    }
+
+    function syncUserDashboardView(menuKey, subKey) {
+      state.role = 'user';
+      state.userGate = 'dashboard';
+      state.userMenu = menuKey || state.userMenu || 'overview';
+
+      const subs = userSubs[state.userMenu] || ['Ringkasan'];
+      state.userSub = subKey || subs[0] || 'Ringkasan';
+
+      saveState();
+      renderUserDashboard();
+
+      setTimeout(scrubAdminEntryFromUser, 0);
+    }
+
+    function openUserMenu(menuKey) {
+      const subs = userSubs[menuKey] || ['Ringkasan'];
+      syncUserDashboardView(menuKey, subs[0]);
+    }
+
+    function openUserSub(subKey) {
+      syncUserDashboardView(state.userMenu || 'overview', subKey);
+    }
+
+    function userAction(label, nextMenu = null, nextSub = null) {
+      showToast(label || 'Aksi diproses');
+      if (nextMenu) {
+        syncUserDashboardView(nextMenu, nextSub);
+      } else {
+        setTimeout(scrubAdminEntryFromUser, 0);
+      }
+    }
+
+
     function renderApp() {
       if (state.role !== 'marketplace') clearInterval(marketplaceCarouselTimer);
       if (state.role === 'admin') {
@@ -1242,16 +1307,11 @@
     }
 
     function setUserMenu(key) {
-      state.userMenu = key;
-      state.userSub = (userSubs[key] || ['Ringkasan'])[0];
-      saveState();
-      renderUserDashboard();
+      openUserMenu(key);
     }
 
     function setUserSub(sub) {
-      state.userSub = sub;
-      saveState();
-      renderUserDashboard();
+      openUserSub(sub);
     }
 
 
@@ -3476,6 +3536,30 @@
       });
     }
 
+
+    function userGenericPanel() {
+      const menuLabel = (userMenus.find(item => item.key === state.userMenu) || {}).label || 'Menu User';
+      const subLabel = state.userSub || 'Ringkasan';
+
+      return panel(menuLabel, `Panel ${subLabel} aktif dan siap dieksekusi.`, `
+        <div class="grid md:grid-cols-3 gap-4 mb-5">
+          ${kpiCard('Status', 'Aktif', 'fa-circle-check', 'emerald')}
+          ${kpiCard('Menu', menuLabel, 'fa-layer-group', 'indigo')}
+          ${kpiCard('Submenu', subLabel, 'fa-list-check', 'orange')}
+        </div>
+        <div class="rounded-[24px] border bg-white p-5">
+          <h3 class="font-black text-lg">${subLabel}</h3>
+          <p class="text-sm text-slate-500 mt-2">Area ini disiapkan untuk pengisian data, update informasi, proses transaksi, dan latihan eksekusi menu user.</p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button onclick="userAction('Data ${subLabel} disimpan')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black text-sm">Simpan</button>
+            <button onclick="userAction('Preview ${subLabel} dibuka')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black text-sm">Preview</button>
+            <button onclick="userAction('Bantuan ${subLabel} dibuka', 'support', 'Buat Tiket')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black text-sm">Minta Bantuan</button>
+          </div>
+        </div>
+      `);
+    }
+
+
     function renderUserContent() {
       const activeSubPanel = userActiveSubContent();
       if (activeSubPanel) return activeSubPanel;
@@ -3493,7 +3577,7 @@
       if (key === 'notif') return userNotifications();
       if (key === 'security') return userSecurity();
       if (key === 'profile') return userProfile();
-      return userOverview();
+      return userGenericPanel();
     }
 
     function userOverview() {
@@ -3506,15 +3590,15 @@
         </div>
         ${panel('Ringkasan Akun', 'Area kerja customer untuk transaksi, toko, dan bantuan.', `
           <div class="grid md:grid-cols-3 gap-4">
-            <button onclick="setUserMenu('orders')" class="p-5 rounded-2xl bg-indigo-50 border text-left">
+            <button onclick="openUserMenu('orders')" class="p-5 rounded-2xl bg-indigo-50 border text-left">
               <b>Pesanan Saya</b>
               <p class="text-sm text-slate-500 mt-1">Lacak order dan invoice.</p>
             </button>
-            <button onclick="setUserMenu('addProduct')" class="p-5 rounded-2xl bg-amber-50 border text-left">
+            <button onclick="openUserMenu('addProduct')" class="p-5 rounded-2xl bg-amber-50 border text-left">
               <b>Tambah Produk</b>
               <p class="text-sm text-slate-500 mt-1">Upload produk lengkap.</p>
             </button>
-            <button onclick="setUserMenu('store')" class="p-5 rounded-2xl bg-emerald-50 border text-left">
+            <button onclick="openUserMenu('store')" class="p-5 rounded-2xl bg-emerald-50 border text-left">
               <b>Kelola Toko</b>
               <p class="text-sm text-slate-500 mt-1">Setting toko di kanan.</p>
             </button>
