@@ -1235,7 +1235,7 @@
           let quality = 0.78;
           let result = canvas.toDataURL('image/jpeg', quality);
 
-          while (result.length > 450000 && quality > 0.38) {
+          while (result.length > 420000 && quality > 0.38) {
             quality -= 0.08;
             result = canvas.toDataURL('image/jpeg', quality);
           }
@@ -1331,7 +1331,7 @@
           mode: banner ? 'image' : 'text',
           speedSeconds: Number(document.getElementById('bhAdSpeed')?.value || old.speedSeconds || 18),
           textItems: finalTexts,
-          bannerSrc: banner && banner.image && banner.image.length < 500000 ? banner.image : '',
+          bannerSrc: banner && banner.image && banner.image.length < 450000 ? banner.image : '',
           bannerAlt: banner ? banner.title : 'Iklan BisnisHUB'
         });
       }
@@ -2972,27 +2972,58 @@
         .filter(Boolean)
         .slice(0, 3);
 
-      localStorage.setItem('bisnishub_ads_settings', JSON.stringify({
+      const safeBanner = settings.bannerSrc && settings.bannerSrc.length < 520000 ? settings.bannerSrc : '';
+
+      const payload = JSON.stringify({
         mode: settings.mode || 'text',
         speedSeconds: Math.max(8, Number(settings.speedSeconds || 18)),
         textItems: cleanTextItems.length ? cleanTextItems : DEFAULT_ADS_SETTINGS.textItems,
-        bannerSrc: settings.bannerSrc || '',
+        bannerSrc: safeBanner,
         bannerAlt: settings.bannerAlt || 'Iklan BisnisHUB'
-      }));
+      });
+
+      try {
+        clearHeavyMediaStorage();
+        localStorage.setItem('bisnishub_ads_settings', payload);
+        return true;
+      } catch (error) {
+        console.warn('Storage iklan penuh, simpan iklan teks saja:', error);
+        try {
+          localStorage.removeItem('bisnishub_ads_settings');
+          if (window.BH_ADS_KEY) localStorage.removeItem(window.BH_ADS_KEY);
+          clearHeavyMediaStorage();
+          localStorage.setItem('bisnishub_ads_settings', JSON.stringify({
+            mode: 'text',
+            speedSeconds: Math.max(8, Number(settings.speedSeconds || 18)),
+            textItems: cleanTextItems.length ? cleanTextItems : DEFAULT_ADS_SETTINGS.textItems,
+            bannerSrc: '',
+            bannerAlt: 'Iklan BisnisHUB'
+          }));
+          showToast('Iklan teks tersimpan. Banner terlalu besar dibersihkan.');
+          return true;
+        } catch (secondError) {
+          console.error('Iklan tetap gagal disimpan:', secondError);
+          alert('Storage browser penuh. Reset iklan/carousel atau gunakan gambar kecil.');
+          return false;
+        }
+      }
     }
 
     function readAdsBannerFile(input) {
       const file = input.files && input.files[0];
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = function(event) {
+      showToast('Mengompres banner iklan...');
+
+      compressImageDataUrl(file, function(compressedDataUrl) {
         const img = document.getElementById('adsBannerPreview');
         const hidden = document.getElementById('adsBannerSrc');
-        if (img) img.src = event.target.result;
-        if (hidden) hidden.value = event.target.result;
-      };
-      reader.readAsDataURL(file);
+
+        if (img) img.src = compressedDataUrl;
+        if (hidden) hidden.value = compressedDataUrl;
+
+        showToast('Banner iklan siap disimpan');
+      }, 1200, 400, 450000);
     }
 
     function saveAdminAdsSettings() {
@@ -3115,6 +3146,65 @@
     }
 
 
+
+    function clearHeavyMediaStorage() {
+      [
+        'bisnishub_admin_ads',
+        'bisnishub_real_ads',
+        'bisnishub_ads_settings_backup',
+        'bisnishub_ads_live_v2_backup',
+        'bisnishub_carousel_settings_backup',
+        'bisnishub_carousel_old'
+      ].forEach(key => {
+        try { localStorage.removeItem(key); } catch (error) {}
+      });
+    }
+
+    function compressImageDataUrl(file, callback, maxW = 1200, maxH = 520, maxBytes = 520000) {
+      const reader = new FileReader();
+
+      reader.onload = function(event) {
+        const img = new Image();
+
+        img.onload = function() {
+          let w = img.width;
+          let h = img.height;
+          const ratio = Math.min(maxW / w, maxH / h, 1);
+
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+
+          let quality = 0.78;
+          let result = canvas.toDataURL('image/jpeg', quality);
+
+          while (result.length > maxBytes && quality > 0.35) {
+            quality -= 0.08;
+            result = canvas.toDataURL('image/jpeg', quality);
+          }
+
+          callback(result);
+        };
+
+        img.onerror = function() {
+          callback(event.target.result);
+        };
+
+        img.src = event.target.result;
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+
     const DEFAULT_CAROUSEL_SETTINGS = {
       intervalSeconds: 4,
       images: [
@@ -3150,26 +3240,67 @@
     function saveCarouselSettings(settings) {
       const cleanImages = (settings.images || [])
         .filter(item => item && item.src)
-        .slice(0, 3);
+        .slice(0, 3)
+        .map(item => ({
+          name: item.name || 'Slide',
+          src: item.src || '',
+          title: item.title || '',
+          desc: item.desc || ''
+        }));
 
-      localStorage.setItem('bisnishub_carousel_settings', JSON.stringify({
+      const payload = JSON.stringify({
         intervalSeconds: Math.max(2, Number(settings.intervalSeconds || 4)),
         images: cleanImages.length ? cleanImages : DEFAULT_CAROUSEL_SETTINGS.images
-      }));
+      });
+
+      try {
+        clearHeavyMediaStorage();
+        localStorage.setItem('bisnishub_carousel_settings', payload);
+        return true;
+      } catch (error) {
+        console.warn('Storage carousel penuh, mencoba simpan versi ringan:', error);
+
+        try {
+          localStorage.removeItem('bisnishub_carousel_settings');
+          localStorage.removeItem('bisnishub_ads_settings');
+          if (window.BH_ADS_KEY) localStorage.removeItem(window.BH_ADS_KEY);
+          clearHeavyMediaStorage();
+
+          const lighterImages = cleanImages.map((item, index) => ({
+            ...item,
+            src: item.src && item.src.length > 520000 ? DEFAULT_CAROUSEL_SETTINGS.images[index % DEFAULT_CAROUSEL_SETTINGS.images.length].src : item.src
+          }));
+
+          localStorage.setItem('bisnishub_carousel_settings', JSON.stringify({
+            intervalSeconds: Math.max(2, Number(settings.intervalSeconds || 4)),
+            images: lighterImages.length ? lighterImages : DEFAULT_CAROUSEL_SETTINGS.images
+          }));
+
+          showToast('Carousel tersimpan. Gambar terlalu besar diganti versi aman/default.');
+          return true;
+        } catch (secondError) {
+          console.error('Carousel tetap gagal disimpan:', secondError);
+          alert('Storage browser penuh. Klik Reset Carousel/Iklan dulu, atau upload gambar lebih kecil.');
+          return false;
+        }
+      }
     }
 
     function readCarouselFile(input, index) {
       const file = input.files && input.files[0];
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = function(event) {
+      showToast('Mengompres foto carousel...');
+
+      compressImageDataUrl(file, function(compressedDataUrl) {
         const img = document.getElementById('carouselPreview' + index);
         const hidden = document.getElementById('carouselImageSrc' + index);
-        if (img) img.src = event.target.result;
-        if (hidden) hidden.value = event.target.result;
-      };
-      reader.readAsDataURL(file);
+
+        if (img) img.src = compressedDataUrl;
+        if (hidden) hidden.value = compressedDataUrl;
+
+        showToast('Foto carousel siap disimpan');
+      }, 1400, 620, 520000);
     }
 
     function saveAdminCarouselSettings() {
@@ -3191,10 +3322,12 @@
         return;
       }
 
-      saveCarouselSettings({
+      const ok = saveCarouselSettings({
         intervalSeconds: interval,
         images
       });
+
+      if (!ok) return;
 
       showToast('Setting carousel berhasil disimpan');
       if (state.role === 'marketplace') renderMarketplace();
@@ -3203,7 +3336,8 @@
 
     function resetAdminCarouselSettings() {
       localStorage.removeItem('bisnishub_carousel_settings');
-      showToast('Carousel dikembalikan ke bawaan');
+      clearHeavyMediaStorage();
+      showToast('Carousel dikembalikan ke bawaan dan storage dibersihkan');
       renderAdminDashboard();
     }
 
