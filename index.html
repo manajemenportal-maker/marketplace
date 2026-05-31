@@ -669,6 +669,65 @@
     }
 
   </style>
+
+  <!-- Firebase Data Source -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      getDoc,
+      getDocs,
+      setDoc,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      query,
+      where,
+      orderBy,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = window.BISNISHUB_FIREBASE_CONFIG || {
+      apiKey: "ISI_API_KEY_FIREBASE",
+      authDomain: "ISI_AUTH_DOMAIN_FIREBASE",
+      projectId: "ISI_PROJECT_ID_FIREBASE",
+      storageBucket: "ISI_STORAGE_BUCKET_FIREBASE",
+      messagingSenderId: "ISI_MESSAGING_SENDER_ID",
+      appId: "ISI_APP_ID"
+    };
+
+    try {
+      if (firebaseConfig && firebaseConfig.projectId && !String(firebaseConfig.projectId).includes("ISI_")) {
+        window.bisnisHubFirebaseApp = initializeApp(firebaseConfig);
+        window.bisnisHubDb = getFirestore(window.bisnisHubFirebaseApp);
+        window.bisnisHubFirebaseReady = true;
+      } else {
+        window.bisnisHubFirebaseReady = false;
+        console.warn("BisnisHUB Firebase config belum diisi. Data memakai cache lokal sementara.");
+      }
+    } catch (error) {
+      window.bisnisHubFirebaseReady = false;
+      console.error("Firebase BisnisHUB gagal aktif:", error);
+    }
+
+    window.bisnisHubFirebaseApi = {
+      collection,
+      doc,
+      getDoc,
+      getDocs,
+      setDoc,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      query,
+      where,
+      orderBy,
+      serverTimestamp
+    };
+  </script>
+
 </head>
 <body>
   <div id="app" class="app-shell"></div>
@@ -1345,7 +1404,7 @@
     function getFilteredMarketplaceProducts() {
       const filters = getMarketplaceFilters();
 
-      return marketplaceProducts.filter(product => {
+      return [...getUserMarketplaceProducts(), ...marketplaceProducts].filter(product => {
         const text = `${product.name} ${product.seller} ${product.category} ${product.badge}`.toLowerCase();
         const matchQuery = !filters.query || text.includes(filters.query);
         const matchCategory = !filters.category || product.category === filters.category || product.name.includes(filters.category);
@@ -1687,6 +1746,10 @@
 
 
     function renderMarketplace() {
+      if (firebaseIsReady() && !window.bisnisHubMarketplaceLoadedOnce) {
+        window.bisnisHubMarketplaceLoadedOnce = true;
+        refreshMarketplaceFromFirebase().then(() => renderMarketplace()).catch(() => {});
+      }
       const filteredProducts = getFilteredMarketplaceProducts();
       const productCards = filteredProducts.map(product => `
         <div class="content-card mobile-product-card p-4 hover:-translate-y-1 transition">
@@ -1694,7 +1757,7 @@
             <i class="fa-solid ${product.icon} text-4xl text-indigo-400"></i>
           </div>
           <div class="flex items-center justify-between gap-2 mb-2">
-            ${badge(product.badge, product.badge === 'TKDN' ? 'rose' : 'indigo')}
+            ${badge(product.badge, product.source === 'user' ? 'emerald' : product.badge === 'TKDN' ? 'rose' : 'indigo')}
             <span class="text-[10px] font-black text-slate-400 uppercase">${product.category}</span>
           </div>
           <h3 class="font-black leading-tight min-h-[48px]">${product.name}</h3>
@@ -3537,6 +3600,529 @@
     }
 
 
+
+
+    const BISNISHUB_TENANT_ID = 'bisnishub-main';
+    const BISNISHUB_ACTIVE_USER_ID = 'user-demo-main';
+
+    function firebaseIsReady() {
+      return Boolean(window.bisnisHubFirebaseReady && window.bisnisHubDb && window.bisnisHubFirebaseApi);
+    }
+
+    function firebasePaths() {
+      return {
+        user: `tenants/${BISNISHUB_TENANT_ID}/users/${BISNISHUB_ACTIVE_USER_ID}`,
+        store: `tenants/${BISNISHUB_TENANT_ID}/users/${BISNISHUB_ACTIVE_USER_ID}/private/store`,
+        company: `tenants/${BISNISHUB_TENANT_ID}/users/${BISNISHUB_ACTIVE_USER_ID}/private/company`,
+        products: `tenants/${BISNISHUB_TENANT_ID}/products`,
+        companies: `tenants/${BISNISHUB_TENANT_ID}/companies`
+      };
+    }
+
+    async function firebaseSetDocument(path, data) {
+      if (!firebaseIsReady()) return false;
+      const { doc, setDoc, serverTimestamp } = window.bisnisHubFirebaseApi;
+      await setDoc(doc(window.bisnisHubDb, path), {
+        ...data,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      return true;
+    }
+
+    async function firebaseGetDocument(path) {
+      if (!firebaseIsReady()) return null;
+      const { doc, getDoc } = window.bisnisHubFirebaseApi;
+      const snap = await getDoc(doc(window.bisnisHubDb, path));
+      return snap.exists() ? snap.data() : null;
+    }
+
+    async function firebaseDeleteDocument(path) {
+      if (!firebaseIsReady()) return false;
+      const { doc, deleteDoc } = window.bisnisHubFirebaseApi;
+      await deleteDoc(doc(window.bisnisHubDb, path));
+      return true;
+    }
+
+    async function firebaseGetTenantProducts() {
+      if (!firebaseIsReady()) return [];
+      const { collection, getDocs, query, where } = window.bisnisHubFirebaseApi;
+      const q = query(
+        collection(window.bisnisHubDb, firebasePaths().products),
+        where('status', 'in', ['Aktif', 'Review', 'Tayang'])
+      );
+      const snaps = await getDocs(q);
+      return snaps.docs.map(snap => ({ id: snap.id, ...snap.data() }));
+    }
+
+    async function firebaseSyncUserDataToCloud(data) {
+      if (!firebaseIsReady()) {
+        console.warn('Firebase belum aktif. Data disimpan di cache lokal sebagai fallback.');
+        return false;
+      }
+
+      const paths = firebasePaths();
+      await firebaseSetDocument(paths.user, {
+        name: state.name || 'Customer BisnisHUB',
+        role: 'user',
+        tenantId: BISNISHUB_TENANT_ID
+      });
+      await firebaseSetDocument(paths.store, data.store || {});
+      await firebaseSetDocument(paths.company, data.company || {});
+
+      const products = Array.isArray(data.products) ? data.products : [];
+      await Promise.all(products.map(product => firebaseSetDocument(`${paths.products}/${product.id}`, {
+        ...product,
+        tenantId: BISNISHUB_TENANT_ID,
+        ownerUserId: BISNISHUB_ACTIVE_USER_ID,
+        seller: (data.store && data.store.name) || product.seller || 'Seller BisnisHUB'
+      })));
+
+      return true;
+    }
+
+    async function firebaseLoadUserDataFromCloud() {
+      if (!firebaseIsReady()) return null;
+
+      const paths = firebasePaths();
+      const store = await firebaseGetDocument(paths.store);
+      const company = await firebaseGetDocument(paths.company);
+      const cloudProducts = await firebaseGetTenantProducts();
+      const myProducts = cloudProducts.filter(product => product.ownerUserId === BISNISHUB_ACTIVE_USER_ID);
+
+      return {
+        store: store || {},
+        company: company || {},
+        products: myProducts || []
+      };
+    }
+
+    async function refreshUserDataFromFirebase() {
+      const cloud = await firebaseLoadUserDataFromCloud();
+      if (!cloud) {
+        showToast('Firebase belum aktif, memakai cache sementara');
+        return;
+      }
+
+      const merged = getUserData();
+      merged.store = { ...merged.store, ...(cloud.store || {}) };
+      merged.company = { ...merged.company, ...(cloud.company || {}) };
+      merged.products = Array.isArray(cloud.products) ? cloud.products : merged.products;
+      localStorage.setItem('bisnishub_user_data', JSON.stringify(merged));
+      renderUserDashboard();
+      showToast('Data Firebase dimuat');
+    }
+
+    async function refreshMarketplaceFromFirebase() {
+      if (!firebaseIsReady()) {
+        window.bisnisHubCloudProducts = [];
+        return [];
+      }
+
+      try {
+        window.bisnisHubCloudProducts = await firebaseGetTenantProducts();
+        return window.bisnisHubCloudProducts;
+      } catch (error) {
+        console.error('Gagal memuat produk marketplace Firebase:', error);
+        window.bisnisHubCloudProducts = [];
+        return [];
+      }
+    }
+
+
+    const DEFAULT_USER_DATA = {
+      store: {
+        name: 'Toko BisnisHUB Anda',
+        category: 'Pertanian & Alsintan',
+        tagline: 'Supplier produk industri dan jasa profesional',
+        description: 'Toko/perusahaan siap melayani kebutuhan produk industri, jasa keteknikan, tender, dan proyek B2B.',
+        phone: '',
+        email: 'adminbishub@gmail.com',
+        city: '',
+        address: '',
+        nib: '',
+        npwp: '',
+        bank: '',
+        accountNumber: '',
+        accountName: '',
+        warehouse: '',
+        courier: 'Kargo B2B, Ambil Sendiri',
+        hours: 'Senin - Sabtu, 08.00 - 17.00',
+        policy: 'Barang/jasa diproses sesuai kesepakatan, invoice, dan dokumen pendukung.'
+      },
+      company: {
+        name: 'Company Profile BisnisHUB',
+        industry: 'Bidang Industri',
+        category: 'Database Perusahaan & Company Profile',
+        city: '',
+        website: '',
+        email: 'adminbishub@gmail.com',
+        phone: '',
+        pic: '',
+        description: 'Profil perusahaan, bidang usaha, portofolio, produk, jasa, dan kontak resmi.',
+        legal: '',
+        portfolio: '',
+        products: '',
+        services: ''
+      },
+      products: []
+    };
+
+    function getUserData() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('bisnishub_user_data') || '{}');
+        return {
+          ...DEFAULT_USER_DATA,
+          ...saved,
+          store: { ...DEFAULT_USER_DATA.store, ...(saved.store || {}) },
+          company: { ...DEFAULT_USER_DATA.company, ...(saved.company || {}) },
+          products: Array.isArray(saved.products) ? saved.products : []
+        };
+      } catch (error) {
+        return JSON.parse(JSON.stringify(DEFAULT_USER_DATA));
+      }
+    }
+
+    function saveUserData(data) {
+      localStorage.setItem('bisnishub_user_data', JSON.stringify(data));
+      firebaseSyncUserDataToCloud(data).catch(error => {
+        console.error('Sinkronisasi Firebase gagal:', error);
+        showToast('Data tersimpan sementara, sinkron Firebase perlu dicek');
+      });
+    }
+
+    function updateUserStoreData(patch = {}) {
+      const data = getUserData();
+      data.store = { ...data.store, ...patch };
+      saveUserData(data);
+      return data.store;
+    }
+
+    function updateUserCompanyData(patch = {}) {
+      const data = getUserData();
+      data.company = { ...data.company, ...patch };
+      saveUserData(data);
+      return data.company;
+    }
+
+    function fieldValue(id, fallback = '') {
+      return document.getElementById(id)?.value?.trim() || fallback;
+    }
+
+    function saveStoreProfile() {
+      const old = getUserData().store;
+      updateUserStoreData({
+        name: fieldValue('storeName', old.name),
+        category: fieldValue('storeCategory', old.category),
+        tagline: fieldValue('storeTagline', old.tagline),
+        description: fieldValue('storeDescription', old.description),
+        phone: fieldValue('storePhone', old.phone),
+        email: fieldValue('storeEmail', old.email),
+        city: fieldValue('storeCity', old.city),
+        address: fieldValue('storeAddress', old.address)
+      });
+      showToast('Profil toko disimpan dan preview diperbarui');
+      state.userSub = 'Preview Toko';
+      saveState();
+      renderUserDashboard();
+    }
+
+    function saveStoreLegal() {
+      const old = getUserData().store;
+      updateUserStoreData({ nib: fieldValue('storeNib', old.nib), npwp: fieldValue('storeNpwp', old.npwp) });
+      showToast('Legalitas toko disimpan');
+      renderUserDashboard();
+    }
+
+    function saveStoreBank() {
+      const old = getUserData().store;
+      updateUserStoreData({
+        bank: fieldValue('storeBank', old.bank),
+        accountNumber: fieldValue('storeAccountNumber', old.accountNumber),
+        accountName: fieldValue('storeAccountName', old.accountName)
+      });
+      showToast('Rekening toko disimpan');
+      renderUserDashboard();
+    }
+
+    function saveStoreShipping() {
+      const old = getUserData().store;
+      updateUserStoreData({ warehouse: fieldValue('storeWarehouse', old.warehouse), courier: fieldValue('storeCourier', old.courier) });
+      showToast('Kurir dan gudang disimpan');
+      renderUserDashboard();
+    }
+
+    function saveStoreHours() {
+      updateUserStoreData({ hours: fieldValue('storeHours', getUserData().store.hours) });
+      showToast('Jam operasional disimpan');
+      renderUserDashboard();
+    }
+
+    function saveStorePolicy() {
+      updateUserStoreData({ policy: fieldValue('storePolicy', getUserData().store.policy) });
+      showToast('Kebijakan toko disimpan');
+      renderUserDashboard();
+    }
+
+
+    function saveUserProduct() {
+      const data = getUserData();
+      const product = {
+        id: 'PRD-' + new Date().getTime().toString().slice(-6),
+        name: fieldValue('quickProductName', 'Produk Baru BisnisHUB'),
+        category: fieldValue('quickProductCategory', 'Pertanian & Alsintan'),
+        price: fieldValue('quickProductPrice', 'Hubungi Seller'),
+        stock: fieldValue('quickProductStock', 'Ready'),
+        unit: fieldValue('quickProductUnit', 'Unit'),
+        brand: fieldValue('quickProductBrand', ''),
+        sku: fieldValue('quickProductSku', ''),
+        listingType: fieldValue('quickProductListingType', 'Produk Fisik'),
+        serviceArea: fieldValue('quickProductServiceArea', ''),
+        description: fieldValue('quickProductDescription', 'Produk/jasa dari seller BisnisHUB.'),
+        specs: fieldValue('quickProductSpecs', ''),
+        delivery: fieldValue('quickProductDelivery', ''),
+        seller: data.store.name || 'Seller BisnisHUB',
+        badge: fieldValue('quickProductListingType', '').includes('Jasa') ? 'Jasa' : 'Produk',
+        icon: fieldValue('quickProductListingType', '').includes('Jasa') ? 'fa-handshake-angle' : 'fa-box-open',
+        status: 'Aktif',
+        createdAt: new Date().toLocaleString('id-ID')
+      };
+
+      if (!product.name || product.name === 'Produk Baru BisnisHUB') {
+        showToast('Nama produk wajib diisi');
+        return;
+      }
+
+      data.products = Array.isArray(data.products) ? data.products : [];
+      const existingIndex = state.editProductId ? data.products.findIndex(item => item.id === state.editProductId) : data.products.findIndex(item => item.name.toLowerCase() === product.name.toLowerCase());
+      if (state.editProductId) product.id = state.editProductId;
+      if (existingIndex >= 0) data.products[existingIndex] = { ...data.products[existingIndex], ...product };
+      else data.products.unshift(product);
+
+      saveUserData(data);
+      if (firebaseIsReady()) {
+        firebaseSetDocument(`${firebasePaths().products}/${product.id}`, {
+          ...product,
+          tenantId: BISNISHUB_TENANT_ID,
+          ownerUserId: BISNISHUB_ACTIVE_USER_ID,
+          seller: getUserData().store.name || product.seller || 'Seller BisnisHUB'
+        }).catch(error => console.error('Produk gagal dikirim ke Firebase:', error));
+      }
+      state.editProductId = null;
+      showToast(firebaseIsReady() ? 'Produk disimpan ke Firebase dan masuk Marketplace' : 'Produk tersimpan sementara, Firebase belum aktif');
+      state.userMenu = 'addProduct';
+      state.userSub = 'Preview';
+      saveState();
+      renderUserDashboard();
+    }
+
+    function getUserMarketplaceProducts() {
+      const data = getUserData();
+      const localProducts = data.products || [];
+      const cloudProducts = Array.isArray(window.bisnisHubCloudProducts) ? window.bisnisHubCloudProducts : [];
+
+      const merged = [...cloudProducts, ...localProducts];
+      const unique = [];
+      const seen = new Set();
+
+      merged.forEach(product => {
+        const key = product.id || product.name;
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        unique.push(product);
+      });
+
+      return unique
+        .filter(product => product.status !== 'Draft' && product.status !== 'Nonaktif')
+        .map(product => ({
+          name: product.name,
+          seller: product.seller || data.store.name || 'Seller BisnisHUB',
+          category: product.category || 'Produk User',
+          price: product.price || 'Hubungi Seller',
+          badge: product.badge || 'User',
+          icon: product.icon || 'fa-box-open',
+          source: product.ownerUserId ? 'firebase' : 'user',
+          id: product.id
+        }));
+    }
+
+    function renderUserProductList() {
+      const data = getUserData();
+      const products = data.products || [];
+
+      if (!products.length) {
+        return `
+          <div class="rounded-[24px] border bg-white p-6 text-center">
+            <i class="fa-solid fa-box-open text-5xl text-slate-300 mb-4"></i>
+            <h3 class="font-black text-lg">Belum ada produk user</h3>
+            <p class="text-sm text-slate-500 mt-2">Isi produk di menu Info Produk lalu klik Simpan Produk.</p>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+          ${products.map(product => `
+            <div class="rounded-[24px] border bg-white p-5">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h3 class="font-black text-lg">${product.name}</h3>
+                  <p class="text-xs font-black text-orange-600 mt-1">${product.category}</p>
+                  <p class="text-sm text-slate-500 mt-2">${product.description || '-'}</p>
+                </div>
+                ${badge(product.status || 'Aktif', 'emerald')}
+              </div>
+              <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Harga</b><p class="text-slate-500">${product.price || '-'}</p></div>
+                <div class="rounded-xl bg-slate-50 border p-3"><b>Stok</b><p class="text-slate-500">${product.stock || '-'}</p></div>
+              </div>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button onclick="editUserProduct('${product.id}')" class="bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Edit</button>
+                <button onclick="toggleUserProduct('${product.id}')" class="bg-amber-500 text-white rounded-xl px-4 py-2 text-xs font-black">${product.status === 'Nonaktif' ? 'Aktifkan' : 'Nonaktifkan'}</button>
+                <button onclick="deleteUserProduct('${product.id}')" class="bg-rose-600 text-white rounded-xl px-4 py-2 text-xs font-black">Hapus</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function editUserProduct(id) {
+      const data = getUserData();
+      const product = (data.products || []).find(item => item.id === id);
+      if (!product) return;
+
+      state.editProductId = id;
+      state.userMenu = 'addProduct';
+      state.userSub = 'Info Produk';
+      saveState();
+      renderUserDashboard();
+
+      setTimeout(() => {
+        const fields = {
+          quickProductName: product.name,
+          quickProductCategory: product.category,
+          quickProductPrice: product.price,
+          quickProductStock: product.stock,
+          quickProductUnit: product.unit,
+          quickProductBrand: product.brand,
+          quickProductSku: product.sku,
+          quickProductListingType: product.listingType,
+          quickProductServiceArea: product.serviceArea,
+          quickProductDescription: product.description,
+          quickProductSpecs: product.specs,
+          quickProductDelivery: product.delivery
+        };
+        Object.entries(fields).forEach(([id, value]) => {
+          const el = document.getElementById(id);
+          if (el) el.value = value || '';
+        });
+      }, 50);
+    }
+
+    function toggleUserProduct(id) {
+      const data = getUserData();
+      data.products = (data.products || []).map(product => product.id === id ? {
+        ...product,
+        status: product.status === 'Nonaktif' ? 'Aktif' : 'Nonaktif'
+      } : product);
+      saveUserData(data);
+      showToast('Status produk diperbarui');
+      renderUserDashboard();
+    }
+
+    function deleteUserProduct(id) {
+      const data = getUserData();
+      data.products = (data.products || []).filter(product => product.id !== id);
+      saveUserData(data);
+      if (firebaseIsReady()) {
+        firebaseDeleteDocument(`${firebasePaths().products}/${id}`).catch(error => console.error('Gagal hapus produk Firebase:', error));
+      }
+      showToast('Produk dihapus');
+      renderUserDashboard();
+    }
+
+
+    function renderStorePreviewCard(store = getUserData().store) {
+      return `
+        <div class="rounded-[30px] overflow-hidden border bg-white shadow-sm">
+          <div class="h-36 bg-gradient-to-br from-orange-500 via-amber-400 to-slate-950 relative">
+            <div class="absolute left-5 bottom-5">
+              <div class="w-20 h-20 rounded-[24px] bg-white/95 shadow-lg flex items-center justify-center text-orange-600 text-3xl">
+                <i class="fa-solid fa-store"></i>
+              </div>
+            </div>
+          </div>
+          <div class="p-5 pt-12">
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+              <div>
+                <h3 class="text-2xl font-black">${store.name}</h3>
+                <p class="text-sm font-bold text-orange-600 mt-1">${store.category}</p>
+                <p class="text-sm text-slate-500 mt-2">${store.tagline}</p>
+              </div>
+              ${badge('Toko Aktif', 'emerald')}
+            </div>
+            <p class="text-sm text-slate-600 mt-4 leading-relaxed">${store.description}</p>
+            <div class="grid md:grid-cols-3 gap-3 mt-5 text-sm">
+              <div class="rounded-2xl bg-slate-50 border p-4"><b>Kota</b><p class="text-slate-500 mt-1">${store.city || '-'}</p></div>
+              <div class="rounded-2xl bg-slate-50 border p-4"><b>WhatsApp</b><p class="text-slate-500 mt-1">${store.phone || '-'}</p></div>
+              <div class="rounded-2xl bg-slate-50 border p-4"><b>Email</b><p class="text-slate-500 mt-1">${store.email || '-'}</p></div>
+              <div class="rounded-2xl bg-slate-50 border p-4"><b>NIB</b><p class="text-slate-500 mt-1">${store.nib || '-'}</p></div>
+              <div class="rounded-2xl bg-slate-50 border p-4"><b>Kurir</b><p class="text-slate-500 mt-1">${store.courier || '-'}</p></div>
+              <div class="rounded-2xl bg-slate-50 border p-4"><b>Jam Buka</b><p class="text-slate-500 mt-1">${store.hours || '-'}</p></div>
+            </div>
+            <div class="mt-5 rounded-2xl bg-orange-50 border border-orange-100 p-4">
+              <b class="text-orange-700">Kebijakan</b>
+              <p class="text-sm text-orange-800 mt-1">${store.policy || '-'}</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function saveCompanyProfileData() {
+      const old = getUserData().company;
+      updateUserCompanyData({
+        name: fieldValue('companyName', old.name),
+        industry: fieldValue('companyIndustry', old.industry),
+        category: fieldValue('companyCategory', old.category),
+        city: fieldValue('companyCity', old.city),
+        website: fieldValue('companyWebsite', old.website),
+        email: fieldValue('companyEmail', old.email),
+        phone: fieldValue('companyPhone', old.phone),
+        pic: fieldValue('companyPic', old.pic),
+        description: fieldValue('companyDescription', old.description),
+        legal: fieldValue('companyLegal', old.legal),
+        portfolio: fieldValue('companyPortfolio', old.portfolio),
+        products: fieldValue('companyProducts', old.products),
+        services: fieldValue('companyServices', old.services)
+      });
+      showToast('Company profile disimpan dan preview diperbarui');
+      state.userSub = 'Preview Compro';
+      saveState();
+      renderUserDashboard();
+    }
+
+    function renderCompanyPreviewCard(company = getUserData().company) {
+      return `
+        <div class="rounded-[30px] overflow-hidden border bg-white shadow-sm">
+          <div class="h-40 bg-gradient-to-br from-slate-950 via-indigo-900 to-orange-600"></div>
+          <div class="p-5">
+            <h3 class="text-2xl font-black">${company.name}</h3>
+            <p class="text-sm font-bold text-orange-600 mt-1">${company.category}</p>
+            <p class="text-sm text-slate-500 mt-2">${company.industry} • ${company.city || '-'}</p>
+            <p class="text-sm text-slate-600 mt-4 leading-relaxed">${company.description}</p>
+            <div class="grid md:grid-cols-2 gap-3 mt-5">
+              <div class="rounded-2xl bg-slate-50 border p-4"><b>Website</b><p class="text-sm text-slate-500 mt-1">${company.website || '-'}</p></div>
+              <div class="rounded-2xl bg-slate-50 border p-4"><b>Email</b><p class="text-sm text-slate-500 mt-1">${company.email || '-'}</p></div>
+              <div class="rounded-2xl bg-slate-50 border p-4"><b>Produk</b><p class="text-sm text-slate-500 mt-1">${company.products || '-'}</p></div>
+              <div class="rounded-2xl bg-slate-50 border p-4"><b>Jasa</b><p class="text-sm text-slate-500 mt-1">${company.services || '-'}</p></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+
     function userGenericPanel() {
       const menuLabel = (userMenus.find(item => item.key === state.userMenu) || {}).label || 'Menu User';
       const subLabel = state.userSub || 'Ringkasan';
@@ -3755,442 +4341,172 @@
     }
 
     function userAddProduct() {
-      const productRows = Products.map((product, index) => `
-        <tr>
-          <td><b>${product[0]}</b><br><span class="text-xs text-slate-400">${product[1]}</span></td>
-          <td class="font-black">${product[2]}</td>
-          <td>${badge(product[3], 'rose')}</td>
-          <td>${badge(product[4], statusColor(product[4]))}</td>
-          <td>
-            <button onclick="openProductEdit(${index})" class="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-3 py-2 text-xs font-black">
-              <i class="fa-solid fa-pen-to-square mr-1"></i>Edit
-            </button>
-          </td>
-        </tr>
-      `);
+      const active = state.userSub || 'Info Produk';
+      const data = getUserData();
+      const editing = state.editProductId ? (data.products || []).find(item => item.id === state.editProductId) : null;
 
-      return panel('Tambah Produk', 'Form lengkap upload produk user dan menu edit produk.', `
-        <div class="grid md:grid-cols-2 gap-4">
-          <input id="quickProductName" class="border rounded-2xl p-3" placeholder="Nama produk">
-          <select id="quickProductCategory" class="border rounded-2xl p-3">
-            <option>Kategori Industri</option>
-            <option>Pompa & Kompresor</option>
-            <option>Mesin Pertanian</option>
-            <option>Perkakas & Tools</option>
-          </select>
-          <input class="border rounded-2xl p-3" placeholder="Brand / Merek">
-          <input class="border rounded-2xl p-3" placeholder="SKU">
-          <select class="border rounded-2xl p-3 bg-white">
-            <option>Jenis Listing: Produk Fisik</option>
-            <option>Jenis Listing: Bidang Jasa Industri</option>
-            <option>Jenis Listing: Jasa Keteknikan</option>
-            <option>Jenis Listing: Jasa Survey / Lapangan</option>
-            <option>Jenis Listing: Sewa / Rental Alat</option>
-            <option>Jenis Listing: Produk Digital</option>
-            <option>Jenis Listing: Tender / Proyek</option>
-          </select>
-          <input class="border rounded-2xl p-3" placeholder="Area layanan untuk jasa, contoh: Jabodetabek">
-          <input id="quickProductPrice" class="border rounded-2xl p-3" placeholder="Harga Retail">
-          <input class="border rounded-2xl p-3" placeholder="Harga Grosir / B2B">
-          <input class="border rounded-2xl p-3" placeholder="Stok">
-          <input class="border rounded-2xl p-3" placeholder="MOQ">
-          <input type="file" class="border rounded-2xl p-3 md:col-span-2">
-          <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Spesifikasi teknis dan deskripsi produk"></textarea>
-          <input id="quickProductTkdn" class="border rounded-2xl p-3" placeholder="Nilai TKDN %">
-          <input class="border rounded-2xl p-3" placeholder="No. Sertifikat / Dokumen">
-        </div>
-        <div class="mt-5 flex flex-wrap gap-2">
-          <button onclick="showToast('Draft produk disimpan')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Simpan Draft</button>
-          <button onclick="submitQuickProduct()" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Ajukan ke Admin</button>
-          <button onclick="openProductEdit('new')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Buka Form Edit Lengkap</button>
-        </div>
-        <div class="mt-6">
-          <h3 class="font-black text-lg mb-3">Produk Saya / Produk </h3>
-          ${table(['Produk', 'Harga', 'TKDN', 'Status', 'Edit'], productRows)}
-        </div>
-      `);
-    }
-
-
-    function userStore() {
-      const active = state.userSub || 'Profil Toko';
-
-      const tabTitle = `
-        <div class="mb-4 rounded-[24px] bg-emerald-50 border border-emerald-100 p-4">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <div>
-              <p class="text-xs font-black uppercase tracking-widest text-emerald-700">Kelola Toko</p>
-              <h3 class="text-xl font-black text-slate-900 mt-1">${active}</h3>
-              <p class="text-sm text-slate-500 mt-1">Submenu toko sekarang aktif. Klik tab di atas, isi detailnya tampil di frame kanan.</p>
-            </div>
-            <button onclick="showToast('Perubahan toko disimpan')" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl px-5 py-3 text-sm font-black">
-              Simpan Perubahan
-            </button>
-          </div>
-        </div>
-      `;
-
-      if (active === 'Profil Toko') {
-        return panel('Kelola Toko', 'Profil toko, branding, dan deskripsi usaha.', `
-          ${tabTitle}
+      if (active === 'Info Produk') {
+        return panel('Tambah Produk / Jasa', 'Produk yang disimpan otomatis tampil di Marketplace B2B.', `
           <div class="grid md:grid-cols-2 gap-4">
-            <div>
-              <label class="text-xs font-black text-slate-500 uppercase">Nama Toko</label>
-              <input class="mt-1 border rounded-2xl p-3 w-full" value="Toko ${state.name}">
-            </div>
-            <div>
-              <label class="text-xs font-black text-slate-500 uppercase">Slug / Link Toko</label>
-              <input class="mt-1 border rounded-2xl p-3 w-full" value="bishub.com/toko-${state.name.toLowerCase().replaceAll(' ', '-')}">
-            </div>
-            <div>
-              <label class="text-xs font-black text-slate-500 uppercase">Slogan Toko</label>
-              <input class="mt-1 border rounded-2xl p-3 w-full" placeholder="Contoh: Pusat alat industri terpercaya">
-            </div>
-            <div>
-              <label class="text-xs font-black text-slate-500 uppercase">Kategori Utama Toko</label>
-              <select class="mt-1 border rounded-2xl p-3 w-full bg-white">
-                ${categoryOptions()}
-              </select>
-            </div>
-            <div class="md:col-span-2">
-              <label class="text-xs font-black text-slate-500 uppercase">Deskripsi Toko</label>
-              <textarea class="mt-1 border rounded-2xl p-3 w-full" rows="5" placeholder="Jelaskan profil toko, pengalaman, layanan, garansi, dan keunggulan produk."></textarea>
-            </div>
-            <div>
-              <label class="text-xs font-black text-slate-500 uppercase">Upload Logo Toko</label>
-              <input type="file" accept="image/*" class="mt-1 border rounded-2xl p-3 w-full">
-            </div>
-            <div>
-              <label class="text-xs font-black text-slate-500 uppercase">Upload Banner Toko</label>
-              <input type="file" accept="image/*" class="mt-1 border rounded-2xl p-3 w-full">
-            </div>
+            <input id="quickProductName" class="border rounded-2xl p-3" placeholder="Nama produk / jasa" value="${editing?.name || ''}">
+            <select id="quickProductCategory" class="border rounded-2xl p-3 bg-white">
+              <option value="">Pilih Kategori Produk / Jasa</option>
+              ${categoryOptions(editing?.category || '')}
+            </select>
+            <select id="quickProductListingType" class="border rounded-2xl p-3 bg-white">
+              ${['Produk Fisik','Bidang Jasa Industri','Jasa Keteknikan','Jasa Survey / Lapangan','Sewa / Rental Alat','Produk Digital','Tender / Proyek'].map(type => `<option ${editing?.listingType === type ? 'selected' : ''}>${type}</option>`).join('')}
+            </select>
+            <input id="quickProductServiceArea" class="border rounded-2xl p-3" placeholder="Area layanan untuk jasa" value="${editing?.serviceArea || ''}">
+            <input id="quickProductBrand" class="border rounded-2xl p-3" placeholder="Brand / Merek" value="${editing?.brand || ''}">
+            <input id="quickProductSku" class="border rounded-2xl p-3" placeholder="SKU / Kode produk" value="${editing?.sku || ''}">
+            <input id="quickProductPrice" class="border rounded-2xl p-3" placeholder="Harga, contoh: Rp 12.500.000" value="${editing?.price || ''}">
+            <input id="quickProductStock" class="border rounded-2xl p-3" placeholder="Stok, contoh: 10" value="${editing?.stock || ''}">
+            <input id="quickProductUnit" class="border rounded-2xl p-3" placeholder="Satuan, contoh: unit / pcs / hari" value="${editing?.unit || ''}">
+            <input id="quickProductDelivery" class="border rounded-2xl p-3" placeholder="Pengiriman / layanan" value="${editing?.delivery || ''}">
+            <textarea id="quickProductDescription" class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Deskripsi produk / jasa">${editing?.description || ''}</textarea>
+            <textarea id="quickProductSpecs" class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Spesifikasi teknis">${editing?.specs || ''}</textarea>
+          </div>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button onclick="saveUserProduct()" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">${editing ? 'Update Produk' : 'Simpan Produk'}</button>
+            <button onclick="state.editProductId=null; state.userSub='Preview'; saveState(); renderUserDashboard();" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Lihat Produk Saya</button>
+            <button onclick="switchRole('marketplace')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Lihat Marketplace</button>
           </div>
         `);
       }
 
-      if (active === 'Legalitas') {
-        return panel('Kelola Toko', 'Legalitas perusahaan dan dokumen toko.', `
-          ${tabTitle}
+      if (active === 'Harga & Stok') {
+        return panel('Harga & Stok Produk', 'Gunakan menu Info Produk untuk menyimpan data agar langsung sinkron ke marketplace.', `
+          <div class="rounded-[24px] border bg-white p-5">
+            <p class="text-sm text-slate-600">Harga dan stok sekarang tersambung ke form utama produk agar tidak pecah data. Klik tombol di bawah untuk mengedit produk lengkap.</p>
+            <button onclick="openUserSub('Info Produk')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Edit Produk Lengkap</button>
+          </div>
+        `);
+      }
+
+      if (active === 'Gambar & Media') {
+        return panel('Gambar & Media Produk', 'Upload media produk. Untuk versi HTML lokal, file belum dikirim ke server.', `
           <div class="grid md:grid-cols-2 gap-4">
-            <input class="border rounded-2xl p-3" placeholder="Nama badan usaha / perusahaan">
-            <input class="border rounded-2xl p-3" placeholder="NIB">
-            <input class="border rounded-2xl p-3" placeholder="NPWP">
-            <input class="border rounded-2xl p-3" placeholder="Nomor akta / SIUP / izin usaha">
-            <input class="border rounded-2xl p-3" placeholder="Nama penanggung jawab">
-            <input class="border rounded-2xl p-3" placeholder="No. WhatsApp penanggung jawab">
-            <div>
-              <label class="text-xs font-black text-slate-500 uppercase">Upload NIB / Legalitas</label>
-              <input type="file" class="mt-1 border rounded-2xl p-3 w-full">
-            </div>
-            <div>
-              <label class="text-xs font-black text-slate-500 uppercase">Upload NPWP</label>
-              <input type="file" class="mt-1 border rounded-2xl p-3 w-full">
-            </div>
+            <div><label class="text-xs font-black uppercase text-slate-500">Foto Utama</label><input type="file" accept="image/*" class="mt-1 border rounded-2xl p-3 w-full"></div>
+            <div><label class="text-xs font-black uppercase text-slate-500">Galeri Produk</label><input type="file" accept="image/*" multiple class="mt-1 border rounded-2xl p-3 w-full"></div>
+            <input class="border rounded-2xl p-3 md:col-span-2" placeholder="Link video produk / YouTube">
           </div>
-          <div class="mt-4 p-4 rounded-2xl bg-amber-50 border border-amber-100 text-sm text-amber-800 font-bold">
-            Status legalitas: Menunggu verifikasi admin.
+          <button onclick="userAction('Media produk siap disimpan ke storage saat server aktif')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Simpan Media</button>
+        `);
+      }
+
+      if (active === 'Spesifikasi') {
+        return panel('Spesifikasi Produk', 'Spesifikasi sekarang bisa ditulis di menu Info Produk dan akan ikut tersimpan.', `
+          <div class="rounded-[24px] border bg-white p-5">
+            <p class="text-sm text-slate-600">Agar data tidak terpisah, spesifikasi sudah digabung ke form utama produk.</p>
+            <button onclick="openUserSub('Info Produk')" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Buka Form Produk</button>
           </div>
+        `);
+      }
+
+      if (active === 'Dokumen') {
+        return panel('Dokumen Produk', 'Upload dokumen legal produk.', `
+          <div class="grid md:grid-cols-2 gap-4">
+            ${['TKDN','SNI','Brosur','Manual Book'].map(doc => `<div><label class="text-xs font-black uppercase text-slate-500">${doc}</label><input type="file" class="mt-1 border rounded-2xl p-3 w-full"></div>`).join('')}
+          </div>
+        `);
+      }
+
+      if (active === 'Pengiriman') {
+        return panel('Pengiriman Produk', 'Data pengiriman sudah bisa diisi di menu Info Produk agar masuk satu data.', `
+          <div class="rounded-[24px] border bg-white p-5">
+            <p class="text-sm text-slate-600">Pengiriman/area layanan digabung ke form utama agar ikut tampil di data produk.</p>
+            <button onclick="openUserSub('Info Produk')" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Buka Form Produk</button>
+          </div>
+        `);
+      }
+
+      if (active === 'Preview') {
+        return panel('Produk Saya di Marketplace', 'Produk yang tersimpan di sini otomatis ditarik ke Marketplace B2B.', `
+          ${renderUserProductList()}
+          <div class="mt-5 flex flex-wrap gap-2">
+            <button onclick="state.editProductId=null; openUserSub('Info Produk')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Tambah Produk Baru</button>
+            <button onclick="refreshMarketplaceFromFirebase().then(() => switchRole('marketplace'))" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Cek di Marketplace</button>
+            <button onclick="refreshUserDataFromFirebase()" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Sync Firebase</button>
+          </div>
+        `);
+      }
+
+      return userGenericPanel();
+    }
+
+    function userStore() {
+      const store = getUserData().store;
+      const active = state.userSub || 'Profil Toko';
+
+      if (active === 'Profil Toko') {
+        return panel('Kelola Toko', 'Data profil toko yang tampil di preview dan marketplace.', `
+          <div class="grid md:grid-cols-2 gap-4">
+            <input id="storeName" class="border rounded-2xl p-3" placeholder="Nama toko" value="${store.name || ''}">
+            <select id="storeCategory" class="border rounded-2xl p-3 bg-white">${categoryOptions(store.category)}</select>
+            <input id="storeTagline" class="border rounded-2xl p-3" placeholder="Tagline toko" value="${store.tagline || ''}">
+            <input id="storePhone" class="border rounded-2xl p-3" placeholder="WhatsApp toko" value="${store.phone || ''}">
+            <input id="storeEmail" class="border rounded-2xl p-3" placeholder="Email toko" value="${store.email || ''}">
+            <input id="storeCity" class="border rounded-2xl p-3" placeholder="Kota / domisili" value="${store.city || ''}">
+            <textarea id="storeAddress" class="border rounded-2xl p-3 md:col-span-2" rows="3" placeholder="Alamat toko / gudang">${store.address || ''}</textarea>
+            <textarea id="storeDescription" class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Deskripsi toko">${store.description || ''}</textarea>
+          </div>
+          <button onclick="saveStoreProfile()" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Profil Toko</button>
+        `);
+      }
+
+      if (active === 'Legalitas') {
+        return panel('Legalitas Toko', 'Data legalitas ikut terbaca di preview toko.', `
+          <div class="grid md:grid-cols-2 gap-4">
+            <input id="storeNib" class="border rounded-2xl p-3" placeholder="NIB" value="${store.nib || ''}">
+            <input id="storeNpwp" class="border rounded-2xl p-3" placeholder="NPWP" value="${store.npwp || ''}">
+            <input type="file" class="border rounded-2xl p-3">
+            <input type="file" class="border rounded-2xl p-3">
+          </div>
+          <button onclick="saveStoreLegal()" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Legalitas</button>
         `);
       }
 
       if (active === 'Rekening') {
-        return panel('Kelola Toko', 'Rekening pencairan dan data keuangan seller.', `
-          ${tabTitle}
-          <div class="grid md:grid-cols-2 gap-4">
-            <select class="border rounded-2xl p-3 bg-white">
-              <option>BCA</option>
-              <option>Mandiri</option>
-              <option>BRI</option>
-              <option>BNI</option>
-              <option>BSI</option>
-            </select>
-            <input class="border rounded-2xl p-3" placeholder="Nomor rekening">
-            <input class="border rounded-2xl p-3" placeholder="Nama pemilik rekening">
-            <input class="border rounded-2xl p-3" placeholder="Cabang bank">
-            <input class="border rounded-2xl p-3" placeholder="Email invoice / finance">
-            <input class="border rounded-2xl p-3" placeholder="Minimal pencairan otomatis">
+        return panel('Rekening Pencairan', 'Rekening seller untuk pembayaran dan pencairan.', `
+          <div class="grid md:grid-cols-3 gap-4">
+            <input id="storeBank" class="border rounded-2xl p-3" placeholder="Nama bank" value="${store.bank || ''}">
+            <input id="storeAccountNumber" class="border rounded-2xl p-3" placeholder="Nomor rekening" value="${store.accountNumber || ''}">
+            <input id="storeAccountName" class="border rounded-2xl p-3" placeholder="Nama pemilik rekening" value="${store.accountName || ''}">
           </div>
-          <div class="mt-4 grid md:grid-cols-3 gap-4">
-            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
-              <p class="text-xs font-black text-emerald-700 uppercase">Saldo Siap Cair</p>
-              <h4 class="text-2xl font-black mt-1">Rp 24.500.000</h4>
-            </div>
-            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-100">
-              <p class="text-xs font-black text-rose-700 uppercase">Dana Tertahan</p>
-              <h4 class="text-2xl font-black mt-1">Rp 14.500.000</h4>
-            </div>
-            <button onclick="showToast('Permintaan pencairan dikirim')" class="rounded-2xl bg-emerald-600 text-white font-black">Ajukan Pencairan</button>
-          </div>
+          <button onclick="saveStoreBank()" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Rekening</button>
         `);
       }
 
       if (active === 'Kurir & Gudang') {
-        return panel('Kelola Toko', 'Gudang asal, jasa pengiriman, dan kargo aktif.', `
-          ${tabTitle}
+        return panel('Kurir & Gudang', 'Data gudang dan kurir akan tampil di preview toko.', `
           <div class="grid md:grid-cols-2 gap-4">
-            <input class="border rounded-2xl p-3" placeholder="Nama gudang / outlet">
-            <input class="border rounded-2xl p-3" placeholder="Kota asal pengiriman">
-            <textarea class="border rounded-2xl p-3 md:col-span-2" rows="3" placeholder="Alamat lengkap gudang"></textarea>
-            <input class="border rounded-2xl p-3" placeholder="PIC gudang">
-            <input class="border rounded-2xl p-3" placeholder="No. WhatsApp gudang">
+            <input id="storeWarehouse" class="border rounded-2xl p-3" placeholder="Alamat gudang" value="${store.warehouse || ''}">
+            <input id="storeCourier" class="border rounded-2xl p-3" placeholder="Kurir aktif" value="${store.courier || ''}">
           </div>
-          <div class="mt-5">
-            <h4 class="font-black mb-3">Kurir Aktif</h4>
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              ${['JNE', 'J&T', 'SiCepat', 'Dakota Cargo', 'Indah Cargo', 'Ambil Sendiri'].map(kurir => `
-                <label class="flex items-center justify-between gap-3 border rounded-2xl p-4 bg-white">
-                  <span class="font-black">${kurir}</span>
-                  <input type="checkbox" checked class="w-5 h-5 accent-emerald-600">
-                </label>
-              `).join('')}
-            </div>
-          </div>
+          <button onclick="saveStoreShipping()" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Kurir & Gudang</button>
         `);
       }
 
       if (active === 'Jam Operasional') {
-        const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-        return panel('Kelola Toko', 'Jam kerja toko dan batas proses order.', `
-          ${tabTitle}
-          <div class="grid gap-3">
-            ${days.map((day, index) => `
-              <div class="grid grid-cols-1 md:grid-cols-[140px_1fr_1fr_110px] gap-3 items-center border rounded-2xl p-4">
-                <b>${day}</b>
-                <input type="time" value="${index === 6 ? '00:00' : '08:00'}" class="border rounded-xl p-3">
-                <input type="time" value="${index === 6 ? '00:00' : '17:00'}" class="border rounded-xl p-3">
-                <label class="flex items-center gap-2 font-bold text-sm">
-                  <input type="checkbox" ${index === 6 ? '' : 'checked'} class="accent-emerald-600"> Buka
-                </label>
-              </div>
-            `).join('')}
-          </div>
-          <div class="mt-4 grid md:grid-cols-2 gap-4">
-            <input class="border rounded-2xl p-3" placeholder="Batas proses order harian, contoh: 15:00">
-            <input class="border rounded-2xl p-3" placeholder="Estimasi packing, contoh: 1-2 hari kerja">
-          </div>
+        return panel('Jam Operasional', 'Jam buka toko untuk ditampilkan kepada customer.', `
+          <input id="storeHours" class="border rounded-2xl p-3 w-full" placeholder="Contoh: Senin - Sabtu, 08.00 - 17.00" value="${store.hours || ''}">
+          <button onclick="saveStoreHours()" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Jam Operasional</button>
         `);
       }
 
       if (active === 'Kebijakan') {
-        return panel('Kelola Toko', 'Atur kebijakan retur, garansi, dan syarat transaksi.', `
-          ${tabTitle}
-          <div class="grid gap-4">
-            <textarea class="border rounded-2xl p-3" rows="4" placeholder="Kebijakan retur barang"></textarea>
-            <textarea class="border rounded-2xl p-3" rows="4" placeholder="Kebijakan garansi produk"></textarea>
-            <textarea class="border rounded-2xl p-3" rows="4" placeholder="Syarat pembayaran / DP / termin"></textarea>
-            <textarea class="border rounded-2xl p-3" rows="4" placeholder="Catatan khusus untuk produk berat, indent, custom, atau proyek tender"></textarea>
-          </div>
+        return panel('Kebijakan Toko', 'Kebijakan retur, garansi, termin, dan catatan transaksi.', `
+          <textarea id="storePolicy" class="border rounded-2xl p-3 w-full" rows="6" placeholder="Tulis kebijakan toko">${store.policy || ''}</textarea>
+          <button onclick="saveStorePolicy()" class="mt-4 bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Kebijakan</button>
         `);
       }
 
       if (active === 'Preview Toko') {
-        return panel('Kelola Toko', 'Preview tampilan toko sebelum dipublikasikan.', `
-          ${tabTitle}
-          <div class="rounded-[28px] overflow-hidden border bg-white">
-            <div class="h-40 bg-gradient-to-r from-indigo-700 to-emerald-600 relative">
-              <div class="absolute left-5 bottom-[-36px] w-20 h-20 rounded-3xl bg-white shadow-lg flex items-center justify-center text-indigo-700 font-black text-2xl">TK</div>
-            </div>
-            <div class="pt-12 p-5">
-              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div>
-                  <h3 class="text-2xl font-black">Toko ${state.name}</h3>
-                  <p class="text-sm text-slate-500 mt-1">Pusat alat industri terpercaya untuk kebutuhan B2B dan proyek.</p>
-                </div>
-                <div class="flex gap-2">
-                  ${badge('Terverifikasi', 'emerald')}
-                  ${badge('Vendor B2B', 'indigo')}
-                </div>
-              </div>
-              <div class="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
-                ${kpiCard('Produk', '24', 'fa-boxes-stacked', 'indigo')}
-                ${kpiCard('Rating', '4.8', 'fa-star', 'amber')}
-                ${kpiCard('Order', '120+', 'fa-receipt', 'emerald')}
-                ${kpiCard('TKDN', 'Ready', 'fa-certificate', 'rose')}
-              </div>
-            </div>
-          </div>
-        `);
+        return panel('Preview Toko', 'Preview membaca data terakhir yang disimpan dari menu Kelola Toko.', `${renderStorePreviewCard(store)}`);
       }
 
-      return panel('Kelola Toko', 'Pilih submenu toko di atas.', `${tabTitle}`);
+      return userGenericPanel();
     }
-
-
-
-    function getCompanyProfiles() {
-      try {
-        const saved = JSON.parse(localStorage.getItem('bisnishub_company_profiles') || '[]');
-        return Array.isArray(saved) ? saved : [];
-      } catch (error) {
-        return [];
-      }
-    }
-
-    function saveCompanyProfiles(profiles) {
-      localStorage.setItem('bisnishub_company_profiles', JSON.stringify(profiles));
-    }
-
-    function saveCompanyProfile() {
-      const profile = {
-        id: 'CMP-' + new Date().getTime().toString().slice(-6),
-        companyName: document.getElementById('companyName')?.value || 'Perusahaan BisnisHUB',
-        industry: document.getElementById('companyIndustry')?.value || 'Bidang Industri',
-        category: document.getElementById('companyCategory')?.value || 'Database Perusahaan & Company Profile',
-        city: document.getElementById('companyCity')?.value || '',
-        website: document.getElementById('companyWebsite')?.value || '',
-        description: document.getElementById('companyDescription')?.value || '',
-        status: 'Menunggu Review',
-        createdAt: new Date().toLocaleString('id-ID')
-      };
-
-      const profiles = getCompanyProfiles();
-      const existingIndex = profiles.findIndex(item => item.companyName === profile.companyName);
-      if (existingIndex >= 0) profiles[existingIndex] = { ...profiles[existingIndex], ...profile };
-      else profiles.unshift(profile);
-
-      saveCompanyProfiles(profiles);
-      showToast('Company profile disimpan ke database BisnisHUB');
-      renderUserDashboard();
-    }
-
-    function userCompanyProfile() {
-      const active = state.userSub || 'Compro Utama';
-
-      const header = `
-        <div class="mb-4 rounded-[24px] bg-orange-50 border border-orange-100 p-4">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <div>
-              <p class="text-xs font-black uppercase tracking-widest text-orange-700">Database Perusahaan BisnisHUB</p>
-              <h3 class="text-xl font-black text-slate-900 mt-1">${active}</h3>
-              <p class="text-sm text-slate-500 mt-1">Perusahaan dapat masuk database dan menampilkan company profile, portofolio, produk, jasa, serta kontak resmi.</p>
-            </div>
-            <button onclick="saveCompanyProfile()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 text-sm font-black">
-              Simpan Compro
-            </button>
-          </div>
-        </div>
-      `;
-
-      if (active === 'Compro Utama') {
-        return panel('Profil Perusahaan', 'Data utama company profile untuk database BisnisHUB.', `
-          ${header}
-          <div class="grid md:grid-cols-2 gap-4">
-            <input id="companyName" class="border rounded-2xl p-3" placeholder="Nama perusahaan">
-            <select id="companyCategory" class="border rounded-2xl p-3 bg-white">
-              ${categoryOptions('Database Perusahaan & Company Profile')}
-            </select>
-            <input id="companyIndustry" class="border rounded-2xl p-3" placeholder="Bidang usaha / industri">
-            <input id="companyCity" class="border rounded-2xl p-3" placeholder="Kota / domisili perusahaan">
-            <input id="companyWebsite" class="border rounded-2xl p-3" placeholder="Website perusahaan">
-            <input class="border rounded-2xl p-3" placeholder="Email resmi perusahaan">
-            <textarea id="companyDescription" class="border rounded-2xl p-3 md:col-span-2" rows="5" placeholder="Profil singkat perusahaan, keunggulan, pengalaman, dan kapasitas usaha."></textarea>
-            <div>
-              <label class="text-xs font-black uppercase text-slate-500">Upload Logo Perusahaan</label>
-              <input type="file" accept="image/*" class="mt-1 border rounded-2xl p-3 w-full">
-            </div>
-            <div>
-              <label class="text-xs font-black uppercase text-slate-500">Upload Banner / Foto Kantor</label>
-              <input type="file" accept="image/*" class="mt-1 border rounded-2xl p-3 w-full">
-            </div>
-          </div>
-        `);
-      }
-
-      if (active === 'Bidang Usaha') {
-        return panel('Profil Perusahaan', 'Pilih bidang usaha, industri, dan layanan.', `
-          ${header}
-          <div class="grid md:grid-cols-2 gap-4">
-            <select class="border rounded-2xl p-3 bg-white">
-              ${categoryOptions('Supplier, Distributor & Principal')}
-            </select>
-            <input class="border rounded-2xl p-3" placeholder="Spesialisasi utama, contoh: pompa irigasi, hidrolik, SID">
-            <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Daftar bidang usaha, layanan, kapasitas kerja, area layanan, dan target customer."></textarea>
-            <input class="border rounded-2xl p-3" placeholder="Area layanan / wilayah operasi">
-            <input class="border rounded-2xl p-3" placeholder="Kapasitas tim / teknisi / unit kerja">
-          </div>
-        `);
-      }
-
-      if (active === 'Legalitas') {
-        return panel('Profil Perusahaan', 'Legalitas untuk meningkatkan kepercayaan customer.', `
-          ${header}
-          <div class="grid md:grid-cols-2 gap-4">
-            <input class="border rounded-2xl p-3" placeholder="NIB">
-            <input class="border rounded-2xl p-3" placeholder="NPWP">
-            <input class="border rounded-2xl p-3" placeholder="Akta / izin usaha">
-            <input class="border rounded-2xl p-3" placeholder="Sertifikasi ISO / SNI / TKDN">
-            <input type="file" class="border rounded-2xl p-3">
-            <input type="file" class="border rounded-2xl p-3">
-          </div>
-        `);
-      }
-
-      if (active === 'Portofolio') {
-        return panel('Profil Perusahaan', 'Tampilkan pengalaman proyek dan klien.', `
-          ${header}
-          <div class="grid md:grid-cols-2 gap-4">
-            <input class="border rounded-2xl p-3" placeholder="Nama proyek / pekerjaan">
-            <input class="border rounded-2xl p-3" placeholder="Nama klien / instansi">
-            <input class="border rounded-2xl p-3" placeholder="Nilai proyek">
-            <input class="border rounded-2xl p-3" placeholder="Tahun pekerjaan">
-            <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Uraian pekerjaan dan hasil."></textarea>
-            <input type="file" accept="image/*" multiple class="border rounded-2xl p-3 md:col-span-2">
-          </div>
-        `);
-      }
-
-      if (active === 'Produk & Jasa') {
-        return panel('Profil Perusahaan', 'Hubungkan company profile dengan produk dan jasa yang ditawarkan.', `
-          ${header}
-          <div class="grid md:grid-cols-2 gap-4">
-            <input class="border rounded-2xl p-3" placeholder="Produk utama">
-            <input class="border rounded-2xl p-3" placeholder="Jasa utama">
-            <select class="border rounded-2xl p-3 bg-white">
-              ${categoryOptions('Bidang Jasa Industri')}
-            </select>
-            <select class="border rounded-2xl p-3 bg-white">
-              ${categoryOptions('Jasa Keteknikan / Engineering')}
-            </select>
-            <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Deskripsi produk, jasa, dan layanan unggulan."></textarea>
-          </div>
-        `);
-      }
-
-      if (active === 'Kontak') {
-        return panel('Profil Perusahaan', 'Kontak resmi perusahaan.', `
-          ${header}
-          <div class="grid md:grid-cols-2 gap-4">
-            <input class="border rounded-2xl p-3" placeholder="Nama PIC">
-            <input class="border rounded-2xl p-3" placeholder="Jabatan PIC">
-            <input class="border rounded-2xl p-3" placeholder="WhatsApp perusahaan">
-            <input class="border rounded-2xl p-3" placeholder="Email perusahaan">
-            <textarea class="border rounded-2xl p-3 md:col-span-2" rows="3" placeholder="Alamat lengkap kantor / workshop / gudang."></textarea>
-          </div>
-        `);
-      }
-
-      if (active === 'Preview Compro') {
-        const profiles = getCompanyProfiles();
-        return panel('Preview Company Profile', 'Tampilan company profile sebelum dipublikasikan ke database.', `
-          ${header}
-          <div class="rounded-[28px] overflow-hidden border bg-white">
-            <div class="h-40 bg-gradient-to-r from-orange-500 to-slate-950"></div>
-            <div class="p-5">
-              <h3 class="text-2xl font-black">Company Profile BisnisHUB</h3>
-              <p class="text-sm text-slate-500 mt-2">Profil perusahaan, bidang usaha, legalitas, portofolio, produk, jasa, dan kontak akan tampil di database perusahaan.</p>
-              <div class="mt-5 grid md:grid-cols-3 gap-4">
-                ${kpiCard('Profil Tersimpan', String(profiles.length), 'fa-building-user', 'orange')}
-                ${kpiCard('Status', profiles.length ? profiles[0].status : 'Draft', 'fa-circle-check', 'emerald')}
-                ${kpiCard('Kategori', 'Company Profile', 'fa-layer-group', 'indigo')}
-              </div>
-            </div>
-          </div>
-        `);
-      }
-
-      return panel('Profil Perusahaan', 'Pilih submenu company profile di atas.', `${header}`);
-    }
-
 
     function userWishlist() {
       return panel('Wishlist', 'Produk favorit user.', `
