@@ -1541,6 +1541,15 @@
     }
 
 
+
+    function exposeProductFunctions() {
+      window.bhReadProductImage = bhReadProductImage;
+      window.bhSaveAdminProduct = bhSaveAdminProduct;
+      window.bhSaveUserProductFromForm = bhSaveUserProductFromForm;
+      window.bhProductCardImage = bhProductCardImage;
+    }
+
+
     function renderApp() {
       if (state.role !== 'marketplace') clearInterval(marketplaceCarouselTimer);
       if (state.role === 'admin') {
@@ -4803,6 +4812,290 @@ service cloud.firestore {
     }
 
 
+
+    function bhProductStoreKey() {
+      return 'bisnishub_products_live_v1';
+    }
+
+    function bhGetAllSavedProducts() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(bhProductStoreKey()) || '[]');
+        return Array.isArray(saved) ? saved : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function bhSaveAllProducts(products) {
+      const safe = (Array.isArray(products) ? products : []).slice(0, 300);
+      try {
+        localStorage.setItem(bhProductStoreKey(), JSON.stringify(safe));
+        return true;
+      } catch (error) {
+        console.warn('Storage produk penuh, simpan tanpa gambar besar:', error);
+        const light = safe.map(product => ({
+          ...product,
+          image: product.image && product.image.length > 360000 ? '' : product.image
+        }));
+        try {
+          localStorage.setItem(bhProductStoreKey(), JSON.stringify(light));
+          showToast('Produk tersimpan, gambar terlalu besar dibersihkan');
+          return true;
+        } catch (secondError) {
+          alert('Gagal simpan produk. Storage browser penuh, hapus beberapa gambar/produk dulu.');
+          return false;
+        }
+      }
+    }
+
+    function bhCompressProductImage(file, callback) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          const maxW = 900;
+          const maxH = 700;
+          let w = img.width;
+          let h = img.height;
+          const ratio = Math.min(maxW / w, maxH / h, 1);
+
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+
+          let quality = 0.76;
+          let result = canvas.toDataURL('image/jpeg', quality);
+          while (result.length > 360000 && quality > 0.35) {
+            quality -= 0.08;
+            result = canvas.toDataURL('image/jpeg', quality);
+          }
+          callback(result);
+        };
+        img.onerror = function() {
+          callback(event.target.result);
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function bhReadProductImage(input, prefix = 'admin') {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      showToast('Mengompres foto produk...');
+
+      bhCompressProductImage(file, function(dataUrl) {
+        const hidden = document.getElementById(prefix + 'ProductImage');
+        const preview = document.getElementById(prefix + 'ProductImagePreview');
+
+        if (hidden) hidden.value = dataUrl;
+        if (preview) preview.src = dataUrl;
+
+        showToast('Foto produk siap dipakai');
+      });
+    }
+
+    function bhProductCardImage(product) {
+      if (product && product.image) {
+        return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">`;
+      }
+      return `${bhProductCardImage(product)}`;
+    }
+
+    function bhBuildProductFromForm(prefix = 'admin', source = 'admin') {
+      const data = typeof getUserData === 'function' ? getUserData() : { store: {} };
+
+      const name = document.getElementById(prefix + 'ProductName')?.value?.trim() || '';
+      const category = document.getElementById(prefix + 'ProductCategory')?.value?.trim() || '';
+      const price = document.getElementById(prefix + 'ProductPrice')?.value?.trim() || '';
+      const stock = document.getElementById(prefix + 'ProductStock')?.value?.trim() || '';
+      const unit = document.getElementById(prefix + 'ProductUnit')?.value?.trim() || '';
+      const brand = document.getElementById(prefix + 'ProductBrand')?.value?.trim() || '';
+      const sku = document.getElementById(prefix + 'ProductSku')?.value?.trim() || '';
+      const listingType = document.getElementById(prefix + 'ProductListingType')?.value?.trim() || 'Produk Fisik';
+      const description = document.getElementById(prefix + 'ProductDescription')?.value?.trim() || '';
+      const specs = document.getElementById(prefix + 'ProductSpecs')?.value?.trim() || '';
+      const delivery = document.getElementById(prefix + 'ProductDelivery')?.value?.trim() || '';
+      const image = document.getElementById(prefix + 'ProductImage')?.value || '';
+
+      if (!name) {
+        showToast('Nama produk wajib diisi');
+        return null;
+      }
+
+      return {
+        id: 'PRD-' + Date.now(),
+        name,
+        category: category || 'Produk Industri',
+        price: price || 'Hubungi Seller',
+        stock: stock || 'Ready',
+        unit: unit || 'Unit',
+        brand,
+        sku,
+        listingType,
+        description,
+        specs,
+        delivery,
+        image,
+        seller: source === 'admin' ? 'BisnisHUB Admin' : (data.store?.name || 'Seller BisnisHUB'),
+        badge: listingType.includes('Jasa') ? 'Jasa' : (source === 'admin' ? 'Admin' : 'User'),
+        icon: listingType.includes('Jasa') ? 'fa-handshake-angle' : 'fa-box-open',
+        status: 'Aktif',
+        source,
+        createdAt: new Date().toLocaleString('id-ID')
+      };
+    }
+
+    function bhSaveAdminProduct() {
+      const product = bhBuildProductFromForm('admin', 'admin');
+      if (!product) return;
+
+      const products = bhGetAllSavedProducts();
+      products.unshift(product);
+
+      if (!bhSaveAllProducts(products)) return;
+
+      if (typeof firebaseIsReady === 'function' && firebaseIsReady() && typeof firebaseSetDocument === 'function') {
+        firebaseSetDocument(`${firebasePaths().products}/${product.id}`, {
+          ...product,
+          tenantId: BISNISHUB_TENANT_ID,
+          ownerUserId: 'admin',
+          seller: product.seller
+        }).catch(error => console.error('Produk admin gagal dikirim ke Firebase:', error));
+      }
+
+      showToast('Produk admin disimpan dan tampil di Marketplace');
+      state.adminMenu = 'products';
+      state.adminSub = 'Semua Produk';
+      saveState();
+      renderAdminDashboard();
+    }
+
+    function bhSaveUserProductFromForm() {
+      const product = bhBuildProductFromForm('quick', 'user');
+      if (!product) return;
+
+      const data = getUserData();
+      data.products = Array.isArray(data.products) ? data.products : [];
+
+      if (state.editProductId) {
+        product.id = state.editProductId;
+        const index = data.products.findIndex(item => item.id === state.editProductId);
+        if (index >= 0) data.products[index] = { ...data.products[index], ...product };
+        else data.products.unshift(product);
+      } else {
+        data.products.unshift(product);
+      }
+
+      saveUserData(data);
+
+      const globalProducts = bhGetAllSavedProducts();
+      const existingGlobalIndex = globalProducts.findIndex(item => item.id === product.id);
+      if (existingGlobalIndex >= 0) globalProducts[existingGlobalIndex] = product;
+      else globalProducts.unshift(product);
+      bhSaveAllProducts(globalProducts);
+
+      if (typeof firebaseIsReady === 'function' && firebaseIsReady() && typeof firebaseSetDocument === 'function') {
+        firebaseSetDocument(`${firebasePaths().products}/${product.id}`, {
+          ...product,
+          tenantId: BISNISHUB_TENANT_ID,
+          ownerUserId: BISNISHUB_ACTIVE_USER_ID,
+          seller: product.seller
+        }).catch(error => console.error('Produk user gagal dikirim ke Firebase:', error));
+      }
+
+      state.editProductId = null;
+      state.userMenu = 'addProduct';
+      state.userSub = 'Preview';
+      saveState();
+      showToast(firebaseIsReady && firebaseIsReady() ? 'Produk disimpan ke Firebase dan Marketplace' : 'Produk tersimpan dan tampil sementara. Firebase belum aktif.');
+      renderUserDashboard();
+    }
+
+    function getAdminSavedMarketplaceProducts() {
+      return bhGetAllSavedProducts()
+        .filter(product => product.status !== 'Nonaktif')
+        .map(product => ({
+          ...product,
+          source: product.source || 'saved'
+        }));
+    }
+
+    function adminProductAddPanel() {
+      return panel('Tambah Produk Admin', 'Admin dapat menambah produk resmi yang langsung tampil di Marketplace B2B.', `
+        <div class="grid md:grid-cols-2 gap-4">
+          <input id="adminProductName" class="border rounded-2xl p-3" placeholder="Nama produk / jasa">
+          <select id="adminProductCategory" class="border rounded-2xl p-3 bg-white">
+            <option value="">Pilih kategori</option>
+            ${categoryOptions('')}
+          </select>
+          <select id="adminProductListingType" class="border rounded-2xl p-3 bg-white">
+            ${['Produk Fisik','Bidang Jasa Industri','Jasa Keteknikan','Jasa Survey / Lapangan','Sewa / Rental Alat','Produk Digital','Tender / Proyek'].map(type => `<option>${type}</option>`).join('')}
+          </select>
+          <input id="adminProductBrand" class="border rounded-2xl p-3" placeholder="Brand / Merek">
+          <input id="adminProductSku" class="border rounded-2xl p-3" placeholder="SKU / Kode">
+          <input id="adminProductPrice" class="border rounded-2xl p-3" placeholder="Harga">
+          <input id="adminProductStock" class="border rounded-2xl p-3" placeholder="Stok">
+          <input id="adminProductUnit" class="border rounded-2xl p-3" placeholder="Satuan">
+          <input id="adminProductDelivery" class="border rounded-2xl p-3 md:col-span-2" placeholder="Pengiriman / layanan">
+
+          <div class="md:col-span-2 rounded-[24px] border bg-slate-50 p-4">
+            <label class="text-xs font-black uppercase text-slate-500">Foto Produk Admin</label>
+            <div class="grid md:grid-cols-[190px_1fr] gap-4 mt-2 items-center">
+              <div class="h-36 rounded-2xl bg-white border overflow-hidden flex items-center justify-center">
+                <img id="adminProductImagePreview" class="w-full h-full object-cover" alt="">
+              </div>
+              <div>
+                <input id="adminProductImage" type="hidden">
+                <input type="file" accept="image/*" onchange="bhReadProductImage(this, 'admin')" class="border rounded-2xl p-3 w-full bg-white">
+                <p class="text-xs text-slate-500 mt-2">Foto dikompres otomatis agar ringan dan bisa disimpan.</p>
+              </div>
+            </div>
+          </div>
+
+          <textarea id="adminProductDescription" class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Deskripsi produk / jasa"></textarea>
+          <textarea id="adminProductSpecs" class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Spesifikasi teknis"></textarea>
+        </div>
+        <button onclick="bhSaveAdminProduct()" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Simpan Produk Admin</button>
+      `);
+    }
+
+    function renderAdminSavedProductsTable() {
+      const products = getAdminSavedMarketplaceProducts();
+      const rows = products.map(product => `
+        <tr>
+          <td>
+            <div class="w-16 h-12 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center">${bhProductCardImage(product)}</div>
+          </td>
+          <td><b>${product.name}</b><br><span class="text-xs text-slate-400">${product.category}</span></td>
+          <td>${product.seller || '-'}</td>
+          <td>${product.price || '-'}</td>
+          <td>${badge(product.status || 'Aktif', 'emerald')}</td>
+          <td>${actionButton('Review')} ${actionButton('Edit', 'indigo')} ${actionButton('Nonaktifkan', 'amber')}</td>
+        </tr>
+      `);
+
+      return panel('Semua Produk', 'Produk bawaan, produk admin, dan produk user yang masuk marketplace.', `
+        ${products.length ? table(['Foto', 'Produk', 'Seller', 'Harga', 'Status', 'Aksi'], rows) : `
+          <div class="rounded-[24px] border bg-white p-8 text-center">
+            <i class="fa-solid fa-box-open text-5xl text-slate-300 mb-4"></i>
+            <h3 class="font-black text-lg">Belum ada produk tersimpan</h3>
+            <p class="text-sm text-slate-500 mt-2">Tambahkan produk dari menu Tambah Produk.</p>
+          </div>
+        `}
+      `);
+    }
+
+
     function adminProducts() {
       const rows = Products.map((product, index) => `
         <tr>
@@ -5463,7 +5756,7 @@ service cloud.firestore {
         return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk BisnisHUB'}">`;
       }
 
-      return `<i class="fa-solid ${product.icon || 'fa-box-open'} text-5xl text-indigo-500"></i>`;
+      return `${bhProductCardImage(product)}`;
     }
 
 
@@ -5524,7 +5817,8 @@ service cloud.firestore {
       const localProducts = data.products || [];
       const cloudProducts = Array.isArray(window.bisnisHubCloudProducts) ? window.bisnisHubCloudProducts : [];
 
-      const merged = [...cloudProducts, ...localProducts];
+      const savedProducts = typeof getAdminSavedMarketplaceProducts === 'function' ? getAdminSavedMarketplaceProducts() : [];
+      const merged = [...savedProducts, ...cloudProducts, ...localProducts];
       const unique = [];
       const seen = new Set();
 
@@ -5569,7 +5863,7 @@ service cloud.firestore {
           ${products.map(product => `
             <div class="rounded-[24px] border bg-white p-5">
               <div class="h-36 rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center mb-4">
-                ${productImageOrIcon(product)}
+                ${bhProductCardImage(product)}
               </div>
               <div class="flex items-start justify-between gap-3">
                 <div>
@@ -5984,7 +6278,7 @@ service cloud.firestore {
                 </div>
                 <div>
                   <input id="quickProductImage" type="hidden" value="${editing?.image || ''}">
-                  <input type="file" accept="image/*" onchange="readUserProductImage(this)" class="border rounded-2xl p-3 w-full bg-white">
+                  <input type="file" accept="image/*" onchange="bhReadProductImage(this, 'quick')" class="border rounded-2xl p-3 w-full bg-white">
                   <p class="text-xs text-slate-500 mt-2">Gambar dikompres otomatis agar ringan dan bisa tampil di marketplace.</p>
                 </div>
               </div>
@@ -5993,7 +6287,7 @@ service cloud.firestore {
             <textarea id="quickProductSpecs" class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Spesifikasi teknis">${editing?.specs || ''}</textarea>
           </div>
           <div class="mt-4 flex flex-wrap gap-2">
-            <button onclick="saveUserProduct()" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">${editing ? 'Update Produk' : 'Simpan Produk'}</button>
+            <button onclick="bhSaveUserProductFromForm()" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">${editing ? 'Update Produk' : 'Simpan Produk'}</button>
             <button onclick="state.editProductId=null; state.userSub='Preview'; saveState(); renderUserDashboard();" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Lihat Produk Saya</button>
             <button onclick="switchRole('marketplace')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Lihat Marketplace</button>
           </div>
@@ -6584,6 +6878,7 @@ service cloud.firestore {
 
     if (window.bhClearOldAdStorage) window.bhClearOldAdStorage();
     if (typeof exposeRealAdsFunctions === 'function') exposeRealAdsFunctions();
+    if (typeof exposeProductFunctions === 'function') exposeProductFunctions();
     renderApp();
   </script>
 </body>
