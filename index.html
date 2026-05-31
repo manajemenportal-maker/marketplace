@@ -2291,6 +2291,238 @@
       `;
     }
 
+
+    function getRealAds() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('bisnishub_real_ads') || '[]');
+        if (Array.isArray(saved) && saved.length) return saved;
+      } catch (error) {}
+
+      return [
+        {
+          id: 'AD-001',
+          tipe: 'teks',
+          judul: 'Promo Launching BisnisHUB',
+          teks: 'Promo launching BisnisHUB: tampilkan produk dan jasa Anda di Marketplace',
+          gambar: '',
+          status: 'Aktif'
+        },
+        {
+          id: 'AD-002',
+          tipe: 'teks',
+          judul: 'Iklan User',
+          teks: 'Pasang iklan banner untuk menjangkau buyer, seller, dan owner proyek',
+          gambar: '',
+          status: 'Aktif'
+        },
+        {
+          id: 'AD-003',
+          tipe: 'teks',
+          judul: 'Peluang Tender',
+          teks: 'Buka peluang tender, promosi vendor, dan penawaran layanan langsung dari platform',
+          gambar: '',
+          status: 'Aktif'
+        }
+      ];
+    }
+
+    function saveRealAds(ads) {
+      localStorage.setItem('bisnishub_real_ads', JSON.stringify(ads));
+    }
+
+    function realAdsToRunningSettings() {
+      const ads = getRealAds().filter(ad => ad.status === 'Aktif');
+      const imageAd = ads.find(ad => ad.tipe === 'gambar' && ad.gambar);
+      const textAds = ads.filter(ad => ad.tipe === 'teks').map(ad => ad.teks).filter(Boolean);
+
+      const speed = Number(document.getElementById('realAdSpeed')?.value || getAdsSettings().speedSeconds || 18);
+
+      if (imageAd) {
+        saveAdsSettings({
+          mode: 'image',
+          speedSeconds: speed,
+          textItems: textAds.length ? textAds.slice(0, 3) : DEFAULT_ADS_SETTINGS.textItems,
+          bannerSrc: imageAd.gambar,
+          bannerAlt: imageAd.judul || 'Iklan BisnisHUB'
+        });
+      } else {
+        saveAdsSettings({
+          mode: 'text',
+          speedSeconds: speed,
+          textItems: textAds.length ? textAds.slice(0, 3) : DEFAULT_ADS_SETTINGS.textItems,
+          bannerSrc: '',
+          bannerAlt: 'Iklan BisnisHUB'
+        });
+      }
+    }
+
+    function readRealAdImage(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        document.getElementById('realAdImageValue').value = event.target.result;
+        document.getElementById('realAdImagePreview').src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function tambahIklanReal() {
+      const tipe = document.getElementById('realAdType')?.value || 'teks';
+      const judul = document.getElementById('realAdTitle')?.value?.trim() || '';
+      const teks = document.getElementById('realAdText')?.value?.trim() || '';
+      const gambar = document.getElementById('realAdImageValue')?.value || '';
+
+      if (!judul) {
+        showToast('Judul iklan wajib diisi');
+        return;
+      }
+      if (tipe === 'teks' && !teks) {
+        showToast('Teks iklan wajib diisi');
+        return;
+      }
+      if (tipe === 'gambar' && !gambar) {
+        showToast('Upload gambar banner dulu');
+        return;
+      }
+
+      const ads = getRealAds();
+      ads.unshift({
+        id: 'AD-' + Date.now().toString().slice(-6),
+        tipe,
+        judul,
+        teks,
+        gambar,
+        status: 'Aktif'
+      });
+
+      saveRealAds(ads);
+      realAdsToRunningSettings();
+      showToast('Iklan tersimpan dan aktif di marketplace');
+      renderAdminDashboard();
+    }
+
+    function toggleIklanReal(id) {
+      const ads = getRealAds().map(ad => ad.id === id ? {
+        ...ad,
+        status: ad.status === 'Aktif' ? 'Nonaktif' : 'Aktif'
+      } : ad);
+
+      saveRealAds(ads);
+      realAdsToRunningSettings();
+      showToast('Status iklan diperbarui');
+      renderAdminDashboard();
+    }
+
+    function hapusIklanReal(id) {
+      const ads = getRealAds().filter(ad => ad.id !== id);
+      saveRealAds(ads);
+      realAdsToRunningSettings();
+      showToast('Iklan dihapus');
+      renderAdminDashboard();
+    }
+
+    function jadikanBannerReal(id) {
+      const ads = getRealAds().map(ad => ({
+        ...ad,
+        status: ad.id === id ? 'Aktif' : (ad.tipe === 'gambar' ? 'Nonaktif' : ad.status)
+      }));
+
+      saveRealAds(ads);
+      realAdsToRunningSettings();
+      showToast('Banner utama aktif');
+      renderAdminDashboard();
+    }
+
+    function renderRealAdsList() {
+      const ads = getRealAds();
+
+      return `
+        <div class="grid lg:grid-cols-2 gap-4">
+          ${ads.map(ad => `
+            <div class="rounded-[24px] border bg-white p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-xs font-black uppercase text-orange-600">${ad.tipe === 'gambar' ? 'Banner Gambar' : 'Teks Berjalan'}</p>
+                  <h3 class="font-black text-lg mt-1">${ad.judul}</h3>
+                  <p class="text-sm text-slate-500 mt-2">${ad.teks || 'Banner gambar'}</p>
+                </div>
+                ${badge(ad.status, ad.status === 'Aktif' ? 'emerald' : 'slate')}
+              </div>
+              ${ad.gambar ? `<img src="${ad.gambar}" class="mt-4 w-full h-28 object-cover rounded-2xl border" alt="${ad.judul}">` : ''}
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button onclick="toggleIklanReal('${ad.id}')" class="bg-amber-500 text-white rounded-xl px-4 py-2 text-xs font-black">${ad.status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}</button>
+                ${ad.tipe === 'gambar' ? `<button onclick="jadikanBannerReal('${ad.id}')" class="bg-indigo-600 text-white rounded-xl px-4 py-2 text-xs font-black">Jadikan Banner</button>` : ''}
+                <button onclick="hapusIklanReal('${ad.id}')" class="bg-rose-600 text-white rounded-xl px-4 py-2 text-xs font-black">Hapus</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function adminPasangIklanRealPanel() {
+      const settings = getAdsSettings();
+
+      return panel('Pasang Iklan Berjalan', 'Modul ini sudah tersambung langsung ke iklan sticky di Marketplace B2B.', `
+        <div class="grid lg:grid-cols-[420px_1fr] gap-5">
+          <div class="rounded-[28px] bg-orange-50 border border-orange-100 p-5">
+            <h3 class="text-xl font-black mb-4">Input Iklan Baru</h3>
+            <div class="grid gap-3">
+              <select id="realAdType" class="border rounded-2xl p-3 bg-white">
+                <option value="teks">Teks Berjalan</option>
+                <option value="gambar">Banner Gambar</option>
+              </select>
+
+              <input id="realAdTitle" class="border rounded-2xl p-3" placeholder="Judul iklan">
+
+              <textarea id="realAdText" class="border rounded-2xl p-3" rows="3" placeholder="Teks iklan berjalan"></textarea>
+
+              <div>
+                <label class="text-xs font-black uppercase text-orange-800">Upload banner gambar</label>
+                <img id="realAdImagePreview" class="mt-2 w-full h-28 object-cover rounded-2xl border bg-white" alt="">
+                <input id="realAdImageValue" type="hidden">
+                <input type="file" accept="image/*" onchange="readRealAdImage(this)" class="mt-2 border rounded-2xl p-3 w-full bg-white">
+              </div>
+
+              <div>
+                <label class="text-xs font-black uppercase text-orange-800">Kecepatan Teks</label>
+                <select id="realAdSpeed" class="mt-1 border rounded-2xl p-3 w-full bg-white">
+                  ${[8,12,15,18,22,28,35,40,50,60].map(s => `<option value="${s}" ${Number(settings.speedSeconds) === s ? 'selected' : ''}>${s} detik</option>`).join('')}
+                </select>
+              </div>
+
+              <button onclick="tambahIklanReal()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">
+                Simpan & Tampilkan
+              </button>
+
+              <button onclick="realAdsToRunningSettings(); switchRole('marketplace')" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-5 py-3 font-black">
+                Preview Marketplace
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div class="rounded-[28px] border bg-white p-5 mb-4">
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                  <p class="text-xs font-black uppercase text-orange-600">Iklan Aktif</p>
+                  <h3 class="text-xl font-black">Daftar Iklan Berjalan</h3>
+                  <p class="text-sm text-slate-500 mt-1">Aktif/nonaktifkan dari sini. Data aktif langsung dipakai di halaman marketplace.</p>
+                </div>
+                <button onclick="localStorage.removeItem('bisnishub_real_ads'); realAdsToRunningSettings(); renderAdminDashboard(); showToast('Iklan dikembalikan ke default')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black text-sm">
+                  Reset Default
+                </button>
+              </div>
+            </div>
+            ${renderRealAdsList()}
+          </div>
+        </div>
+      `);
+    }
+
+
     function adminAdsManagerPanel() {
       const current = getAdsSettings();
 
@@ -2482,6 +2714,7 @@
     }
 
     function renderRunningAds() {
+      realAdsToRunningSettings();
       const ads = getAdsSettings();
 
       if (ads.mode === 'image' && ads.bannerSrc) {
@@ -3202,7 +3435,7 @@
 
       if (menu === 'cms') {
         if (sub === 'Iklan Berjalan') {
-          return adminAdsManagerPanel();
+          return adminPasangIklanRealPanel();
         }
         if (sub === 'Foto Carousel') {
           return adminCarouselSettingPanel();
