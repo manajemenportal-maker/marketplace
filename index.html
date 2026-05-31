@@ -985,7 +985,7 @@
       registration: ['Data Pribadi', 'Data Perusahaan', 'Alamat', 'Dokumen', 'Preview Submit'],
       orders: ['Semua Pesanan', 'Diproses', 'Dikirim', 'Selesai', 'Komplain'],
       addProduct: ['Info Produk', 'Harga & Stok', 'Gambar & Media', 'Spesifikasi', 'Dokumen', 'Pengiriman', 'Preview'],
-      myProducts: ['Tambah Produk', 'Daftar Produk', 'Produk Aktif', 'Produk Nonaktif', 'Produk Review'],
+      myProducts: ['Daftar Produk', 'Produk Aktif', 'Produk Nonaktif', 'Produk Review'],
       store: ['Profil Toko', 'Legalitas', 'Rekening', 'Kurir & Gudang', 'Jam Operasional', 'Kebijakan', 'Preview Toko'],
       companyProfile: ['Compro Utama', 'Bidang Usaha', 'Legalitas', 'Portofolio', 'Produk & Jasa', 'Kontak', 'Preview Compro'],
       riskCheck: ['Skor Kepercayaan', 'Cek Produk', 'Cek Tender', 'Cek Legalitas', 'Riwayat Laporan'],
@@ -4827,7 +4827,7 @@ service cloud.firestore {
               <i class="fa-solid fa-box-open text-5xl text-slate-300 mb-4"></i>
               <h3 class="font-black text-lg">Belum ada produk</h3>
               <p class="text-sm text-slate-500 mt-2">Tambahkan produk agar bisa dianalisis risikonya.</p>
-              <button onclick="syncUserDashboardView('myProducts','Tambah Produk')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Tambah Produk</button>
+              
             </div>
           `}
         `);
@@ -6505,7 +6505,7 @@ service cloud.firestore {
             <i class="fa-solid fa-box-open text-5xl text-slate-300 mb-4"></i>
             <h3 class="font-black text-lg">Belum ada produk</h3>
             <p class="text-sm text-slate-500 mt-2">Tambahkan produk dulu agar bisa diedit, dinonaktifkan, atau dihapus.</p>
-            <button onclick="syncUserDashboardView('myProducts','Tambah Produk')" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Tambah Produk</button>
+            
           </div>
         `;
       }
@@ -6564,10 +6564,12 @@ service cloud.firestore {
 
 
     function userMyProducts() {
-      const sub = state.userSub || 'Daftar Produk';
+      let sub = state.userSub || 'Daftar Produk';
 
       if (sub === 'Tambah Produk') {
-        return userAddProductForProdukSaya();
+        sub = 'Daftar Produk';
+        state.userSub = 'Daftar Produk';
+        saveState();
       }
 
       const allProducts = getUnifiedUserProducts();
@@ -6591,7 +6593,7 @@ service cloud.firestore {
             <p class="text-sm text-orange-700 mt-1">Produk yang aktif akan ikut tampil di Marketplace B2B.</p>
           </div>
           <div class="flex flex-wrap gap-2">
-            <button onclick="syncUserDashboardView('myProducts','Tambah Produk')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black text-sm">Tambah Produk Baru</button>
+            
             <button onclick="switchRole('marketplace')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black text-sm">Cek Marketplace</button>
           </div>
         </div>
