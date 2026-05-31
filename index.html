@@ -4413,6 +4413,7 @@
       if (!product.price || priceText.includes('hubungi')) { score -= 12; issues.push('Harga belum jelas'); }
       if (!desc || desc.length < 30) { score -= 14; issues.push('Deskripsi terlalu pendek'); }
       if (!product.stock) { score -= 8; issues.push('Stok belum diisi'); }
+      if (!product.image) { score -= 8; issues.push('Foto produk belum diupload'); }
       if (!product.seller) { score -= 10; issues.push('Seller belum terhubung'); }
       if (!product.specs && !String(product.badge || '').toLowerCase().includes('jasa')) { score -= 10; issues.push('Spesifikasi teknis belum lengkap'); }
 
@@ -5314,6 +5315,44 @@
     }
 
 
+
+    function readUserProductImage(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      showToast('Mengompres gambar produk...');
+
+      const done = function(dataUrl) {
+        const hidden = document.getElementById('quickProductImage');
+        const preview = document.getElementById('quickProductImagePreview');
+
+        if (hidden) hidden.value = dataUrl;
+        if (preview) preview.src = dataUrl;
+
+        showToast('Gambar produk siap disimpan');
+      };
+
+      if (typeof compressImageDataUrl === 'function') {
+        compressImageDataUrl(file, done, 900, 700, 380000);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        done(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function productImageOrIcon(product) {
+      if (product && product.image) {
+        return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk BisnisHUB'}">`;
+      }
+
+      return `<i class="fa-solid ${product.icon || 'fa-box-open'} text-5xl text-indigo-500"></i>`;
+    }
+
+
     function saveUserProduct() {
       const data = getUserData();
       const product = {
@@ -5330,6 +5369,7 @@
         description: fieldValue('quickProductDescription', 'Produk/jasa dari seller BisnisHUB.'),
         specs: fieldValue('quickProductSpecs', ''),
         delivery: fieldValue('quickProductDelivery', ''),
+        image: document.getElementById('quickProductImage')?.value || '',
         seller: data.store.name || 'Seller BisnisHUB',
         badge: fieldValue('quickProductListingType', '').includes('Jasa') ? 'Jasa' : 'Produk',
         icon: fieldValue('quickProductListingType', '').includes('Jasa') ? 'fa-handshake-angle' : 'fa-box-open',
@@ -5390,6 +5430,7 @@
           price: product.price || 'Hubungi Seller',
           badge: product.badge || 'User',
           icon: product.icon || 'fa-box-open',
+          image: product.image || '',
           source: product.ownerUserId ? 'firebase' : 'user',
           id: product.id
         }));
@@ -5413,6 +5454,9 @@
         <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
           ${products.map(product => `
             <div class="rounded-[24px] border bg-white p-5">
+              <div class="h-36 rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center mb-4">
+                ${productImageOrIcon(product)}
+              </div>
               <div class="flex items-start justify-between gap-3">
                 <div>
                   <h3 class="font-black text-lg">${product.name}</h3>
@@ -5460,12 +5504,16 @@
           quickProductServiceArea: product.serviceArea,
           quickProductDescription: product.description,
           quickProductSpecs: product.specs,
-          quickProductDelivery: product.delivery
+          quickProductDelivery: product.delivery,
+          quickProductImage: product.image
         };
         Object.entries(fields).forEach(([id, value]) => {
           const el = document.getElementById(id);
           if (el) el.value = value || '';
         });
+
+        const preview = document.getElementById('quickProductImagePreview');
+        if (preview && product.image) preview.src = product.image;
       }, 50);
     }
 
@@ -5814,6 +5862,19 @@
             <input id="quickProductStock" class="border rounded-2xl p-3" placeholder="Stok, contoh: 10" value="${editing?.stock || ''}">
             <input id="quickProductUnit" class="border rounded-2xl p-3" placeholder="Satuan, contoh: unit / pcs / hari" value="${editing?.unit || ''}">
             <input id="quickProductDelivery" class="border rounded-2xl p-3" placeholder="Pengiriman / layanan" value="${editing?.delivery || ''}">
+            <div class="md:col-span-2 border rounded-[24px] bg-slate-50 p-4">
+              <label class="text-xs font-black uppercase text-slate-500">Foto Produk / Jasa</label>
+              <div class="grid md:grid-cols-[180px_1fr] gap-4 mt-2 items-center">
+                <div class="h-36 rounded-2xl bg-white border overflow-hidden flex items-center justify-center">
+                  ${editing?.image ? `<img id="quickProductImagePreview" src="${editing.image}" class="w-full h-full object-cover" alt="Preview produk">` : `<img id="quickProductImagePreview" class="w-full h-full object-cover" alt="">`}
+                </div>
+                <div>
+                  <input id="quickProductImage" type="hidden" value="${editing?.image || ''}">
+                  <input type="file" accept="image/*" onchange="readUserProductImage(this)" class="border rounded-2xl p-3 w-full bg-white">
+                  <p class="text-xs text-slate-500 mt-2">Gambar dikompres otomatis agar ringan dan bisa tampil di marketplace.</p>
+                </div>
+              </div>
+            </div>
             <textarea id="quickProductDescription" class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Deskripsi produk / jasa">${editing?.description || ''}</textarea>
             <textarea id="quickProductSpecs" class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Spesifikasi teknis">${editing?.specs || ''}</textarea>
           </div>
