@@ -1199,6 +1199,8 @@
         if (state.userGate === 'dashboard') renderUserDashboard();
         else if (state.userGate === 'login') renderUserLogin();
         else renderUserEntry();
+      } else if (state.role === 'companyProfile' && state.selectedCompanyId) {
+        renderCompanyProfilePage(state.selectedCompanyId);
       } else if (state.role === 'tender') {
         renderTenderMarketplace();
       } else {
@@ -1611,6 +1613,8 @@
     }
 
     function openCompanyProfile(companyId) {
+      clearInterval(marketplaceCarouselTimer);
+      state.role = 'companyProfile';
       state.selectedCompanyId = companyId;
       saveState();
       renderCompanyProfilePage(companyId);
@@ -1619,12 +1623,14 @@
 
     function closeCompanyProfile() {
       state.selectedCompanyId = null;
+      state.role = 'marketplace';
       saveState();
       renderMarketplace();
       setTimeout(() => document.getElementById('companyDirectory')?.scrollIntoView({ behavior: 'smooth' }), 80);
     }
 
     function renderCompanyProfilePage(companyId) {
+      clearInterval(marketplaceCarouselTimer);
       const company = normalizeCompanyProfile(getCompanyById(companyId));
 
       document.getElementById('app').innerHTML = `
@@ -2438,6 +2444,10 @@
       clearInterval(marketplaceCarouselTimer);
       if (images.length > 1) {
         marketplaceCarouselTimer = setInterval(() => {
+          if (state.role !== 'marketplace' || state.selectedCompanyId) {
+            clearInterval(marketplaceCarouselTimer);
+            return;
+          }
           marketplaceCarouselIndex = (marketplaceCarouselIndex + 1) % images.length;
           renderMarketplace();
         }, Math.max(2, Number(settings.intervalSeconds || 4)) * 1000);
