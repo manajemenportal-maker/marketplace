@@ -5776,7 +5776,39 @@
             </div>
           </div>
           <div class="taobao-main-frame space-y-4 flex flex-col">
-            ${renderActiveMarketplaceCarousel()}
+            <div class="flex-1 rounded-[32px] overflow-hidden bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 shadow-[0_24px_60px_rgba(251,146,60,0.35)]">
+              <div class="grid md:grid-cols-[1.2fr_0.8fr] gap-4 p-6 md:p-8 items-center">
+                <div>
+                  <p class="text-xs font-black uppercase tracking-[0.25em] text-white/90">BisnisHUB Marketplace</p>
+                  <h2 class="text-3xl md:text-5xl font-black text-white leading-tight mt-3">Marketplace B2B bergaya modern untuk produk & jasa industri</h2>
+                  <p class="text-sm md:text-base text-white/90 mt-4 max-w-2xl">Nuansa marketplace padat, cepat, dan ramai seperti e-commerce besar, tetapi seluruh konten disesuaikan untuk seller, vendor, tender, jasa teknik, dan kebutuhan industri BisnisHUB.</p>
+                  <div class="flex flex-wrap gap-3 mt-6">
+                    <button onclick="${"${state.previewMode ? 'returnToDashboardFromPreview()' : 'switchRole(\\'user\\')'}"}" class="bg-white text-orange-600 rounded-2xl px-5 py-3 font-black shadow-lg">Kelola Akun</button>
+                    <button onclick="rememberDashboardBeforePreview('tender')" class="bg-slate-950/85 text-white rounded-2xl px-5 py-3 font-black">Lihat Tender</button>
+                  </div>
+                </div>
+                <div class="grid gap-3">
+                  <div class="rounded-[24px] bg-white/15 backdrop-blur-md border border-white/20 p-4">
+                    <p class="text-xs font-black uppercase tracking-[0.18em] text-white/80">Produk unggulan</p>
+                    <div class="mt-3 grid grid-cols-2 gap-3">
+                      ${(products || []).slice(0, 4).map(product => `
+                        <div class="rounded-2xl bg-white p-3">
+                          <div class="w-full h-20 rounded-xl overflow-hidden bg-slate-100 border">
+                            ${product.thumb ? `<img src="${product.thumb}" class="w-full h-full object-cover" alt="${product.name}">`
+                              : product.image && product.image.startsWith('data:image/') ? `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name}">`
+                              : product.imageKey ? `<img data-cpe-img-key="${product.imageKey}" class="w-full h-full object-cover" alt="${product.name}">`
+                              : `<div class="w-full h-full flex items-center justify-center"><i class="fa-solid fa-box-open text-orange-400"></i></div>`}
+                          </div>
+                          <p class="text-[11px] font-black text-slate-800 mt-2 line-clamp-2">${product.name}</p>
+                        </div>
+                      `).join('') || `
+                        <div class="col-span-2 rounded-2xl bg-white p-5 text-center text-sm text-slate-500">Belum ada produk aktif.</div>
+                      `}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             ${renderTaobaoMarketplaceSearch()}
           </div>
           <div class="taobao-main-frame space-y-4 flex flex-col">
@@ -6239,278 +6271,6 @@
     }
 
 
-
-    // === BISNISHUB MARKETPLACE CAROUSEL ACTIVE FINAL ===
-    const BH_CAROUSEL_KEY = 'bisnishub_market_carousel_v1';
-
-    function carouselGetDefaultSlides() {
-      return [
-        {
-          id: 'CAR-DEFAULT-1',
-          title: 'BisnisHUB Marketplace B2B',
-          subtitle: 'Produk teknik, jasa industri, vendor, dan tender dalam satu portal.',
-          image: '',
-          badge: 'BISNISHUB'
-        },
-        {
-          id: 'CAR-DEFAULT-2',
-          title: 'Etalase Produk Teknik',
-          subtitle: 'Alsintan, pompa, hidrolik, spare part, alat proyek, dan kebutuhan industri.',
-          image: '',
-          badge: 'PRODUK'
-        },
-        {
-          id: 'CAR-DEFAULT-3',
-          title: 'Jasa Keteknikan & Survey',
-          subtitle: 'Engineering, fabrikasi, maintenance, SID lapangan, TKDN, dan layanan proyek.',
-          image: '',
-          badge: 'JASA'
-        }
-      ];
-    }
-
-    function carouselGetSlides() {
-      let saved = [];
-
-      try {
-        saved = JSON.parse(localStorage.getItem(BH_CAROUSEL_KEY) || '[]');
-        if (!Array.isArray(saved)) saved = [];
-      } catch (error) {
-        saved = [];
-      }
-
-      return saved.length ? saved : carouselGetDefaultSlides();
-    }
-
-    function carouselSaveSlides(slides) {
-      localStorage.setItem(BH_CAROUSEL_KEY, JSON.stringify(Array.isArray(slides) ? slides : []));
-    }
-
-    function carouselReadImage(input) {
-      const file = input.files && input.files[0];
-      if (!file) return;
-
-      if (!file.type.startsWith('image/')) {
-        showToast('File harus gambar');
-        return;
-      }
-
-      const reader = new FileReader();
-
-      reader.onload = function(event) {
-        const img = new Image();
-
-        img.onload = function() {
-          const maxW = 1200;
-          const maxH = 520;
-          let w = img.width || maxW;
-          let h = img.height || maxH;
-          const ratio = Math.min(maxW / w, maxH / h, 1);
-
-          w = Math.round(w * ratio);
-          h = Math.round(h * ratio);
-
-          const canvas = document.createElement('canvas');
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, w, h);
-          ctx.drawImage(img, 0, 0, w, h);
-
-          let quality = 0.72;
-          let dataUrl = canvas.toDataURL('image/jpeg', quality);
-
-          while (dataUrl.length > 350000 && quality > 0.35) {
-            quality -= 0.06;
-            dataUrl = canvas.toDataURL('image/jpeg', quality);
-          }
-
-          window.__carouselPendingImage = dataUrl;
-          const preview = document.getElementById('carouselPreviewImage');
-          if (preview) preview.src = dataUrl;
-          showToast('Foto carousel siap disimpan');
-        };
-
-        img.onerror = function() {
-          showToast('Gambar tidak terbaca');
-        };
-
-        img.src = event.target.result;
-      };
-
-      reader.readAsDataURL(file);
-    }
-
-    function carouselAddSlide() {
-      const title = document.getElementById('carouselTitle')?.value?.trim() || '';
-      const subtitle = document.getElementById('carouselSubtitle')?.value?.trim() || '';
-      const badge = document.getElementById('carouselBadge')?.value?.trim() || 'PROMO';
-
-      if (!title) {
-        showToast('Judul carousel wajib diisi');
-        return;
-      }
-
-      const slides = carouselGetSlides().filter(slide => !String(slide.id || '').startsWith('CAR-DEFAULT'));
-      slides.unshift({
-        id: 'CAR-' + Date.now(),
-        title,
-        subtitle,
-        badge,
-        image: window.__carouselPendingImage || '',
-        createdAt: new Date().toLocaleString('id-ID')
-      });
-
-      carouselSaveSlides(slides);
-      window.__carouselPendingImage = '';
-      showToast('Slide carousel tersimpan');
-      renderAdminDashboard();
-    }
-
-    function carouselDeleteSlide(id) {
-      const slides = carouselGetSlides()
-        .filter(slide => slide.id !== id)
-        .filter(slide => !String(slide.id || '').startsWith('CAR-DEFAULT'));
-
-      carouselSaveSlides(slides);
-      showToast('Slide carousel dihapus');
-      renderAdminDashboard();
-    }
-
-    function renderActiveMarketplaceCarousel() {
-      const slides = carouselGetSlides();
-
-      return `
-        <div class="relative rounded-[32px] overflow-hidden bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 shadow-[0_24px_60px_rgba(251,146,60,0.35)] min-h-[360px]">
-          <div id="marketCarouselTrack" class="flex transition-transform duration-700 ease-out" style="transform: translateX(0%);">
-            ${slides.map((slide, index) => `
-              <div class="min-w-full grid md:grid-cols-[1.15fr_0.85fr] gap-4 p-6 md:p-8 items-center">
-                <div class="relative z-10">
-                  <span class="inline-flex bg-white/20 border border-white/30 text-white rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.18em]">${slide.badge || 'PROMO'}</span>
-                  <h2 class="text-3xl md:text-5xl font-black text-white leading-tight mt-4">${slide.title}</h2>
-                  <p class="text-sm md:text-base text-white/90 mt-4 max-w-2xl">${slide.subtitle || 'Promo dan informasi BisnisHUB.'}</p>
-                  <div class="flex flex-wrap gap-3 mt-6">
-                    <button onclick="document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth'});" class="bg-white text-orange-600 rounded-2xl px-5 py-3 font-black shadow-lg">Lihat Produk</button>
-                    <button onclick="rememberDashboardBeforePreview('tender')" class="bg-slate-950/85 text-white rounded-2xl px-5 py-3 font-black">Lihat Tender</button>
-                  </div>
-                </div>
-                <div class="relative z-10">
-                  ${slide.image ? `
-                    <div class="h-64 md:h-80 rounded-[28px] overflow-hidden bg-white/15 border border-white/25 shadow-2xl">
-                      <img src="${slide.image}" class="w-full h-full object-cover" alt="${slide.title}">
-                    </div>
-                  ` : `
-                    <div class="h-64 md:h-80 rounded-[28px] bg-white/15 border border-white/25 shadow-2xl flex items-center justify-center">
-                      <div class="text-center text-white">
-                        <i class="fa-solid fa-store text-7xl mb-4"></i>
-                        <p class="font-black text-xl">BisnisHUB</p>
-                        <p class="text-sm text-white/80">Industrial B2B Marketplace</p>
-                      </div>
-                    </div>
-                  `}
-                </div>
-              </div>
-            `).join('')}
-          </div>
-
-          <div class="absolute left-0 right-0 bottom-4 flex justify-center gap-2 z-20">
-            ${slides.map((_, index) => `<button onclick="carouselGoTo(${index})" class="carousel-dot w-2.5 h-2.5 rounded-full bg-white/55 hover:bg-white"></button>`).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    function carouselGoTo(index) {
-      const track = document.getElementById('marketCarouselTrack');
-      if (!track) return;
-
-      const slides = track.children.length || 1;
-      const safeIndex = Math.max(0, Math.min(index, slides - 1));
-      window.__carouselIndex = safeIndex;
-      track.style.transform = `translateX(-${safeIndex * 100}%)`;
-
-      document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
-        dot.style.opacity = i === safeIndex ? '1' : '.45';
-        dot.style.transform = i === safeIndex ? 'scale(1.25)' : 'scale(1)';
-      });
-    }
-
-    function startMarketplaceCarousel() {
-      const track = document.getElementById('marketCarouselTrack');
-      if (!track) return;
-
-      const slides = track.children.length || 1;
-      if (slides <= 1) {
-        carouselGoTo(0);
-        return;
-      }
-
-      if (window.__carouselTimer) clearInterval(window.__carouselTimer);
-      window.__carouselIndex = window.__carouselIndex || 0;
-      carouselGoTo(window.__carouselIndex);
-
-      window.__carouselTimer = setInterval(() => {
-        window.__carouselIndex = ((window.__carouselIndex || 0) + 1) % slides;
-        carouselGoTo(window.__carouselIndex);
-      }, 4500);
-    }
-
-    function carouselAdminPanel() {
-      const slides = carouselGetSlides();
-
-      return panel('Carousel Marketplace', 'Atur slide carousel utama marketplace. Bisa 1, 2, 3 atau lebih slide.', `
-        <div class="rounded-[24px] bg-orange-50 border border-orange-100 p-5 mb-5">
-          <h3 class="text-xl font-black text-orange-800">Tambah Slide Carousel</h3>
-          <div class="grid md:grid-cols-[240px_1fr] gap-4 mt-4 items-start">
-            <div>
-              <div class="h-36 rounded-2xl bg-white border overflow-hidden flex items-center justify-center">
-                <img id="carouselPreviewImage" class="w-full h-full object-cover" alt="">
-              </div>
-              <input type="file" accept="image/*" onchange="carouselReadImage(this)" class="mt-3 border rounded-2xl p-3 w-full bg-white text-sm">
-            </div>
-            <div class="grid md:grid-cols-2 gap-3">
-              <input id="carouselTitle" class="border rounded-2xl p-3" placeholder="Judul slide">
-              <input id="carouselBadge" class="border rounded-2xl p-3" placeholder="Badge: PROMO / PRODUK / JASA">
-              <textarea id="carouselSubtitle" class="border rounded-2xl p-3 md:col-span-2" rows="3" placeholder="Subjudul / deskripsi slide"></textarea>
-              <button onclick="carouselAddSlide()" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black md:col-span-2">Simpan Slide</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-          ${slides.map(slide => `
-            <div class="rounded-[24px] border bg-white p-4 shadow-sm">
-              <div class="h-36 rounded-2xl bg-slate-100 border overflow-hidden flex items-center justify-center">
-                ${slide.image ? `<img src="${slide.image}" class="w-full h-full object-cover" alt="${slide.title}">` : `<i class="fa-solid fa-store text-5xl text-orange-400"></i>`}
-              </div>
-              <div class="mt-4">
-                ${badge(slide.badge || 'PROMO', 'orange')}
-                <h3 class="font-black text-lg mt-2">${slide.title}</h3>
-                <p class="text-sm text-slate-500 mt-1">${slide.subtitle || '-'}</p>
-              </div>
-              ${String(slide.id || '').startsWith('CAR-DEFAULT') ? `
-                <p class="text-xs text-slate-400 mt-4">Slide default</p>
-              ` : `
-                <button onclick="carouselDeleteSlide('${slide.id}')" class="mt-4 bg-rose-600 text-white rounded-xl px-4 py-2 text-xs font-black">Hapus</button>
-              `}
-            </div>
-          `).join('')}
-        </div>
-      `);
-    }
-
-    function installCarouselEngine() {
-      window.carouselReadImage = carouselReadImage;
-      window.carouselAddSlide = carouselAddSlide;
-      window.carouselDeleteSlide = carouselDeleteSlide;
-      window.carouselGoTo = carouselGoTo;
-      window.startMarketplaceCarousel = startMarketplaceCarousel;
-      window.carouselAdminPanel = carouselAdminPanel;
-      window.renderActiveMarketplaceCarousel = renderActiveMarketplaceCarousel;
-    }
-
-
     function renderMarketplace() {
       if (firebaseIsReady() && !window.bisnisHubMarketplaceLoadedOnce) {
         window.bisnisHubMarketplaceLoadedOnce = true;
@@ -6592,7 +6352,7 @@
         ${renderFloatingHelp()}${renderMobileBottomDock()}
       `;
 
-      setTimeout(() => { if (typeof cpeHydrateImages === 'function') cpeHydrateImages(); if (typeof startMarketplaceCarousel === 'function') startMarketplaceCarousel(); }, 180);
+      setTimeout(() => { if (typeof cpeHydrateImages === 'function') cpeHydrateImages(); }, 180);
       setTimeout(() => { if (typeof mandiriHydrateImages === 'function') mandiriHydrateImages(); if (typeof bhHydrateProductImages === 'function') bhHydrateProductImages(); }, 250);
     }
 
@@ -11600,7 +11360,6 @@ service cloud.firestore {
     if (typeof installTenderEngine === 'function') installTenderEngine();
     if (typeof installSessionPreviewFix === 'function') installSessionPreviewFix();
     if (typeof installAllMenuActiveSampleEngine === 'function') installAllMenuActiveSampleEngine();
-    if (typeof installCarouselEngine === 'function') installCarouselEngine();
     renderApp();
     setTimeout(cpeHydrateImages, 300);
     setTimeout(mandiriHydrateImages, 300);
