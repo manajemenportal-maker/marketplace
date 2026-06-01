@@ -4545,6 +4545,10 @@
 
 
     function renderApp() {
+      if (state.role === 'productDetail') {
+        renderProductDetailPage();
+        return;
+      }
       try {
         if (state.role !== 'marketplace' && typeof marketplaceCarouselTimer !== 'undefined') {
           clearInterval(marketplaceCarouselTimer);
@@ -5851,7 +5855,7 @@
                         <p class="text-[10px] font-black text-slate-400 uppercase">Harga / Skema</p>
                         <b class="${text} text-sm md:text-base">${product.price || 'Hubungi Seller'}</b>
                       </div>
-                      <button onclick="document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth'});" class="${button} text-white rounded-2xl px-4 py-2.5 text-xs font-black">
+                      <button onclick="product.id ? openProductDetail(product.id) : document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth'});" class="${button} text-white rounded-2xl px-4 py-2.5 text-xs font-black">
                         Lihat
                       </button>
                     </div>
@@ -6832,6 +6836,214 @@
     }
 
 
+
+    // === BISNISHUB PRODUCT DETAIL PAGE ACTIVE FINAL ===
+    function getProductDetailDatabase() {
+      let products = [];
+
+      try {
+        const meta = typeof getMarketplaceProductsForDisplayFinal === 'function' ? getMarketplaceProductsForDisplayFinal() : null;
+        if (meta?.allProducts) products.push(...meta.allProducts);
+        if (meta?.displayProducts) products.push(...meta.displayProducts);
+      } catch (error) {}
+
+      try {
+        if (typeof getMarketplaceFullProductDatabase === 'function') products.push(...getMarketplaceFullProductDatabase());
+      } catch (error) {}
+
+      try {
+        if (typeof getApprovedProductsSuperPriority === 'function') products.push(...getApprovedProductsSuperPriority());
+      } catch (error) {}
+
+      try {
+        if (typeof getFinalSample50Products === 'function') products.push(...getFinalSample50Products());
+      } catch (error) {}
+
+      const seen = new Set();
+      return products.filter(product => {
+        const key = product.id || product.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function findProductDetail(productId) {
+      const products = getProductDetailDatabase();
+      return products.find(product => String(product.id) === String(productId)) || null;
+    }
+
+    function productDetailImage(product) {
+      if (product?.thumb) {
+        return `<img src="${product.thumb}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">`;
+      }
+
+      if (product?.image && product.image.startsWith('data:image/')) {
+        return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">`;
+      }
+
+      if (product?.image && (product.image.startsWith('http://') || product.image.startsWith('https://'))) {
+        return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">`;
+      }
+
+      if (product?.imageKey) {
+        return `<img data-cpe-img-key="${product.imageKey}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}">`;
+      }
+
+      return `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50">
+        <div class="text-center text-orange-500">
+          <i class="fa-solid ${product?.icon || 'fa-box-open'} text-7xl mb-4"></i>
+          <p class="font-black">BisnisHUB Product</p>
+        </div>
+      </div>`;
+    }
+
+    function openProductDetail(productId) {
+      const product = findProductDetail(productId);
+
+      if (!product) {
+        showToast('Detail produk belum ditemukan');
+        return;
+      }
+
+      state.role = 'productDetail';
+      state.selectedProductId = productId;
+      state.selectedProductDetail = product;
+      saveState();
+      renderProductDetailPage(product);
+    }
+
+    function closeProductDetail() {
+      state.role = 'marketplace';
+      state.selectedProductId = null;
+      state.selectedProductDetail = null;
+      saveState();
+      renderMarketplace();
+    }
+
+    function renderProductDetailPage(productArg = null) {
+      const product = productArg || state.selectedProductDetail || findProductDetail(state.selectedProductId);
+
+      if (!product) {
+        state.role = 'marketplace';
+        saveState();
+        renderMarketplace();
+        return;
+      }
+
+      const isService = String(product.category || '').toLowerCase().includes('jasa') || String(product.badge || '').toLowerCase().includes('jasa');
+      const specs = product.specs || product.specification || product.description || 'Spesifikasi detail mengikuti penawaran seller/vendor.';
+      const seller = product.seller || 'Seller BisnisHUB';
+      const city = product.city || product.location || 'Indonesia';
+      const price = product.price || 'Hubungi Seller';
+      const stock = product.stock || 'Ready / By Request';
+
+      document.getElementById('app').innerHTML = `
+        ${renderTaobaoMarketplaceHeader ? renderTaobaoMarketplaceHeader() : renderHeader('Detail Produk', product.name || 'Produk BisnisHUB', false)}
+        <main class="bg-gradient-to-b from-orange-50 via-white to-white min-h-screen">
+          <div class="max-w-[1320px] mx-auto px-4 md:px-6 py-6 pb-28">
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <button onclick="closeProductDetail()" class="bg-slate-950 text-white rounded-2xl px-5 py-3 font-black text-sm">
+                <i class="fa-solid fa-arrow-left mr-2"></i>Kembali Marketplace
+              </button>
+              <div class="flex flex-wrap gap-2">
+                ${badge(product.badge || (isService ? 'Jasa' : 'Produk'), isService ? 'indigo' : 'orange')}
+                ${badge(product.status || 'Aktif', 'emerald')}
+              </div>
+            </div>
+
+            <section class="grid lg:grid-cols-[1.05fr_0.95fr] gap-5">
+              <div class="rounded-[34px] bg-white border border-orange-100 shadow-sm p-4 md:p-5">
+                <div class="h-[340px] md:h-[520px] rounded-[28px] overflow-hidden bg-slate-100 border">
+                  ${productDetailImage(product)}
+                </div>
+                <div class="grid grid-cols-3 gap-3 mt-4">
+                  <div class="rounded-2xl bg-orange-50 border border-orange-100 p-4 text-center">
+                    <i class="fa-solid fa-layer-group text-orange-500"></i>
+                    <p class="text-[11px] text-slate-500 mt-2">Kategori</p>
+                    <b class="text-xs text-slate-800 line-clamp-2">${product.category || '-'}</b>
+                  </div>
+                  <div class="rounded-2xl bg-indigo-50 border border-indigo-100 p-4 text-center">
+                    <i class="fa-solid fa-location-dot text-indigo-500"></i>
+                    <p class="text-[11px] text-slate-500 mt-2">Lokasi</p>
+                    <b class="text-xs text-slate-800 line-clamp-2">${city}</b>
+                  </div>
+                  <div class="rounded-2xl bg-emerald-50 border border-emerald-100 p-4 text-center">
+                    <i class="fa-solid fa-boxes-stacked text-emerald-500"></i>
+                    <p class="text-[11px] text-slate-500 mt-2">${isService ? 'Tim' : 'Stok'}</p>
+                    <b class="text-xs text-slate-800 line-clamp-2">${stock}</b>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div class="rounded-[34px] bg-white border border-orange-100 shadow-sm p-5 md:p-7">
+                  <p class="text-xs font-black uppercase tracking-[0.18em] text-orange-500">${isService ? 'Detail Jasa' : 'Detail Produk'}</p>
+                  <h1 class="text-3xl md:text-5xl font-black text-slate-900 leading-tight mt-3">${product.name || '-'}</h1>
+                  <p class="text-sm text-slate-500 mt-3">
+                    <i class="fa-solid fa-building mr-2 text-orange-500"></i>${seller}
+                  </p>
+                  <div class="mt-5 rounded-[24px] bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100 p-5">
+                    <p class="text-xs font-black uppercase text-slate-500">Harga / Skema</p>
+                    <div class="text-3xl font-black text-orange-600 mt-1">${price}</div>
+                    <p class="text-xs text-slate-500 mt-2">Harga dapat berubah sesuai spesifikasi, lokasi, volume, dan kesepakatan dengan seller/vendor.</p>
+                  </div>
+
+                  <div class="grid sm:grid-cols-2 gap-3 mt-5">
+                    <button onclick="openSupportModal()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-4 font-black">
+                      <i class="fa-solid fa-phone mr-2"></i>Hubungi Seller
+                    </button>
+                    <button onclick="showToast('Form penawaran dibuka')" class="bg-slate-950 hover:bg-slate-800 text-white rounded-2xl px-5 py-4 font-black">
+                      <i class="fa-solid fa-file-signature mr-2"></i>Ajukan Penawaran
+                    </button>
+                    <button onclick="showToast('Produk disimpan ke wishlist')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl px-5 py-4 font-black">
+                      <i class="fa-solid fa-heart mr-2"></i>Simpan
+                    </button>
+                    <button onclick="rememberDashboardBeforePreview('tender')" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-5 py-4 font-black">
+                      <i class="fa-solid fa-briefcase mr-2"></i>Cek Tender
+                    </button>
+                  </div>
+                </div>
+
+                <div class="rounded-[34px] bg-white border border-slate-200 shadow-sm p-5 md:p-7">
+                  <h2 class="text-2xl font-black text-slate-900">Deskripsi</h2>
+                  <p class="text-slate-600 mt-3 leading-relaxed">${product.description || 'Deskripsi belum tersedia.'}</p>
+                </div>
+
+                <div class="rounded-[34px] bg-white border border-slate-200 shadow-sm p-5 md:p-7">
+                  <h2 class="text-2xl font-black text-slate-900">Spesifikasi / Ruang Lingkup</h2>
+                  <div class="mt-4 rounded-2xl bg-slate-50 border p-4 text-sm text-slate-600 leading-relaxed whitespace-pre-line">${specs}</div>
+                </div>
+
+                <div class="rounded-[34px] bg-white border border-slate-200 shadow-sm p-5 md:p-7">
+                  <h2 class="text-2xl font-black text-slate-900">Informasi Seller</h2>
+                  <div class="grid sm:grid-cols-2 gap-3 mt-4 text-sm">
+                    <div class="rounded-2xl bg-slate-50 border p-4"><b>Nama Seller</b><p class="text-slate-600 mt-1">${seller}</p></div>
+                    <div class="rounded-2xl bg-slate-50 border p-4"><b>Lokasi</b><p class="text-slate-600 mt-1">${city}</p></div>
+                    <div class="rounded-2xl bg-slate-50 border p-4"><b>Kategori</b><p class="text-slate-600 mt-1">${product.category || '-'}</p></div>
+                    <div class="rounded-2xl bg-slate-50 border p-4"><b>Status</b><p class="text-slate-600 mt-1">${product.status || 'Aktif'}</p></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            ${renderFrontFooter()}
+          </div>
+        </main>
+        ${renderFloatingHelp()}${renderMobileBottomDock()}
+      `;
+
+      setTimeout(() => { if (typeof cpeHydrateImages === 'function') cpeHydrateImages(); }, 150);
+    }
+
+    function installProductDetailPageEngine() {
+      window.openProductDetail = openProductDetail;
+      window.closeProductDetail = closeProductDetail;
+      window.renderProductDetailPage = renderProductDetailPage;
+      window.bhOpenProductDetail = openProductDetail;
+    }
+
+
     function renderMarketplace() {
       if (firebaseIsReady() && !window.bisnisHubMarketplaceLoadedOnce) {
         window.bisnisHubMarketplaceLoadedOnce = true;
@@ -6860,7 +7072,7 @@
               <b class="block text-orange-600 text-base md:text-lg leading-tight truncate">${product.price || '-'}</b>
             </div>
             <div class="mt-3 grid grid-cols-2 gap-2 w-full">
-              <button onclick="bhOpenProductDetail('${product.id}')" class="w-full min-w-0 bg-slate-100 text-slate-700 rounded-xl px-2 py-2 text-[11px] font-black hover:bg-orange-100 transition truncate">Detail</button>
+              <button onclick="openProductDetail('${product.id}')" class="w-full min-w-0 bg-slate-100 text-slate-700 rounded-xl px-2 py-2 text-[11px] font-black hover:bg-orange-100 transition truncate">Detail</button>
               <button onclick="showToast('Produk masuk keranjang simulasi')" class="w-full min-w-0 bg-slate-950 text-white rounded-xl px-2 py-2 text-[11px] font-black group-hover:bg-orange-500 transition truncate">Tambah</button>
             </div>
           </div>
@@ -11925,6 +12137,7 @@ service cloud.firestore {
     if (typeof installTenderEngine === 'function') installTenderEngine();
     if (typeof installSessionPreviewFix === 'function') installSessionPreviewFix();
     if (typeof installAllMenuActiveSampleEngine === 'function') installAllMenuActiveSampleEngine();
+    if (typeof installProductDetailPageEngine === 'function') installProductDetailPageEngine();
     renderApp();
     setTimeout(cpeHydrateImages, 300);
     setTimeout(mandiriHydrateImages, 300);
