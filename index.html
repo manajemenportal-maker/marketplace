@@ -160,6 +160,12 @@
     }
     .toast.show { display: block; }
 
+    .menu-button[data-menu-key="addProduct"],
+    button[data-menu-key="addProduct"] {
+      display: none !important;
+    }
+
+
     /* === BISNISHUB COMPACT UI FINAL === */
     .content-card {
       border-radius: 22px !important;
@@ -1185,7 +1191,7 @@
       registration: ['Data Pribadi', 'Data Perusahaan', 'Alamat', 'Dokumen', 'Preview Submit'],
       orders: ['Semua Pesanan', 'Diproses', 'Dikirim', 'Selesai', 'Komplain'],
       addProduct: ['Info Produk', 'Harga & Stok', 'Gambar & Media', 'Spesifikasi', 'Dokumen', 'Pengiriman', 'Preview'],
-      myProducts: ['Upload Produk', 'Daftar Produk', 'Produk Aktif', 'Produk Nonaktif', 'Produk Review'],
+      myProducts: ['Daftar Produk', 'Produk Aktif', 'Produk Nonaktif', 'Produk Review'],
       store: ['Profil Toko', 'Legalitas', 'Rekening', 'Kurir & Gudang', 'Jam Operasional', 'Kebijakan', 'Preview Toko'],
       companyProfile: ['Compro Utama', 'Bidang Usaha', 'Legalitas', 'Portofolio', 'Produk & Jasa', 'Kontak', 'Preview Compro'],
       riskCheck: ['Skor Kepercayaan', 'Cek Produk', 'Cek Tender', 'Cek Legalitas', 'Riwayat Laporan'],
@@ -12545,6 +12551,159 @@ service cloud.firestore {
     if (typeof installProductDetailPageEngine === 'function') installProductDetailPageEngine();
     if (typeof installProductClickTopFix === 'function') installProductClickTopFix();
     if (typeof installFeaturedPromoSellerMenu === 'function') installFeaturedPromoSellerMenu();
+
+    // === BISNISHUB USER MY PRODUCTS MENU TIDY FINAL ===
+    function openUserAddProductFromList() {
+      state.userMenu = 'myProducts';
+      state.userSub = 'Upload Produk';
+      state.editProductId = null;
+      saveState();
+      renderUserDashboard();
+      setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' }), 80);
+    }
+
+    function openUserProductList() {
+      state.userMenu = 'myProducts';
+      state.userSub = 'Daftar Produk';
+      state.editProductId = null;
+      saveState();
+      renderUserDashboard();
+      setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' }), 80);
+    }
+
+    function getUserProductListTidy() {
+      const bucket = [];
+
+      try {
+        if (typeof cpeGetProducts === 'function') bucket.push(...cpeGetProducts());
+      } catch (error) {}
+
+      try {
+        const data = typeof getUserData === 'function' ? getUserData() : {};
+        if (Array.isArray(data.products)) bucket.push(...data.products);
+      } catch (error) {}
+
+      try {
+        const reports = JSON.parse(localStorage.getItem('bisnishub_admin_product_reports_v1') || '[]');
+        if (Array.isArray(reports)) bucket.push(...reports);
+      } catch (error) {}
+
+      const seen = new Set();
+
+      return bucket.filter(product => {
+        const key = product.id || product.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function productStatusMatchTidy(product, sub) {
+      const status = product.status || product.reportStatus || 'Menunggu Review';
+      if (sub === 'Produk Aktif') return ['Aktif', 'Tayang', 'Admin', 'Approved', 'Published'].includes(status);
+      if (sub === 'Produk Nonaktif') return ['Nonaktif', 'Draft'].includes(status);
+      if (sub === 'Produk Review') return ['Menunggu Review', 'Review', 'Ditolak'].includes(status);
+      return true;
+    }
+
+    function renderProductImageTidy(product) {
+      if (typeof cpeImageBoxFixed === 'function') return cpeImageBoxFixed(product, 'h-32');
+      if (typeof cpeImageBox === 'function') return cpeImageBox(product, 'h-32');
+
+      if (product?.thumb) {
+        return `<div class="h-32 rounded-2xl bg-slate-100 border overflow-hidden"><img src="${product.thumb}" class="w-full h-full object-cover" alt="${product.name || 'Produk'}"></div>`;
+      }
+
+      return `<div class="h-32 rounded-2xl bg-slate-100 border flex items-center justify-center text-slate-400"><i class="fa-solid fa-image text-3xl"></i></div>`;
+    }
+
+    function userMyProducts() {
+      const sub = state.userSub || 'Daftar Produk';
+
+      if (sub === 'Upload Produk') {
+        if (typeof cpeRenderUploadForm === 'function') {
+          return cpeRenderUploadForm(state.editProductId || null)
+            .replaceAll("syncUserDashboardView('myProducts','Daftar Produk')", "openUserProductList()")
+            .replaceAll('Daftar Produk</button>', 'Kembali ke Produk Saya</button>');
+        }
+
+        return panel('Tambah Produk', 'Lengkapi data produk untuk diajukan ke admin.', `
+          <div class="rounded-[22px] border bg-white p-5">
+            <p class="text-sm text-slate-600">Form upload produk sedang disiapkan.</p>
+            <button onclick="openUserProductList()" class="mt-4 bg-slate-950 text-white rounded-2xl px-5 py-3 font-black">Kembali ke Produk Saya</button>
+          </div>
+        `);
+      }
+
+      const allProducts = getUserProductListTidy();
+      const products = allProducts.filter(product => productStatusMatchTidy(product, sub));
+
+      return panel('Produk Saya', 'Daftar produk yang sudah didaftarkan dan pengelolaan produk seller.', `
+        <div class="rounded-[22px] bg-white border border-orange-100 p-4 mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h3 class="font-black text-slate-900">Daftar Produk Saya</h3>
+            <p class="text-xs text-slate-500 mt-1">Kelola produk yang sudah didaftarkan. Produk baru akan masuk review admin sebelum tayang.</p>
+          </div>
+          <div class="flex flex-wrap gap-2 md:justify-end">
+            <button onclick="openUserAddProductFromList()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-4 py-2.5 font-black text-xs">
+              <i class="fa-solid fa-plus mr-1"></i>Tambah Produk
+            </button>
+            <button onclick="rememberDashboardBeforePreview('marketplace')" class="bg-slate-950 hover:bg-slate-800 text-white rounded-xl px-4 py-2.5 font-black text-xs">
+              <i class="fa-solid fa-store mr-1"></i>Cek Marketplace
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          ${kpiCard('Total Produk', String(allProducts.length), 'fa-boxes-stacked', 'indigo')}
+          ${kpiCard('Aktif', String(allProducts.filter(p => ['Aktif','Tayang','Admin','Approved','Published'].includes(p.status || p.reportStatus)).length), 'fa-circle-check', 'emerald')}
+          ${kpiCard('Review', String(allProducts.filter(p => ['Menunggu Review','Review'].includes(p.status || p.reportStatus)).length), 'fa-clock', 'amber')}
+          ${kpiCard('Ditolak/Nonaktif', String(allProducts.filter(p => ['Ditolak','Nonaktif','Draft'].includes(p.status || p.reportStatus)).length), 'fa-circle-xmark', 'rose')}
+        </div>
+
+        ${products.length ? `
+          <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+            ${products.map(product => `
+              <div class="rounded-[22px] border bg-white p-4 shadow-sm">
+                ${renderProductImageTidy(product)}
+                <div class="flex items-start justify-between gap-3 mt-3">
+                  <div class="min-w-0">
+                    <h3 class="font-black text-base leading-tight line-clamp-2">${product.name || 'Produk Seller'}</h3>
+                    <p class="text-xs font-black text-orange-600 mt-1 line-clamp-1">${product.category || '-'}</p>
+                  </div>
+                  ${badge(product.status || product.reportStatus || 'Review', ['Aktif','Tayang','Admin','Approved','Published'].includes(product.status || product.reportStatus) ? 'emerald' : (product.status || product.reportStatus) === 'Ditolak' ? 'rose' : 'amber')}
+                </div>
+                <p class="text-xs text-slate-500 mt-2 line-clamp-2">${product.description || 'Belum ada deskripsi.'}</p>
+                <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
+                  <div class="rounded-xl bg-slate-50 border p-2"><b>Harga</b><p class="text-slate-500 mt-1 truncate">${product.price || '-'}</p></div>
+                  <div class="rounded-xl bg-slate-50 border p-2"><b>Stok</b><p class="text-slate-500 mt-1 truncate">${product.stock || '-'}</p></div>
+                </div>
+                <div class="mt-3 grid grid-cols-2 gap-2">
+                  <button onclick="cpeEditProduct ? cpeEditProduct('${product.id}') : (state.editProductId='${product.id}', openUserAddProductFromList())" class="bg-indigo-600 text-white rounded-xl px-3 py-2 text-xs font-black">Edit</button>
+                  <button onclick="cpeDeleteProduct ? cpeDeleteProduct('${product.id}') : showToast('Hapus produk')" class="bg-rose-600 text-white rounded-xl px-3 py-2 text-xs font-black">Hapus</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="rounded-[22px] border bg-white p-8 text-center">
+            <i class="fa-solid fa-box-open text-5xl text-slate-300 mb-4"></i>
+            <h3 class="font-black text-lg">Belum ada produk</h3>
+            <p class="text-sm text-slate-500 mt-2">Klik Tambah Produk di kanan atas untuk mendaftarkan produk baru.</p>
+            <button onclick="openUserAddProductFromList()" class="mt-4 bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Tambah Produk</button>
+          </div>
+        `}
+      `);
+    }
+
+    function installUserProductMenuTidy() {
+      window.openUserAddProductFromList = openUserAddProductFromList;
+      window.openUserProductList = openUserProductList;
+      window.userMyProducts = userMyProducts;
+    }
+
+
+    if (typeof installUserProductMenuTidy === 'function') installUserProductMenuTidy();
     renderApp();
     setTimeout(cpeHydrateImages, 300);
     setTimeout(mandiriHydrateImages, 300);
