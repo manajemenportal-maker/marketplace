@@ -3415,7 +3415,7 @@
           </div>
           <div class="flex flex-wrap gap-2">
             <button onclick="syncUserDashboardView('myProducts','Upload Produk')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black text-sm">Upload Produk</button>
-            <button onclick="switchRole('marketplace')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black text-sm">Cek Marketplace</button>
+            <button onclick="rememberDashboardBeforePreview('marketplace')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black text-sm">Cek Marketplace</button>
           </div>
         </div>
 
@@ -3843,7 +3843,7 @@
           </div>
           <div class="flex flex-wrap gap-2">
             <button onclick="state.editProductId=null; syncUserDashboardView('myProducts','Upload Produk')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black text-sm">Upload Produk</button>
-            <button onclick="switchRole('marketplace')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black text-sm">Cek Marketplace</button>
+            <button onclick="rememberDashboardBeforePreview('marketplace')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black text-sm">Cek Marketplace</button>
           </div>
         </div>
 
@@ -4453,6 +4453,66 @@
     }
 
 
+
+    // === BISNISHUB SESSION SAFE MARKETPLACE PREVIEW FIX ===
+    function rememberDashboardBeforePreview(target = 'marketplace') {
+      if (state.role === 'admin' || state.role === 'user') {
+        state.lastDashboardRole = state.role;
+        state.lastAdminMenu = state.adminMenu || 'overview';
+        state.lastAdminSub = state.adminSub || 'Ringkasan';
+        state.lastUserMenu = state.userMenu || 'overview';
+        state.lastUserSub = state.userSub || 'Ringkasan';
+        state.previewMode = true;
+        state.role = target;
+        saveState();
+        renderApp();
+        return;
+      }
+
+      state.role = target;
+      saveState();
+      renderApp();
+    }
+
+    function returnToDashboardFromPreview() {
+      const lastRole = state.lastDashboardRole || 'user';
+
+      if (lastRole === 'admin') {
+        state.role = 'admin';
+        state.adminMenu = state.lastAdminMenu || state.adminMenu || 'overview';
+        state.adminSub = state.lastAdminSub || state.adminSub || 'Ringkasan';
+      } else {
+        state.role = 'user';
+        state.userGate = 'dashboard';
+        state.userMenu = state.lastUserMenu || state.userMenu || 'overview';
+        state.userSub = state.lastUserSub || state.userSub || 'Ringkasan';
+      }
+
+      state.previewMode = false;
+      saveState();
+      renderApp();
+    }
+
+    function renderPreviewBackButton() {
+      if (!state.previewMode || !state.lastDashboardRole) return '';
+
+      const label = state.lastDashboardRole === 'admin' ? 'Kembali Dashboard Admin' : 'Kembali Dashboard User';
+
+      return `
+        <button onclick="returnToDashboardFromPreview()" class="fixed left-4 bottom-24 z-[80] bg-slate-950 text-white rounded-2xl shadow-xl px-5 py-3 font-black text-sm flex items-center gap-2">
+          <i class="fa-solid fa-arrow-left"></i>
+          ${label}
+        </button>
+      `;
+    }
+
+    function installSessionPreviewFix() {
+      window.rememberDashboardBeforePreview = rememberDashboardBeforePreview;
+      window.returnToDashboardFromPreview = returnToDashboardFromPreview;
+      window.renderPreviewBackButton = renderPreviewBackButton;
+    }
+
+
     function renderApp() {
       try {
         if (state.role !== 'marketplace' && typeof marketplaceCarouselTimer !== 'undefined') {
@@ -4502,10 +4562,10 @@
               </div>
             </div>
             <div class="flex flex-wrap gap-2">
-              <button onclick="switchRole('marketplace')" class="px-4 py-2 rounded-xl text-xs font-black bg-indigo-600 text-white">
+              <button onclick="rememberDashboardBeforePreview('marketplace')" class="px-4 py-2 rounded-xl text-xs font-black bg-indigo-600 text-white">
                 Marketplace B2B
               </button>
-              <button onclick="switchRole('tender')" class="px-4 py-2 rounded-xl text-xs font-black bg-amber-400 text-slate-950">
+              <button onclick="rememberDashboardBeforePreview('tender')" class="px-4 py-2 rounded-xl text-xs font-black bg-amber-400 text-slate-950">
                 Bursa Tender
               </button>
               <button onclick="switchRole('${isAdmin ? 'user' : 'admin'}')" class="px-4 py-2 rounded-xl text-xs font-black ${isAdmin ? 'bg-white text-slate-950' : 'bg-slate-900 text-white'}">
@@ -4542,11 +4602,15 @@
           </aside>
           <main class="flex-1 min-w-0">${content}</main>
         </div>
-        ${renderFloatingHelp()}${renderMobileBottomDock()}
+        ${renderPreviewBackButton()}${renderFloatingHelp()}${renderMobileBottomDock()}
       `;
     }
 
     function switchRole(role) {
+      if ((role === 'marketplace' || role === 'tender' || role === 'companyProfile') && (state.role === 'admin' || state.role === 'user')) {
+        rememberDashboardBeforePreview(role);
+        return;
+      }
       if (role === 'admin') {
         openAdminHiddenLogin();
         return;
@@ -4922,7 +4986,7 @@
         <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
           <div class="px-4 md:px-6 py-3 flex items-center justify-between gap-3 max-w-[1500px] mx-auto">
             <div class="flex items-center gap-3">
-              <img src="${document.querySelector('.brand-logo')?.src || ''}" alt="BisnisHUB Logo" class="brand-logo market" onclick="switchRole('marketplace')">
+              <img src="${document.querySelector('.brand-logo')?.src || ''}" alt="BisnisHUB Logo" class="brand-logo market" onclick="rememberDashboardBeforePreview('marketplace')">
               <div>
                 <h1 class="text-lg md:text-2xl font-black leading-tight text-slate-950">Company Profile</h1>
                 <p class="text-xs text-slate-500">Compro standar BisnisHUB untuk perusahaan terdaftar.</p>
@@ -5455,7 +5519,7 @@
               </div>
             </div>
             <div class="flex flex-wrap gap-2">
-              <button onclick="switchRole('tender')" class="px-4 py-2 rounded-xl text-xs font-black bg-amber-400 text-indigo-950">Bursa Tender</button>
+              <button onclick="rememberDashboardBeforePreview('tender')" class="px-4 py-2 rounded-xl text-xs font-black bg-amber-400 text-indigo-950">Bursa Tender</button>
               <button onclick="switchRole('user')" class="px-4 py-2 rounded-xl text-xs font-black bg-white text-indigo-950">Akun Saya</button>
             </div>
           </div>
@@ -5496,7 +5560,7 @@
           ${renderSharePreviewSection()}
           ${renderFrontFooter()}
         </main>
-        ${renderFloatingHelp()}${renderMobileBottomDock()}
+        ${renderPreviewBackButton()}${renderFloatingHelp()}${renderMobileBottomDock()}
       `;
       setTimeout(() => { if (typeof cpeHydrateImages === 'function') cpeHydrateImages(); }, 180);
       setTimeout(() => { if (typeof mandiriHydrateImages === 'function') mandiriHydrateImages(); if (typeof bhHydrateProductImages === 'function') bhHydrateProductImages(); }, 250);
@@ -5689,7 +5753,7 @@
                 <h1 class="text-3xl md:text-5xl font-black leading-tight mt-2">Bursa Tender & Proyek B2B</h1>
                 <p class="text-slate-600 mt-3 max-w-3xl">Tender aktif dari admin BisnisHUB dan peluang proyek untuk vendor, supplier, kontraktor, konsultan, dan penyedia jasa industri.</p>
               </div>
-              <button onclick="switchRole('marketplace')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Kembali Marketplace</button>
+              <button onclick="rememberDashboardBeforePreview('marketplace')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Kembali Marketplace</button>
             </div>
           </section>
           <section class="grid gap-4">
@@ -5697,7 +5761,7 @@
           </section>
           ${renderFrontFooter()}
         </main>
-        ${renderFloatingHelp()}${renderMobileBottomDock()}
+        ${renderPreviewBackButton()}${renderFloatingHelp()}${renderMobileBottomDock()}
       `;
     }
 
@@ -6208,7 +6272,7 @@
         </div>
 
         <div class="mt-5 flex flex-wrap gap-2">
-          <button onclick="switchRole('marketplace')" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-5 py-3 font-black">Preview Marketplace</button>
+          <button onclick="rememberDashboardBeforePreview('marketplace')" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-5 py-3 font-black">Preview Marketplace</button>
           <button onclick="resetAdminAdsSettings(); localStorage.removeItem('bisnishub_admin_ads'); renderAdminDashboard();" class="bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl px-5 py-3 font-black">Reset Semua Iklan</button>
         </div>
       `);
@@ -6375,7 +6439,7 @@
         <div class="mt-5 flex flex-wrap gap-2">
           <button onclick="saveAdminAdsSettings()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">Simpan Setting Iklan</button>
           <button onclick="resetAdminAdsSettings()" class="bg-slate-900 hover:bg-slate-800 text-white rounded-2xl px-5 py-3 font-black">Reset Iklan</button>
-          <button onclick="switchRole('marketplace')" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-5 py-3 font-black">Preview Marketplace</button>
+          <button onclick="rememberDashboardBeforePreview('marketplace')" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-5 py-3 font-black">Preview Marketplace</button>
         </div>
       `);
     }
@@ -6661,7 +6725,7 @@
           <button onclick="resetAdminCarouselSettings()" class="bg-slate-900 hover:bg-slate-800 text-white rounded-2xl px-5 py-3 font-black">
             Reset Carousel
           </button>
-          <button onclick="switchRole('marketplace')" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-5 py-3 font-black">
+          <button onclick="rememberDashboardBeforePreview('marketplace')" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-5 py-3 font-black">
             Preview Marketplace
           </button>
         </div>
@@ -6698,7 +6762,7 @@
             <p class="text-slate-100 mt-4 text-sm md:text-base">${active.desc || 'Temukan produk, jasa, tender, dan peluang bisnis dalam satu platform.'}</p>
             <div class="mt-6 flex flex-wrap gap-3">
               <button onclick="document.getElementById('marketProducts').scrollIntoView({behavior:'smooth'})" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 py-3 font-black">Lihat Produk</button>
-              <button onclick="switchRole('tender')" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Lihat Tender</button>
+              <button onclick="rememberDashboardBeforePreview('tender')" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Lihat Tender</button>
               <button onclick="document.getElementById('companyDirectory')?.scrollIntoView({behavior:'smooth'})" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Direktori Perusahaan</button>
               <button onclick="switchRole('user')" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Masuk Akun</button>
             </div>
@@ -8576,7 +8640,7 @@ service cloud.firestore {
               </div>
             </div>
             <div class="flex gap-2">
-              <button onclick="switchRole('marketplace')" class="px-4 py-2 rounded-xl text-xs font-black bg-slate-100 text-slate-700">Marketplace</button>
+              <button onclick="rememberDashboardBeforePreview('marketplace')" class="px-4 py-2 rounded-xl text-xs font-black bg-slate-100 text-slate-700">Marketplace</button>
               <button onclick="openUserLoginEntry()" class="px-4 py-2 rounded-xl text-xs font-black bg-indigo-600 text-white">Login</button>
             </div>
           </div>
@@ -8673,7 +8737,7 @@ service cloud.firestore {
                 <button onclick="openUserLoginEntry()" class="bg-slate-900 hover:bg-slate-800 text-white rounded-2xl px-5 py-3 font-black">
                   Login User
                 </button>
-                <button onclick="switchRole('marketplace')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl px-5 py-3 font-black">
+                <button onclick="rememberDashboardBeforePreview('marketplace')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl px-5 py-3 font-black">
                   Kembali Marketplace
                 </button>
               </div>
@@ -9884,7 +9948,7 @@ service cloud.firestore {
           <div class="mt-4 flex flex-wrap gap-2">
             <button onclick="window.bhSaveProductIndexedDB()" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">${editing ? 'Update Produk' : 'Simpan Produk'}</button>
             <button onclick="state.editProductId=null; state.userSub='Preview'; saveState(); renderUserDashboard();" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Lihat Produk Saya</button>
-            <button onclick="switchRole('marketplace')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Lihat Marketplace</button>
+            <button onclick="rememberDashboardBeforePreview('marketplace')" class="bg-indigo-600 text-white rounded-2xl px-5 py-3 font-black">Lihat Marketplace</button>
           </div>
         `);
       }
@@ -10335,7 +10399,7 @@ service cloud.firestore {
             <button onclick="setAdminMenu('overview')" class="dock-item active"><i class="fa-solid fa-chart-line"></i><span>Admin</span></button>
             <button onclick="setAdminMenu('products')" class="dock-item"><i class="fa-solid fa-boxes-stacked"></i><span>Produk</span></button>
             <button onclick="setAdminMenu('cms')" class="dock-item"><i class="fa-solid fa-palette"></i><span>CMS</span></button>
-            <button onclick="switchRole('marketplace')" class="dock-item"><i class="fa-solid fa-store"></i><span>Market</span></button>
+            <button onclick="rememberDashboardBeforePreview('marketplace')" class="dock-item"><i class="fa-solid fa-store"></i><span>Market</span></button>
             <button onclick="logoutToMarketplace()" class="dock-item"><i class="fa-solid fa-right-from-bracket"></i><span>Keluar</span></button>
           </nav>
         `;
@@ -10343,13 +10407,13 @@ service cloud.firestore {
 
       return `
         <nav class="mobile-bottom-dock">
-          <button onclick="switchRole('marketplace')" class="dock-item ${isMarketplace ? 'active' : ''}">
+          <button onclick="rememberDashboardBeforePreview('marketplace')" class="dock-item ${isMarketplace ? 'active' : ''}">
             <i class="fa-solid fa-store"></i><span>Home</span>
           </button>
           <button onclick="switchRole('marketplace'); setTimeout(() => document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth'}), 60)" class="dock-item">
             <i class="fa-solid fa-box-open"></i><span>Produk</span>
           </button>
-          <button onclick="switchRole('tender')" class="dock-item ${isTender ? 'active' : ''}">
+          <button onclick="rememberDashboardBeforePreview('tender')" class="dock-item ${isTender ? 'active' : ''}">
             <i class="fa-solid fa-file-signature"></i><span>Tender</span>
           </button>
           <button onclick="switchRole('user')" class="dock-item ${isUser ? 'active' : ''}">
@@ -10503,6 +10567,7 @@ service cloud.firestore {
     if (typeof installAdminReportBridge === 'function') installAdminReportBridge();
     if (typeof cpeRepairMissingThumbs === 'function') cpeRepairMissingThumbs().then(() => { if (typeof cpeHydrateImages === 'function') cpeHydrateImages(); });
     if (typeof installTenderEngine === 'function') installTenderEngine();
+    if (typeof installSessionPreviewFix === 'function') installSessionPreviewFix();
     renderApp();
     setTimeout(cpeHydrateImages, 300);
     setTimeout(mandiriHydrateImages, 300);
