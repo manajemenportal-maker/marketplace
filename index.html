@@ -160,6 +160,13 @@
     }
     .toast.show { display: block; }
 
+    /* === BISNISHUB HIDE HERO CATEGORY RESULT BLOCK === */
+    #heroCategoryResult,
+    .bh-clean-category-result {
+      display: none !important;
+    }
+
+
     /* === BISNISHUB HERO FEATURED BOX TALL ALIGNED FINAL === */
     .bh-clean-main {
       min-height: 565px !important;
@@ -6598,7 +6605,7 @@
                 </div>
               </div>
               ${renderHeroMiddleAdSpace(products)}
-              ${renderHeroCategoryResult(products)}
+              
               <div class="h-2 md:h-3"></div>
             </div>
             ${renderTaobaoMarketplaceSearch()}
@@ -13441,7 +13448,7 @@ service cloud.firestore {
               ${renderHeroFeaturedCardClean(featured[1], 1)}
             </div>
 
-            ${renderHeroCategoryResultClean(list)}
+            
             ${renderTaobaoMarketplaceSearch()}
           </main>
 
@@ -13602,6 +13609,17 @@ service cloud.firestore {
 
 
     if (typeof installProtectRealProductData === 'function') installProtectRealProductData();
+
+    // === BISNISHUB REMOVE HERO CATEGORY RESULT BLOCK FINAL ===
+    function renderHeroCategoryResultClean(products = []) {
+      return '';
+    }
+
+    function renderHeroCategoryResult(products = []) {
+      return '';
+    }
+
+
     renderApp();
     setTimeout(cpeHydrateImages, 300);
     setTimeout(mandiriHydrateImages, 300);
