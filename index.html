@@ -160,6 +160,53 @@
     }
     .toast.show { display: block; }
 
+    /* === BISNISHUB HERO PRICE LEFT BUTTON RIGHT FIX === */
+    .bh-hero-feature-meta {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) 88px !important;
+      gap: 12px !important;
+      align-items: end !important;
+      width: 100% !important;
+    }
+    .bh-hero-feature-price-wrap {
+      min-width: 0 !important;
+      overflow: hidden !important;
+      padding-right: 4px !important;
+    }
+    .bh-hero-feature-price {
+      width: 100% !important;
+      max-width: calc(100% - 2px) !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      display: block !important;
+    }
+    .bh-hero-feature-actions {
+      width: 88px !important;
+      min-width: 88px !important;
+      justify-self: end !important;
+    }
+    .bh-hero-feature-btn {
+      width: 88px !important;
+      min-width: 88px !important;
+      max-width: 88px !important;
+      position: static !important;
+      transform: none !important;
+    }
+    @media (max-width: 768px) {
+      .bh-hero-feature-meta {
+        grid-template-columns: minmax(0, 1fr) 76px !important;
+        gap: 8px !important;
+      }
+      .bh-hero-feature-actions,
+      .bh-hero-feature-btn {
+        width: 76px !important;
+        min-width: 76px !important;
+        max-width: 76px !important;
+      }
+    }
+
+
     /* === BISNISHUB HERO TOP BUTTON + PRICE OVERFLOW FIX === */
     .bh-hero-feature-card {
       min-width: 0 !important;
