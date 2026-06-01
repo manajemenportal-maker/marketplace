@@ -5814,7 +5814,7 @@
       };
 
       return `
-        <div class="mt-4 grid md:grid-cols-2 gap-4">
+        <div class="mt-4 px-3 md:px-5 lg:px-7 grid md:grid-cols-2 gap-4">
           ${featured.map((product, index) => {
             const tone = index === 0 ? 'orange' : 'indigo';
             const badgeText = index === 0 ? 'PRODUK UNGGULAN' : 'JASA / VENDOR UNGGULAN';
@@ -5823,7 +5823,7 @@
             const button = index === 0 ? 'bg-orange-500 hover:bg-orange-600' : 'bg-indigo-600 hover:bg-indigo-700';
 
             return `
-              <div class="rounded-[28px] bg-gradient-to-br ${bg} border p-4 md:p-5 shadow-sm hover:shadow-xl transition">
+              <div class="rounded-[28px] bg-gradient-to-br ${bg} border p-4 md:p-5 lg:p-6 shadow-sm hover:shadow-xl transition">
                 <div class="grid grid-cols-[118px_1fr] md:grid-cols-[140px_1fr] gap-4 items-stretch">
                   <div class="h-32 md:h-36 rounded-[22px] overflow-hidden bg-white border border-white shadow-sm">
                     ${renderImage(product, tone)}
@@ -5905,6 +5905,7 @@
                 </div>
               </div>
               ${renderHeroMiddleAdSpace(products)}
+              <div class="h-2 md:h-3"></div>
             </div>
             ${renderTaobaoMarketplaceSearch()}
           </div>
