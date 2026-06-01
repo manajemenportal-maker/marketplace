@@ -160,6 +160,83 @@
     }
     .toast.show { display: block; }
 
+    /* === BISNISHUB HERO TOP BUTTON + PRICE OVERFLOW FIX === */
+    .bh-hero-feature-card {
+      min-width: 0 !important;
+      overflow: hidden !important;
+    }
+    .bh-hero-feature-card * {
+      min-width: 0;
+    }
+    .bh-hero-feature-title {
+      line-height: 1.18 !important;
+      max-height: 44px !important;
+      overflow: hidden !important;
+    }
+    .bh-hero-feature-price {
+      display: block !important;
+      max-width: 100% !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      line-height: 1.15 !important;
+      font-size: 13px !important;
+    }
+    .bh-hero-feature-actions {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) !important;
+      gap: 6px !important;
+      align-items: stretch !important;
+      flex-shrink: 0 !important;
+    }
+    .bh-hero-feature-btn {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      height: 34px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 12px !important;
+      padding: 0 10px !important;
+      font-size: 11px !important;
+      font-weight: 900 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+    .bh-hero-top-small-price,
+    .bh-product-card-price,
+    .bh-promo-price {
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      display: block !important;
+      max-width: 100% !important;
+      line-height: 1.2 !important;
+    }
+    .bh-hero-feature-meta {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) 78px !important;
+      gap: 8px !important;
+      align-items: end !important;
+    }
+    @media (max-width: 768px) {
+      .bh-hero-feature-meta {
+        grid-template-columns: 1fr !important;
+      }
+      .bh-hero-feature-actions {
+        grid-template-columns: 1fr !important;
+      }
+      .bh-hero-feature-btn {
+        height: 32px !important;
+      }
+      .bh-hero-feature-price {
+        font-size: 12px !important;
+      }
+    }
+
+
     /* === BISNISHUB FLOATING SUPPORT POSITION FIX === */
     .floating-whatsapp,
     .floating-wa,
@@ -5974,7 +6051,7 @@
                         : `<div class="w-full h-full flex items-center justify-center"><i class="fa-solid ${product.icon || 'fa-box-open'} text-orange-400 text-2xl"></i></div>`}
                     </div>
                     <p class="text-xs font-black text-slate-900 leading-tight line-clamp-2 hover:text-orange-600">${product.name}</p>
-                    <p class="text-[11px] text-orange-600 font-black mt-1 truncate">${formatRupiahBisnisHub(product.price || 'Hubungi Seller')}</p>
+                    <p class="bh-hero-top-small-price text-[11px] text-orange-600 font-black mt-1">${formatRupiahBisnisHub(product.price || 'Hubungi Seller')}</p>
                     <p class="text-[10px] text-slate-500 mt-1 truncate">${product.seller || 'Seller'}</p>
                   </button>
                 `).join('')}
@@ -6184,9 +6261,9 @@
             const button = index === 0 ? 'bg-orange-500 hover:bg-orange-600' : 'bg-indigo-600 hover:bg-indigo-700';
 
             return `
-              <div class="rounded-[28px] bg-gradient-to-br ${bg} border p-4 md:p-5 lg:p-6 shadow-sm hover:shadow-xl transition">
-                <div class="grid grid-cols-[118px_1fr] md:grid-cols-[140px_1fr] gap-4 items-stretch">
-                  <div class="h-32 md:h-36 rounded-[22px] overflow-hidden bg-white border border-white shadow-sm">
+              <div class="bh-hero-feature-card rounded-[22px] bg-gradient-to-br ${bg} border p-4 md:p-4 lg:p-5 shadow-sm hover:shadow-xl transition">
+                <div class="grid grid-cols-[105px_1fr] md:grid-cols-[118px_1fr] gap-3 items-stretch">
+                  <div class="h-28 md:h-32 rounded-[18px] overflow-hidden bg-white border border-white shadow-sm">
                     ${renderImage(product, tone)}
                   </div>
                   <div class="min-w-0 flex flex-col justify-between">
@@ -6195,7 +6272,7 @@
                         <span class="text-[10px] font-black uppercase tracking-[0.16em] ${text}">${badgeText}</span>
                         <span class="text-[10px] font-black text-slate-400">${product.city || 'Indonesia'}</span>
                       </div>
-                      <h3 class="text-lg md:text-xl font-black text-slate-900 mt-2 leading-tight line-clamp-2">${product.name || '-'}</h3>
+                      <h3 class="bh-hero-feature-title text-base md:text-lg font-black text-slate-900 mt-2 leading-tight line-clamp-2">${product.name || '-'}</h3>
                       <p class="text-xs font-black ${text} mt-1 line-clamp-1">${product.category || '-'}</p>
                       <p class="text-xs text-slate-500 mt-2 leading-snug line-clamp-2">${product.description || product.seller || 'Produk atau jasa unggulan yang tersedia di BisnisHUB.'}</p>
                     </div>
@@ -7506,7 +7583,7 @@
                       </div>
                       <h3 class="font-black text-sm md:text-base text-slate-900 leading-tight min-h-[42px] line-clamp-2 group-hover:text-orange-600 transition">${product.name}</h3>
                       <p class="text-[11px] md:text-xs text-slate-500 mt-2 line-clamp-1"><i class="fa-solid fa-building mr-1"></i>${product.seller || '-'}</p>
-                      <p class="text-orange-600 font-black mt-3 text-base truncate">${formatRupiahBisnisHub(product.price || 'Hubungi Seller')}</p>
+                      <p class="bh-product-card-price text-orange-600 font-black mt-3 text-base">${formatRupiahBisnisHub(product.price || 'Hubungi Seller')}</p>
                     </button>
                     <div class="mt-3 grid grid-cols-2 gap-2">
                       <button onclick="openHeroProductFromTopRight('${product.id}')" class="bg-slate-100 text-slate-700 rounded-xl px-2 py-2 text-[11px] font-black hover:bg-orange-100 transition">Detail</button>
@@ -7572,7 +7649,7 @@
                         ${seller.products.slice(0, 3).map(product => `
                           <button onclick="openHeroProductFromTopRight('${product.id}')" class="w-full text-left rounded-xl bg-white border px-3 py-2 hover:border-indigo-200 hover:bg-indigo-50 transition">
                             <span class="block text-xs font-black text-slate-900 line-clamp-1">${product.name}</span>
-                            <span class="block text-[11px] text-indigo-600 font-bold mt-0.5">${formatRupiahBisnisHub(product.price || 'Hubungi Seller')}</span>
+                            <span class="bh-promo-price block text-[11px] text-indigo-600 font-bold mt-0.5">${formatRupiahBisnisHub(product.price || 'Hubungi Seller')}</span>
                           </button>
                         `).join('')}
                       </div>
@@ -7651,7 +7728,7 @@
           <div class="mt-4">
             <div class="min-w-0">
               <div class="text-[11px] font-bold uppercase text-slate-400">Harga</div>
-              <b class="block text-orange-600 text-base md:text-lg leading-tight truncate">${formatRupiahBisnisHub(product.price || '-')}</b>
+              <b class="bh-product-card-price block text-orange-600 text-base md:text-lg leading-tight">${formatRupiahBisnisHub(product.price || '-')}</b>
             </div>
             <div class="mt-3 grid grid-cols-2 gap-2 w-full">
               <button onclick="openHeroProductFromTopRight('${product.id}')" class="w-full min-w-0 bg-slate-100 text-slate-700 rounded-xl px-2 py-2 text-[11px] font-black hover:bg-orange-100 transition truncate">Detail</button>
