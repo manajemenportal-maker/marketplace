@@ -6650,28 +6650,10 @@
     }
 
     function renderMarketplaceLimitInfo(meta) {
-      if (!meta) return '';
-
-      if (meta.isSearching) {
-        return `
-          <div class="rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-800 px-4 py-3 text-sm font-bold">
-            <i class="fa-solid fa-database mr-2"></i>
-            Pencarian membaca seluruh database: ${meta.matchedProducts.length} hasil ditemukan dari ${meta.allProducts.length} data produk/jasa.
-          </div>
-        `;
-      }
-
-      return `
-        <div class="rounded-2xl bg-orange-50 border border-orange-100 text-orange-800 px-4 py-3 text-sm font-bold">
-          <i class="fa-solid fa-layer-group mr-2"></i>
-          Produk disetujui admin tampil prioritas paling atas. Display awal tetap dibatasi 50 item; sisa ${meta.hiddenCount} produk/jasa tersimpan di database dan muncul saat dicari.
-        </div>
-      `;
+      return '';
     }
 
 
-
-    // === BISNISHUB APPROVED + 50 SAMPLE + CARD BUTTON FIX FINAL ===
     function normalizeMarketplaceProductFinal(product, fallbackSource = 'unknown') {
       const id = product.id || product.productId || ('PRD-' + String(product.name || product.title || Date.now()).replace(/\s+/g, '-'));
       return {
@@ -6834,28 +6816,10 @@
     }
 
     function renderMarketplaceLimitInfoFinal(meta) {
-      if (!meta) return '';
-
-      if (meta.isSearching) {
-        return `
-          <div class="rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-800 px-4 py-3 text-sm font-bold">
-            <i class="fa-solid fa-database mr-2"></i>
-            Pencarian membaca seluruh database: ${meta.matchedProducts.length} hasil ditemukan dari ${meta.allProducts.length} data produk/jasa.
-          </div>
-        `;
-      }
-
-      return `
-        <div class="rounded-2xl bg-orange-50 border border-orange-100 text-orange-800 px-4 py-3 text-sm font-bold">
-          <i class="fa-solid fa-layer-group mr-2"></i>
-          Produk disetujui admin tampil prioritas paling atas. Display awal menampilkan ${meta.displayProducts.length} item: ${meta.approvedCount} approved + hingga 50 produk pilihan. Sisa ${meta.hiddenCount} data tetap tersedia dan dapat ditemukan melalui pencarian.
-        </div>
-      `;
+      return '';
     }
 
 
-
-    // === BISNISHUB PRODUCT DETAIL PAGE ACTIVE FINAL ===
     function getProductDetailDatabase() {
       let products = [];
 
