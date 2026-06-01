@@ -5764,56 +5764,94 @@
 
     // === BISNISHUB HERO MIDDLE AD SPACE FINAL ===
     function renderHeroMiddleAdSpace(products = []) {
-      const picks = (products || []).slice(0, 3);
-      const ads = [
+      const picks = (products || []).filter(product => product.status === 'Aktif' || product.status === 'Tayang' || product.status === 'Admin' || product.source === 'sample-category').slice(0, 2);
+
+      const fallback = [
         {
-          tag: 'PROMO PRODUK',
-          title: picks[0]?.name || 'Etalase Produk Teknik',
-          desc: picks[0]?.seller || 'Tampilkan produk industri, spare part, mesin, dan alat proyek.',
-          icon: 'fa-box-open',
-          tone: 'orange',
-          action: "document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth'})"
+          name: 'Paket Produk Teknik Unggulan',
+          category: 'Produk Teknik',
+          price: 'Hubungi Seller',
+          seller: 'BisnisHUB Featured Vendor',
+          city: 'Indonesia',
+          description: 'Ruang promosi premium untuk produk teknik pilihan seperti mesin, spare part, alat proyek, pompa, dan hidrolik.',
+          icon: 'fa-gears',
+          thumb: ''
         },
         {
-          tag: 'JASA TEKNIK',
-          title: picks[1]?.name || 'Vendor Jasa Engineering',
-          desc: picks[1]?.seller || 'Engineering, fabrikasi, maintenance, survey, dan TKDN.',
+          name: 'Vendor Jasa Teknik Pilihan',
+          category: 'Jasa Teknik',
+          price: 'Survey Dulu',
+          seller: 'BisnisHUB Engineering Partner',
+          city: 'Jabodetabek',
+          description: 'Ruang promosi premium untuk jasa engineering, fabrikasi, maintenance, survey, TKDN, dan instalasi proyek.',
           icon: 'fa-screwdriver-wrench',
-          tone: 'indigo',
-          action: "state.marketSearch='jasa'; saveState(); renderMarketplace()"
-        },
-        {
-          tag: 'TENDER B2B',
-          title: 'Bursa Tender & Vendor',
-          desc: 'Promosikan kebutuhan proyek, cari vendor, dan ajukan penawaran.',
-          icon: 'fa-briefcase',
-          tone: 'emerald',
-          action: "rememberDashboardBeforePreview('tender')"
+          thumb: ''
         }
       ];
 
-      const toneClass = {
-        orange: 'from-orange-50 to-amber-50 border-orange-100 text-orange-600',
-        indigo: 'from-indigo-50 to-blue-50 border-indigo-100 text-indigo-600',
-        emerald: 'from-emerald-50 to-teal-50 border-emerald-100 text-emerald-600'
+      const featured = [picks[0] || fallback[0], picks[1] || fallback[1]];
+
+      const renderImage = (product, tone) => {
+        if (product.thumb) {
+          return `<img src="${product.thumb}" class="w-full h-full object-cover" alt="${product.name || 'Produk unggulan'}">`;
+        }
+
+        if (product.image && product.image.startsWith('data:image/')) {
+          return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk unggulan'}">`;
+        }
+
+        if (product.image && (product.image.startsWith('http://') || product.image.startsWith('https://'))) {
+          return `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name || 'Produk unggulan'}">`;
+        }
+
+        if (product.imageKey) {
+          return `<img data-cpe-img-key="${product.imageKey}" class="w-full h-full object-cover" alt="${product.name || 'Produk unggulan'}">`;
+        }
+
+        return `<div class="w-full h-full flex items-center justify-center bg-white/20">
+          <i class="fa-solid ${product.icon || 'fa-box-open'} text-6xl ${tone === 'orange' ? 'text-orange-500' : 'text-indigo-500'}"></i>
+        </div>`;
       };
 
       return `
-        <div class="mt-4 grid md:grid-cols-3 gap-3">
-          ${ads.map(ad => `
-            <button onclick="${ad.action}" class="text-left rounded-[22px] bg-gradient-to-br ${toneClass[ad.tone]} border p-4 hover:-translate-y-0.5 hover:shadow-lg transition">
-              <div class="flex items-start gap-3">
-                <span class="w-11 h-11 shrink-0 rounded-2xl bg-white flex items-center justify-center shadow-sm">
-                  <i class="fa-solid ${ad.icon}"></i>
-                </span>
-                <span class="min-w-0">
-                  <span class="block text-[10px] font-black uppercase tracking-[0.16em] opacity-80">${ad.tag}</span>
-                  <span class="block text-sm font-black text-slate-900 mt-1 line-clamp-1">${ad.title}</span>
-                  <span class="block text-[11px] text-slate-500 mt-1 leading-snug line-clamp-2">${ad.desc}</span>
-                </span>
+        <div class="mt-4 grid md:grid-cols-2 gap-4">
+          ${featured.map((product, index) => {
+            const tone = index === 0 ? 'orange' : 'indigo';
+            const badgeText = index === 0 ? 'PRODUK UNGGULAN' : 'JASA / VENDOR UNGGULAN';
+            const bg = index === 0 ? 'from-orange-50 to-amber-50 border-orange-100' : 'from-indigo-50 to-blue-50 border-indigo-100';
+            const text = index === 0 ? 'text-orange-600' : 'text-indigo-600';
+            const button = index === 0 ? 'bg-orange-500 hover:bg-orange-600' : 'bg-indigo-600 hover:bg-indigo-700';
+
+            return `
+              <div class="rounded-[28px] bg-gradient-to-br ${bg} border p-4 md:p-5 shadow-sm hover:shadow-xl transition">
+                <div class="grid grid-cols-[118px_1fr] md:grid-cols-[140px_1fr] gap-4 items-stretch">
+                  <div class="h-32 md:h-36 rounded-[22px] overflow-hidden bg-white border border-white shadow-sm">
+                    ${renderImage(product, tone)}
+                  </div>
+                  <div class="min-w-0 flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="text-[10px] font-black uppercase tracking-[0.16em] ${text}">${badgeText}</span>
+                        <span class="text-[10px] font-black text-slate-400">${product.city || 'Indonesia'}</span>
+                      </div>
+                      <h3 class="text-lg md:text-xl font-black text-slate-900 mt-2 leading-tight line-clamp-2">${product.name || '-'}</h3>
+                      <p class="text-xs font-black ${text} mt-1 line-clamp-1">${product.category || '-'}</p>
+                      <p class="text-xs text-slate-500 mt-2 leading-snug line-clamp-2">${product.description || product.seller || 'Produk atau jasa unggulan BisnisHUB.'}</p>
+                    </div>
+                    <div class="mt-3 flex items-end justify-between gap-3">
+                      <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase">Harga / Skema</p>
+                        <b class="${text} text-sm md:text-base">${product.price || 'Hubungi Seller'}</b>
+                      </div>
+                      <button onclick="document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth'});" class="${button} text-white rounded-2xl px-4 py-2.5 text-xs font-black">
+                        Lihat
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </button>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       `;
     }
