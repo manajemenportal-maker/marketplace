@@ -13298,7 +13298,7 @@ service cloud.firestore {
             ...product,
             thumb: photo,
             image: product.image || '',
-            photoSource: 'reference-photo-by-product-keyword'
+            photoSource: 'reference-photo'
           };
         });
       };
@@ -13479,7 +13479,129 @@ service cloud.firestore {
         </section>`;
     }
 
+    // === BISNISHUB PROTECT REAL PRODUCT DATA FINAL ===
+    function isBisnisHubSampleProduct(product = {}) {
+      const id = String(product.id || '');
+      const source = String(product.source || '');
+      return (
+        id.startsWith('LAUNCH-50') ||
+        id.startsWith('SAMPLE-') ||
+        id.startsWith('FALLBACK-50') ||
+        source.includes('sample') ||
+        source.includes('launch-50')
+      );
+    }
 
+    function isBisnisHubRealProduct(product = {}) {
+      return !isBisnisHubSampleProduct(product);
+    }
+
+    function preserveRealProductDisplay(product = {}) {
+      if (!product || isBisnisHubSampleProduct(product)) return product;
+
+      // Real/seller/admin-approved product must keep its original fields.
+      // Do not inject sample thumb/photo/category/price/title over real data.
+      return {
+        ...product,
+        thumb: product.thumb || product.thumbnail || '',
+        image: product.image || '',
+        imageKey: product.imageKey || product.photoKey || product.id || '',
+        name: product.name || product.title || 'Produk Seller',
+        category: product.category || 'Produk Industri',
+        price: product.price || product.harga || 'Hubungi Seller',
+        status: product.status || product.reportStatus || 'Menunggu Review',
+        source: product.source || 'real-product'
+      };
+    }
+
+    // Re-patch launch samples carefully: only samples receive generated reference photos.
+    if (typeof getBisnisHubLaunch50Samples === 'function' && !window.__bhProtectRealDataPatch) {
+      window.__bhProtectRealDataPatch = true;
+
+      const currentLaunch50 = getBisnisHubLaunch50Samples;
+
+      getBisnisHubLaunch50Samples = function() {
+        return currentLaunch50().map((product, index) => {
+          if (!isBisnisHubSampleProduct(product)) return preserveRealProductDisplay(product);
+
+          const existingRealPhoto = product.image || product.imageKey || product.thumb;
+          const shouldKeepExisting = existingRealPhoto && !String(existingRealPhoto).includes('data:image/svg+xml');
+
+          return {
+            ...product,
+            thumb: shouldKeepExisting
+              ? product.thumb
+              : (typeof bhRealProductPhotoUrl === 'function'
+                  ? bhRealProductPhotoUrl(product.name, product.category, index + 1)
+                  : product.thumb),
+            photoSource: shouldKeepExisting ? 'existing-product-photo' : 'reference-photo'
+          };
+        });
+      };
+    }
+
+    // Override full database merge: real products first, samples after, no real fields overwritten.
+    if (typeof getMarketplaceProductsForDisplayFinal === 'function' && !window.__bhProtectDisplayPatch) {
+      window.__bhProtectDisplayPatch = true;
+      const originalDisplayFinal = getMarketplaceProductsForDisplayFinal;
+
+      getMarketplaceProductsForDisplayFinal = function() {
+        const meta = originalDisplayFinal();
+        const all = Array.isArray(meta?.allProducts) ? meta.allProducts.map(preserveRealProductDisplay) : [];
+        const real = all.filter(isBisnisHubRealProduct);
+        const samples = all.filter(isBisnisHubSampleProduct);
+
+        const seen = new Set();
+        const orderedAll = [...real, ...samples].filter(product => {
+          const key = product.id || product.name;
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+
+        const keyword = String(state.marketSearch || '').toLowerCase().trim();
+        const selectedCategory = state.marketCategory || '';
+        const isSearching = Boolean(keyword || selectedCategory);
+
+        const matchedProducts = orderedAll.filter(product => {
+          const text = [
+            product.name,
+            product.seller,
+            product.category,
+            product.description,
+            product.specs,
+            product.city,
+            product.badge
+          ].join(' ').toLowerCase();
+
+          const matchKeyword = !keyword || text.includes(keyword);
+          const matchCategory = !selectedCategory || selectedCategory === 'Semua Kategori' || product.category === selectedCategory;
+          return matchKeyword && matchCategory;
+        });
+
+        const realMatched = matchedProducts.filter(isBisnisHubRealProduct);
+        const sampleMatched = matchedProducts.filter(isBisnisHubSampleProduct);
+
+        return {
+          ...meta,
+          allProducts: orderedAll,
+          matchedProducts,
+          displayProducts: isSearching ? matchedProducts : [...realMatched, ...sampleMatched].slice(0, Math.max(50, realMatched.length)),
+          approvedCount: real.length,
+          sampleCount: samples.length,
+          hiddenCount: isSearching ? 0 : Math.max(0, orderedAll.length - Math.max(50, realMatched.length))
+        };
+      };
+    }
+
+    function installProtectRealProductData() {
+      window.isBisnisHubSampleProduct = isBisnisHubSampleProduct;
+      window.isBisnisHubRealProduct = isBisnisHubRealProduct;
+      window.preserveRealProductDisplay = preserveRealProductDisplay;
+    }
+
+
+    if (typeof installProtectRealProductData === 'function') installProtectRealProductData();
     renderApp();
     setTimeout(cpeHydrateImages, 300);
     setTimeout(mandiriHydrateImages, 300);
