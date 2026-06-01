@@ -160,6 +160,9 @@
     }
     .toast.show { display: block; }
 
+    button[onclick*="openHeroProductFromTopRight"] { cursor: pointer; }
+
+
     #marketProducts .group button { max-width: 100%; overflow: hidden; }
     #marketProducts .group { min-width: 0; }
 
@@ -5724,7 +5727,7 @@
           </div>
           <div class="space-y-3">
             ${picks.map(product => `
-              <div class="flex items-center gap-3 rounded-2xl border border-slate-100 p-3 hover:border-orange-200 transition">
+              <button onclick="openHeroProductFromTopRight('${product.id}')" class="w-full text-left flex items-center gap-3 rounded-2xl border border-slate-100 p-3 hover:border-orange-300 hover:bg-orange-50 hover:-translate-y-0.5 hover:shadow-md transition">
                 <div class="w-16 h-16 shrink-0 rounded-2xl overflow-hidden bg-slate-50 border">
                   ${product.thumb ? `<img src="${product.thumb}" class="w-full h-full object-cover" alt="${product.name}">`
                     : product.image && product.image.startsWith('data:image/') ? `<img src="${product.image}" class="w-full h-full object-cover" alt="${product.name}">`
@@ -5733,13 +5736,13 @@
                 </div>
                 <div class="min-w-0 flex-1">
                   <p class="text-xs font-black uppercase text-slate-400">${product.category || 'Produk'}</p>
-                  <h4 class="text-sm font-black text-slate-900 leading-tight mt-1 line-clamp-2">${product.name}</h4>
+                  <h4 class="text-sm font-black text-slate-900 leading-tight mt-1 line-clamp-2 hover:text-orange-600 transition">${product.name}</h4>
                   <div class="flex items-center justify-between gap-2 mt-2">
                     <b class="text-orange-600 text-sm">${product.price || '-'}</b>
                     <span class="text-[11px] text-slate-500 truncate">${product.seller || 'Seller'}</span>
                   </div>
                 </div>
-              </div>
+              </button>
             `).join('')}
           </div>
         </div>
