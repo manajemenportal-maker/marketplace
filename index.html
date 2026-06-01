@@ -160,6 +160,119 @@
     }
     .toast.show { display: block; }
 
+    /* === BISNISHUB COMPACT UI FINAL === */
+    .content-card {
+      border-radius: 22px !important;
+      padding: 18px !important;
+    }
+    .rounded-\[34px\] { border-radius: 24px !important; }
+    .rounded-\[32px\] { border-radius: 24px !important; }
+    .rounded-\[30px\] { border-radius: 22px !important; }
+    .rounded-\[28px\] { border-radius: 20px !important; }
+    .rounded-\[26px\] { border-radius: 18px !important; }
+    .rounded-\[24px\] { border-radius: 18px !important; }
+
+    main.max-w-\[1500px\],
+    main .max-w-\[1500px\],
+    .max-w-\[1500px\] {
+      max-width: 1480px !important;
+    }
+
+    .taobao-main-frame {
+      min-height: 610px !important;
+    }
+
+    #marketProducts {
+      padding: 16px !important;
+      border-radius: 24px !important;
+    }
+    #marketProducts .group {
+      padding: 10px !important;
+      border-radius: 18px !important;
+    }
+    #marketProducts .product-thumb,
+    #marketProducts .h-36 {
+      height: 118px !important;
+      margin-bottom: 10px !important;
+    }
+    #marketProducts h3 {
+      min-height: 34px !important;
+      font-size: 13px !important;
+      line-height: 1.25 !important;
+    }
+    #marketProducts p {
+      margin-top: 5px !important;
+    }
+    #marketProducts .mt-4 {
+      margin-top: 10px !important;
+    }
+    #marketProducts .mt-3 {
+      margin-top: 8px !important;
+    }
+
+    .bh-company-table-section {
+      padding: 14px !important;
+      border-radius: 22px !important;
+    }
+    .bh-company-table-section .company-toolbar {
+      margin-bottom: 10px !important;
+    }
+    .bh-company-table-section .company-kpi {
+      display: none !important;
+    }
+    .bh-company-table {
+      font-size: 12px !important;
+      line-height: 1.25 !important;
+    }
+    .bh-company-table th {
+      padding: 9px 10px !important;
+      font-size: 11px !important;
+      white-space: nowrap !important;
+    }
+    .bh-company-table td {
+      padding: 8px 10px !important;
+      vertical-align: top !important;
+    }
+    .bh-company-table .company-name {
+      font-size: 13px !important;
+      line-height: 1.2 !important;
+    }
+    .bh-company-table .company-desc {
+      display: none !important;
+    }
+    .bh-company-table .company-category-pill {
+      padding: 4px 8px !important;
+      font-size: 10px !important;
+      border-radius: 999px !important;
+    }
+    .bh-company-table .company-compro-btn {
+      padding: 7px 10px !important;
+      border-radius: 10px !important;
+      font-size: 10px !important;
+      white-space: nowrap !important;
+    }
+    .bh-company-table-wrap {
+      border-radius: 16px !important;
+    }
+
+    .bh-top-action {
+      height: 40px !important;
+      min-width: 108px !important;
+      border-radius: 14px !important;
+      padding: 0 12px !important;
+    }
+
+    @media (max-width: 768px) {
+      .content-card { padding: 14px !important; }
+      #marketProducts { padding: 12px !important; }
+      #marketProducts .product-thumb,
+      #marketProducts .h-36 { height: 104px !important; }
+      .bh-company-table-section { padding: 10px !important; }
+      .bh-company-table th,
+      .bh-company-table td { padding: 7px 8px !important; }
+    }
+
+
     .bh-top-actions {
       display: flex;
       align-items: center;
@@ -4899,7 +5012,7 @@
       const activeQuery = state.marketSearch || '';
 
       return `
-        <section class="content-card p-4 md:p-5 mb-6">
+        <section class="content-card p-4 md:p-5 mb-4">
           <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px_150px_110px] gap-3 items-end">
             <div>
               <label class="text-xs font-black uppercase text-slate-500">Cari Produk / Jasa / Seller</label>
@@ -5248,7 +5361,7 @@
       const activeCategory = state.companyCategory || '';
 
       return `
-        <section id="companyDirectory" class="mt-8">
+        <section id="companyDirectory" class="mt-5">
           <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-4">
             <div>
               <p class="text-xs font-black uppercase tracking-widest text-orange-600">Company Directory</p>
@@ -5931,7 +6044,7 @@
 
     function renderTaobaoHero(products) {
       return `
-        <section class="grid xl:grid-cols-[235px_1fr_320px] gap-4 mb-6 items-stretch">
+        <section class="grid xl:grid-cols-[235px_1fr_320px] gap-4 mb-4 items-stretch">
           <div class="taobao-main-frame rounded-[26px] bg-gradient-to-b from-orange-500 to-amber-500 p-3 shadow-lg shadow-orange-200 flex flex-col">
             <div class="rounded-[20px] bg-white/14 backdrop-blur-sm p-3 border border-white/20 flex-1 flex flex-col">
               <div class="flex items-center justify-between gap-3 mb-4">
@@ -6171,73 +6284,73 @@
       const categories = getDirectoryTableCategories(allCompanies);
 
       return `
-        <section id="companyDirectory" class="mt-8 rounded-[32px] bg-white border border-orange-100 shadow-sm p-4 md:p-6">
-          <div class="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4 mb-5">
+        <section id="companyDirectory" class="bh-company-table-section mt-6 rounded-[24px] bg-white border border-orange-100 shadow-sm p-4">
+          <div class="company-toolbar flex flex-col xl:flex-row xl:items-end xl:justify-between gap-3 mb-3">
             <div>
               <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-500">Company Directory</p>
-              <h2 class="text-2xl md:text-3xl font-black text-slate-900 mt-2">Direktori Perusahaan</h2>
-              <p class="text-sm text-slate-500 mt-2">Database perusahaan, supplier, kontraktor, konsultan, workshop, vendor jasa industri, dan company profile. Tersusun berdasarkan kategori dan abjad.</p>
+              <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Direktori Perusahaan</h2>
+              <p class="text-xs text-slate-500 mt-1">Database perusahaan, supplier, kontraktor, konsultan, workshop, dan vendor jasa industri. Tersusun berdasarkan kategori dan abjad.</p>
             </div>
             <div class="grid md:grid-cols-[1fr_260px_110px_110px] gap-2 w-full xl:max-w-4xl">
-              <div class="rounded-2xl border border-slate-200 px-4 py-3 flex items-center gap-2">
+              <div class="rounded-xl border border-slate-200 px-3 py-2 flex items-center gap-2">
                 <i class="fa-solid fa-magnifying-glass text-orange-500"></i>
                 <input id="companyDirectorySearchInput" value="${state.companySearch || ''}" onkeydown="if(event.key==='Enter') setCompanyDirectorySearch()" class="outline-none w-full text-sm font-bold" placeholder="Cari perusahaan, bidang usaha, kota, website...">
               </div>
-              <select id="companyDirectoryCategorySelect" class="border border-slate-200 rounded-2xl px-4 py-3 bg-white text-sm font-bold">
+              <select id="companyDirectoryCategorySelect" class="border border-slate-200 rounded-xl px-3 py-2 bg-white text-xs font-bold">
                 <option value="">Semua Kategori</option>
                 ${categories.map(category => `<option value="${category}" ${selectedCategory === category ? 'selected' : ''}>${category}</option>`).join('')}
               </select>
-              <button onclick="setCompanyDirectorySearch()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-4 py-3 font-black text-sm">Cari</button>
-              <button onclick="resetCompanyDirectorySearch()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl px-4 py-3 font-black text-sm">Reset</button>
+              <button onclick="setCompanyDirectorySearch()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-3 py-2 font-black text-xs">Cari</button>
+              <button onclick="resetCompanyDirectorySearch()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl px-3 py-2 font-black text-xs">Reset</button>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+          <div class="company-kpi grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
             ${kpiCard('Total Perusahaan', String(allCompanies.length), 'fa-building-user', 'indigo')}
             ${kpiCard('Kategori', String(categories.length), 'fa-layer-group', 'orange')}
             ${kpiCard('Hasil Tampil', String(filtered.length), 'fa-magnifying-glass-chart', 'emerald')}
             ${kpiCard('Status', 'Tayang', 'fa-circle-check', 'amber')}
           </div>
 
-          <div class="overflow-hidden rounded-[24px] border border-slate-200">
+          <div class="bh-company-table-wrap overflow-hidden rounded-[16px] border border-slate-200">
             <div class="overflow-x-auto">
-              <table class="w-full min-w-[980px] text-sm bg-white">
+              <table class="bh-company-table w-full min-w-[920px] text-xs bg-white">
                 <thead class="bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-100">
                   <tr>
-                    <th class="text-left px-4 py-4 font-black text-slate-700 w-[260px]">Nama Perusahaan</th>
-                    <th class="text-left px-4 py-4 font-black text-slate-700 w-[210px]">Kategori</th>
-                    <th class="text-left px-4 py-4 font-black text-slate-700">Bidang Usaha</th>
-                    <th class="text-left px-4 py-4 font-black text-slate-700 w-[140px]">Kota</th>
-                    <th class="text-left px-4 py-4 font-black text-slate-700 w-[170px]">Website</th>
-                    <th class="text-center px-4 py-4 font-black text-slate-700 w-[130px]">Compro</th>
+                    <th class="text-left px-3 py-2 font-black text-slate-700 w-[260px]">Nama Perusahaan</th>
+                    <th class="text-left px-3 py-2 font-black text-slate-700 w-[210px]">Kategori</th>
+                    <th class="text-left px-3 py-2 font-black text-slate-700">Bidang Usaha</th>
+                    <th class="text-left px-3 py-2 font-black text-slate-700 w-[140px]">Kota</th>
+                    <th class="text-left px-3 py-2 font-black text-slate-700 w-[170px]">Website</th>
+                    <th class="text-center px-3 py-2 font-black text-slate-700 w-[130px]">Compro</th>
                   </tr>
                 </thead>
                 <tbody>
                   ${filtered.length ? filtered.map((company, index) => `
                     <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'} border-b border-slate-100 hover:bg-orange-50/70 transition">
-                      <td class="px-4 py-4 align-top">
+                      <td class="px-3 py-2 align-top">
                         <button onclick="openCompanyCompro('${company.id}')" class="text-left">
-                          <div class="font-black text-slate-900 hover:text-orange-600 leading-tight">${company.companyName}</div>
-                          <div class="text-[11px] text-slate-500 mt-1 line-clamp-2">${company.description}</div>
+                          <div class="company-name font-black text-slate-900 hover:text-orange-600 leading-tight">${company.companyName}</div>
+                          <div class="company-desc text-[11px] text-slate-500 mt-1 line-clamp-1">${company.description}</div>
                         </button>
                       </td>
-                      <td class="px-4 py-4 align-top">
-                        <span class="inline-flex rounded-full bg-orange-100 text-orange-700 px-3 py-1 text-[11px] font-black">${company.category}</span>
+                      <td class="px-3 py-2 align-top">
+                        <span class="company-category-pill inline-flex rounded-full bg-orange-100 text-orange-700 px-2 py-1 text-[10px] font-black">${company.category}</span>
                       </td>
-                      <td class="px-4 py-4 align-top text-slate-600">${company.industry}</td>
-                      <td class="px-4 py-4 align-top text-slate-600">${company.city || '-'}</td>
-                      <td class="px-4 py-4 align-top text-slate-600">
+                      <td class="px-3 py-2 align-top text-slate-600">${company.industry}</td>
+                      <td class="px-3 py-2 align-top text-slate-600">${company.city || '-'}</td>
+                      <td class="px-3 py-2 align-top text-slate-600">
                         <span class="line-clamp-1">${company.website || '-'}</span>
                       </td>
-                      <td class="px-4 py-4 align-top text-center">
-                        <button onclick="openCompanyCompro('${company.id}')" class="bg-slate-950 hover:bg-orange-500 text-white rounded-xl px-4 py-2 text-xs font-black transition">
+                      <td class="px-3 py-2 align-top text-center">
+                        <button onclick="openCompanyCompro('${company.id}')" class="company-compro-btn bg-slate-950 hover:bg-orange-500 text-white rounded-lg px-3 py-1.5 text-[10px] font-black transition">
                           Lihat Compro
                         </button>
                       </td>
                     </tr>
                   `).join('') : `
                     <tr>
-                      <td colspan="6" class="px-4 py-10 text-center">
+                      <td colspan="6" class="px-3 py-8 text-center">
                         <i class="fa-solid fa-building-circle-exclamation text-5xl text-slate-300 mb-4"></i>
                         <h3 class="text-lg font-black text-slate-900">Perusahaan belum ditemukan</h3>
                         <p class="text-sm text-slate-500 mt-2">Coba kata kunci lain atau reset filter kategori.</p>
@@ -7191,7 +7304,7 @@
         ${renderTaobaoMarketplaceHeader ? renderTaobaoMarketplaceHeader() : renderHeader('Produk Unggulan', 'Produk pilihan BisnisHUB', false)}
         <main class="bg-gradient-to-b from-orange-50 via-white to-white min-h-screen">
           <div class="max-w-[1400px] mx-auto px-4 md:px-6 py-6 pb-28">
-            <section class="rounded-[34px] bg-white border border-orange-100 shadow-sm p-5 md:p-8 mb-6">
+            <section class="rounded-[34px] bg-white border border-orange-100 shadow-sm p-5 md:p-8 mb-4">
               <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                   <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-500">Featured Products</p>
@@ -7247,7 +7360,7 @@
         ${renderTaobaoMarketplaceHeader ? renderTaobaoMarketplaceHeader() : renderHeader('Promo Seller', 'Seller dan vendor pilihan', false)}
         <main class="bg-gradient-to-b from-indigo-50 via-white to-white min-h-screen">
           <div class="max-w-[1400px] mx-auto px-4 md:px-6 py-6 pb-28">
-            <section class="rounded-[34px] bg-white border border-indigo-100 shadow-sm p-5 md:p-8 mb-6">
+            <section class="rounded-[34px] bg-white border border-indigo-100 shadow-sm p-5 md:p-8 mb-4">
               <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                   <p class="text-xs font-black uppercase tracking-[0.2em] text-indigo-500">Promo Seller</p>
@@ -7374,10 +7487,10 @@
       document.getElementById('app').innerHTML = `
         ${renderTaobaoMarketplaceHeader()}
         <main class="bg-gradient-to-b from-orange-50 via-white to-white min-h-screen">
-          <div class="max-w-[1500px] mx-auto px-4 md:px-6 py-5 md:py-6">
+          <div class="max-w-[1500px] mx-auto px-4 md:px-6 py-4 md:py-5">
             ${renderRunningAds()}
             ${renderTaobaoHero(marketDisplayMeta.allProducts)}
-            <section class="mb-6">
+            <section class="mb-4">
               ${renderTaobaoStats(marketDisplayMeta.allProducts)}
             </section>
 
@@ -7407,10 +7520,10 @@
               `}
             </section>
 
-            <div class="mt-8">
+            <div class="mt-5">
               ${renderCompanyDirectoryTable()}
             </div>
-            <div class="mt-8">
+            <div class="mt-5">
               ${renderSharePreviewSection()}
             </div>
             ${renderFrontFooter()}
@@ -7603,7 +7716,7 @@
         ${renderHeader('Bursa Tender', 'Peluang proyek, tender B2B, dan penawaran vendor aktif.', false)}
         <main class="max-w-[1400px] mx-auto px-4 md:px-6 py-6 pb-28">
           ${renderTenderRunningAds()}
-          <section class="content-card p-6 md:p-8 mb-6 bg-gradient-to-br from-amber-50 to-white border-amber-100">
+          <section class="content-card p-6 md:p-8 mb-4 bg-gradient-to-br from-amber-50 to-white border-amber-100">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <p class="text-xs font-black uppercase text-amber-600 tracking-[0.2em]">BISNISHUB TENDER</p>
@@ -8611,7 +8724,7 @@
       }
 
       return `
-        <section class="hero-carousel mb-6">
+        <section class="hero-carousel mb-4">
           <img src="${active.src}" alt="${active.title || 'BisnisHUB Carousel'}">
           <div class="hero-carousel-content">
             <span class="mobile-pill-title"><i class="fa-solid fa-sparkles"></i> BISNISHUB MARKETPLACE</span>
@@ -8623,7 +8736,7 @@
               <button onclick="document.getElementById('companyDirectory')?.scrollIntoView({behavior:'smooth'})" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Direktori Perusahaan</button>
               <button onclick="switchRole('user')" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 font-black">Masuk Akun</button>
             </div>
-            <div class="mt-8 flex gap-2">
+            <div class="mt-5 flex gap-2">
               ${images.map((image, index) => `
                 <button onclick="marketplaceCarouselIndex=${index}; renderMarketplace();" class="carousel-dot ${index === marketplaceCarouselIndex ? 'active' : ''}" aria-label="Slide ${index + 1}"></button>
               `).join('')}
