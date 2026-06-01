@@ -6371,6 +6371,81 @@
 
 
     // === BISNISHUB MARKETPLACE LIMIT 50 + SEARCH DATABASE FINAL ===
+
+    // === BISNISHUB 50 VISIBLE SAMPLE PRODUCTS FINAL ===
+    function getBisnisHubLaunch50Samples() {
+      const rows = [
+        ['Traktor Roda 4 50 HP', 'Tractor & Implement', 'Rp 285.000.000', 'PT Kalimaja Surya Alam', 'Kab. Tangerang', 'Unit traktor roda 4 untuk pengolahan lahan, transportasi kebun, dan kebutuhan mekanisasi pertanian.'],
+        ['Rotary Tiller 175 cm', 'Tractor & Implement', 'Rp 32.500.000', 'Vendor Alsintan BisnisHUB', 'Jakarta', 'Implement rotary tiller lebar kerja 175 cm untuk traktor kelas menengah.'],
+        ['Disc Plough 3 Piring', 'Tractor & Implement', 'Rp 28.000.000', 'Supplier Implement Nasional', 'Bogor', 'Bajak piring untuk pembukaan lahan dan pengolahan tanah berat.'],
+        ['Traktor Crawler Lahan Basah', 'Agricultural Machinery / Alsintan', 'Hubungi Seller', 'PT Kalimaja Surya Alam', 'Kab. Tangerang', 'Traktor crawler untuk sawah, rawa, dan kondisi lahan berat.'],
+        ['Combine Harvester Medium', 'Harvester & Post Harvest', 'Rp 475.000.000', 'Vendor Panen Nusantara', 'Jawa Barat', 'Combine harvester untuk panen padi dengan performa efisien.'],
+        ['Rice Transplanter 6 Row', 'Agricultural Machinery / Alsintan', 'Rp 88.000.000', 'Mitra Alsintan', 'Jawa Tengah', 'Mesin tanam padi untuk meningkatkan produktivitas kerja tanam.'],
+        ['Pompa Alkon 3 Inch', 'Irrigation Pump / Alkon', 'Rp 3.850.000', 'PT Kalimaja Surya Alam', 'Kab. Tangerang', 'Pompa air irigasi 3 inch untuk sawah, kebun, dan proyek lapangan.'],
+        ['Pompa Alkon 4 Inch', 'Irrigation Pump / Alkon', 'Rp 5.750.000', 'PT Kalimaja Surya Alam', 'Kab. Tangerang', 'Pompa air kapasitas menengah untuk irigasi dan distribusi air.'],
+        ['Pompa Alkon 6 Inch', 'Irrigation Pump / Alkon', 'Rp 12.500.000', 'Supplier Pompa Industri', 'Tangerang', 'Pompa alkon kapasitas besar untuk irigasi luas dan proyek air.'],
+        ['Pompa Sentrifugal Industri', 'Irrigation Pump / Alkon', 'Hubungi Seller', 'Principal Pompa B2B', 'Jakarta', 'Pompa sentrifugal untuk kebutuhan industri dan utilitas proyek.'],
+        ['Hydraulic Cylinder Custom', 'Hydraulic & Pneumatic', 'Mulai Rp 2.500.000', 'Workshop Hidrolik Mandiri', 'Bekasi', 'Silinder hidrolik custom untuk alat berat, traktor, dan mesin industri.'],
+        ['Hydraulic Hose Assembly', 'Hydraulic & Pneumatic', 'Mulai Rp 350.000', 'Supplier Hidrolik B2B', 'Jakarta', 'Selang hidrolik lengkap dengan fitting sesuai kebutuhan tekanan kerja.'],
+        ['Hydraulic Power Pack', 'Hydraulic & Pneumatic', 'Hubungi Seller', 'CV Teknik Karya Mandiri', 'Bogor', 'Unit power pack hidrolik untuk mesin press, lift, dan sistem mekanik.'],
+        ['Pneumatic Cylinder ISO', 'Hydraulic & Pneumatic', 'Mulai Rp 450.000', 'Distributor Pneumatic', 'Jakarta', 'Cylinder pneumatic standar ISO untuk otomasi mesin.'],
+        ['Excavator Mini 3 Ton', 'Construction Machinery', 'Sewa / Beli', 'Rental Alat Proyek', 'Jabodetabek', 'Mini excavator untuk konstruksi, kebun, drainase, dan proyek kecil.'],
+        ['Wheel Loader 1.8 m3', 'Construction Machinery', 'Hubungi Seller', 'Supplier Alat Berat', 'Jakarta', 'Wheel loader untuk material handling, proyek, dan gudang terbuka.'],
+        ['Vibro Roller 8 Ton', 'Construction Machinery', 'Sewa Bulanan', 'Rental Proyek Nasional', 'Bogor', 'Vibro roller untuk pemadatan tanah dan pekerjaan jalan.'],
+        ['Concrete Mixer 350 Liter', 'Engineering & Construction Equipment', 'Rp 7.500.000', 'Toko Alat Proyek', 'Tangerang', 'Molen beton untuk proyek sipil, workshop, dan kontraktor kecil.'],
+        ['Panel Listrik 3 Phase', 'Electrical Equipment & Panel', 'Mulai Rp 5.000.000', 'Panel Maker BisnisHUB', 'Jakarta', 'Panel listrik 3 phase custom untuk pabrik, gedung, dan workshop.'],
+        ['MCC Panel Industri', 'Electrical Equipment & Panel', 'Hubungi Seller', 'CV Panel Teknik', 'Bekasi', 'Motor control center untuk sistem motor industri dan utility plant.'],
+        ['Genset Diesel 50 kVA', 'Generator / Power Equipment', 'Rp 95.000.000', 'Supplier Genset Nasional', 'Jakarta', 'Genset diesel untuk pabrik, proyek, kantor, dan backup power.'],
+        ['Electric Motor 10 HP', 'Motors, Gearbox & Transmission', 'Rp 4.250.000', 'Distributor Motor Industri', 'Tangerang', 'Motor listrik 10 HP untuk pompa, conveyor, dan mesin produksi.'],
+        ['Gearbox Reducer WPA', 'Motors, Gearbox & Transmission', 'Mulai Rp 1.750.000', 'Supplier Power Transmission', 'Jakarta', 'Gearbox reducer untuk conveyor, mesin produksi, dan sistem transmisi.'],
+        ['Bearing Industrial SKF/FAG', 'Bearings, Seals & Couplings', 'Mulai Rp 125.000', 'Toko Bearing Teknik', 'Jakarta', 'Bearing industri berbagai ukuran untuk mesin dan alat berat.'],
+        ['Mechanical Seal Pump', 'Bearings, Seals & Couplings', 'Mulai Rp 450.000', 'Supplier Seal Industri', 'Bekasi', 'Mechanical seal untuk pompa air, chemical pump, dan pompa industri.'],
+        ['Ball Valve Stainless', 'Valves, Pipes & Fittings', 'Mulai Rp 250.000', 'Distributor Valve B2B', 'Jakarta', 'Valve stainless untuk air, chemical ringan, dan sistem perpipaan.'],
+        ['Pipa HDPE Irigasi', 'Valves, Pipes & Fittings', 'Hubungi Seller', 'Supplier Pipa Proyek', 'Tangerang', 'Pipa HDPE untuk irigasi, air bersih, dan proyek lapangan.'],
+        ['Air Compressor 10 HP', 'Compressors & Air Systems', 'Rp 28.000.000', 'Supplier Compressor', 'Jakarta', 'Kompresor udara industri untuk workshop dan pabrik.'],
+        ['Forklift Diesel 3 Ton', 'Material Handling Equipment', 'Sewa / Beli', 'Rental Forklift B2B', 'Bekasi', 'Forklift diesel untuk gudang, pabrik, dan loading barang berat.'],
+        ['Hand Pallet 2.5 Ton', 'Warehouse & Lifting Equipment', 'Rp 2.250.000', 'Warehouse Tools Supplier', 'Jakarta', 'Hand pallet untuk gudang dan distribusi barang.'],
+        ['Chain Block 3 Ton', 'Warehouse & Lifting Equipment', 'Rp 1.850.000', 'Supplier Lifting Tools', 'Tangerang', 'Chain block untuk pengangkatan mesin dan material di workshop.'],
+        ['Mesin Las MIG 350A', 'Welding & Cutting Equipment', 'Rp 12.500.000', 'Welding Center', 'Jakarta', 'Mesin las MIG untuk fabrikasi ringan hingga menengah.'],
+        ['Plasma Cutting Machine', 'Welding & Cutting Equipment', 'Rp 18.000.000', 'Supplier Cutting Tools', 'Bekasi', 'Mesin plasma cutting untuk pemotongan plat dan fabrikasi.'],
+        ['Tool Cabinet Workshop', 'Tools & Workshop Equipment', 'Rp 4.750.000', 'Workshop Tools B2B', 'Tangerang', 'Lemari tools untuk bengkel, workshop, dan maintenance.'],
+        ['Mesin Bubut Manual', 'Machine Tools', 'Hubungi Seller', 'Supplier Machine Tools', 'Jakarta', 'Mesin bubut manual untuk workshop dan fabrikasi spare part.'],
+        ['CNC Milling Service Package', 'Jasa Machining / Bubut CNC', 'Mulai Rp 1.500.000', 'Workshop CNC Partner', 'Bekasi', 'Paket jasa machining CNC untuk spare part custom dan prototyping.'],
+        ['Packaging Sealer Machine', 'Packaging Machinery', 'Rp 8.500.000', 'Packaging Machine Vendor', 'Jakarta', 'Mesin sealer kemasan untuk UMKM dan industri kecil.'],
+        ['Food Processing Mixer', 'Food Processing Machinery', 'Rp 22.500.000', 'Food Machine Supplier', 'Bandung', 'Mesin mixer pengolahan pangan untuk produksi skala kecil-menengah.'],
+        ['Plastic Crusher Machine', 'Plastic & Rubber Machinery', 'Rp 35.000.000', 'Plastic Machinery B2B', 'Tangerang', 'Mesin crusher plastik untuk recycling dan industri pengolahan.'],
+        ['Mesin Serut Kayu Industri', 'Woodworking Machinery', 'Rp 16.500.000', 'Woodworking Supplier', 'Bogor', 'Mesin serut kayu untuk workshop furniture dan pengolahan kayu.'],
+        ['Stone Crusher Mini', 'Mining & Quarry Equipment', 'Hubungi Seller', 'Quarry Equipment Vendor', 'Jawa Barat', 'Stone crusher mini untuk material bangunan dan quarry kecil.'],
+        ['Total Station Survey', 'Measurement & Testing Instruments', 'Rp 38.000.000', 'Survey Tools Supplier', 'Jakarta', 'Alat ukur total station untuk survey, proyek sipil, dan pemetaan.'],
+        ['IoT kWh Monitoring Panel', 'IoT Monitoring & Sensors', 'Mulai Rp 3.500.000', 'IoT Monitoring Partner', 'Tangerang', 'Panel monitoring listrik berbasis IoT untuk pabrik, gedung, dan equipment.'],
+        ['Sensor Flow Meter Digital', 'IoT Monitoring & Sensors', 'Mulai Rp 2.750.000', 'Instrumentation Supplier', 'Jakarta', 'Flow meter digital untuk air, irigasi, dan proses industri.'],
+        ['Paket Safety K3 Proyek', 'Safety Equipment / K3', 'Mulai Rp 850.000', 'Safety Equipment Vendor', 'Bekasi', 'Paket APD proyek: helm, rompi, sepatu safety, sarung tangan, dan perlengkapan K3.'],
+        ['Jasa Fabrikasi Rangka Mesin', 'Jasa Fabrikasi & Welding', 'Survey Dulu', 'CV Teknik Karya Mandiri', 'Bogor', 'Jasa fabrikasi rangka mesin, bracket, dudukan pompa, dan konstruksi ringan.'],
+        ['Jasa Instalasi Pompa Irigasi', 'Jasa Instalasi Pompa & Irigasi', 'Mulai Rp 2.500.000', 'Tim Pompa Lapangan', 'Tangerang', 'Jasa instalasi pompa irigasi, pipa, suction, discharge, dan commissioning.'],
+        ['Jasa Maintenance Mesin Industri', 'Jasa Service & Maintenance Mesin', 'Kontrak Bulanan', 'Maintenance Partner B2B', 'Jakarta', 'Jasa preventive dan corrective maintenance mesin produksi.'],
+        ['Jasa Survey SID Lapangan', 'Jasa Survey / SID Lapangan', 'Mulai Rp 1.500.000', 'Mitra Survey Lapangan', 'Jakarta', 'Jasa survey lapangan, pendataan, dokumentasi, dan laporan SID.'],
+        ['Jasa Konsultan TKDN Industri', 'Jasa Konsultan TKDN', 'Hubungi Konsultan', 'Konsultan TKDN BisnisHUB', 'Jakarta', 'Pendampingan dokumen TKDN, mapping komponen, dan persiapan audit.']
+      ];
+
+      return rows.map((row, index) => ({
+        id: `LAUNCH-50-${String(index + 1).padStart(2, '0')}`,
+        name: row[0],
+        category: row[1],
+        price: row[2],
+        seller: row[3],
+        city: row[4],
+        description: row[5],
+        stock: index % 3 === 0 ? 'Ready' : index % 3 === 1 ? 'By Request' : 'Pre Order',
+        unit: row[1].startsWith('Jasa') ? 'Paket' : 'Unit',
+        status: 'Aktif',
+        source: 'launch-50-sample',
+        badge: row[1].startsWith('Jasa') ? 'Jasa' : 'Sample',
+        icon: bhCategoryIcon(row[1], row[1].startsWith('Jasa') ? 'service' : 'product'),
+        thumb: bhSampleThumb(row[1], (index % 3) + 1, row[1].startsWith('Jasa') ? 'service' : 'product')
+      }));
+    }
+
+
     function getMarketplaceFullProductDatabase() {
       let base = [];
 
@@ -6386,11 +6461,26 @@
         base = [];
       }
 
+      const launch50 = typeof getBisnisHubLaunch50Samples === 'function' ? getBisnisHubLaunch50Samples() : [];
+
       if (typeof bhMergeSampleProducts === 'function') {
-        return bhMergeSampleProducts(base);
+        const merged = bhMergeSampleProducts(base);
+        const seen = new Set();
+        return [...launch50, ...merged].filter(product => {
+          const key = product.id || product.name;
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
       }
 
-      return Array.isArray(base) ? base : [];
+      const seen = new Set();
+      return [...launch50, ...(Array.isArray(base) ? base : [])].filter(product => {
+        const key = product.id || product.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     }
 
     function getMarketplaceProductsForDisplay() {
@@ -6440,7 +6530,7 @@
       return `
         <div class="rounded-2xl bg-orange-50 border border-orange-100 text-orange-800 px-4 py-3 text-sm font-bold">
           <i class="fa-solid fa-layer-group mr-2"></i>
-          Display awal menampilkan 50 produk. Sisa ${meta.hiddenCount} produk tetap tersimpan di database dan muncul saat dicari.
+          Display awal menampilkan 50 sample utama. Sisa ${meta.hiddenCount} produk/jasa tetap tersimpan di database dan muncul saat dicari.
         </div>
       `;
     }
