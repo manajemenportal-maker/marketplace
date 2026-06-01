@@ -160,6 +160,15 @@
     }
     .toast.show { display: block; }
 
+    .taobao-category-scroll::-webkit-scrollbar { width: 6px; }
+    .taobao-category-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,.25); border-radius: 999px; }
+    .taobao-category-scroll::-webkit-scrollbar-thumb { background: rgba(251,146,60,.75); border-radius: 999px; }
+
+    .taobao-category-scroll { scrollbar-width: thin; scrollbar-color: rgba(251,146,60,.75) rgba(255,255,255,.25); }
+    .taobao-main-frame { min-height: 700px; }
+    @media (max-width: 1279px) { .taobao-main-frame { min-height: auto; } }
+
+
     .menu-button[data-menu-key="addProduct"] { display: none !important; }
 
     /* Produk Saya professional menu: old addProduct menu hidden but engine remains active */
@@ -4785,6 +4794,7 @@
     }
 
     function groupedCategoryOptions(activeCategory = '') {
+      const mainBhCategories = typeof getBisnisHubAllMainCategories === 'function' ? getBisnisHubAllMainCategories() : [];
       const produk = sortedCategoriesByKind('produk');
       const jasa = sortedCategoriesByKind('jasa');
       const perusahaan = sortedCategoriesByKind('perusahaan');
@@ -4795,7 +4805,7 @@
         </optgroup>
       ` : '';
 
-      return `
+      return `<optgroup label="Produk & Jasa Teknik BisnisHUB">${mainBhCategories.map(cat => `<option value="${cat}" ${activeCategory === cat ? 'selected' : ''}>${cat}</option>`).join('')}</optgroup>
         ${group('Kelompok Produk', produk)}
         ${group('Kelompok Jasa', jasa)}
         ${group('Kelompok Perusahaan', perusahaan)}
@@ -5488,32 +5498,125 @@
 
 
     // === BISNISHUB TAOBAO-INSPIRED MARKETPLACE HELPERS ===
+
+    function getBisnisHubProductCategories() {
+      return [
+        'Agricultural Machinery / Alsintan',
+        'Tractor & Implement',
+        'Harvester & Post Harvest',
+        'Irrigation Pump / Alkon',
+        'Hydraulic & Pneumatic',
+        'Mechanical Parts & Fabrication',
+        'Construction Machinery',
+        'Engineering & Construction Equipment',
+        'Machine Tools',
+        'Industrial Automation & Control',
+        'Electrical Equipment & Panel',
+        'Generator / Power Equipment',
+        'Motors, Gearbox & Transmission',
+        'Bearings, Seals & Couplings',
+        'Valves, Pipes & Fittings',
+        'Compressors & Air Systems',
+        'Material Handling Equipment',
+        'Warehouse & Lifting Equipment',
+        'Welding & Cutting Equipment',
+        'Tools & Workshop Equipment',
+        'Packaging Machinery',
+        'Food Processing Machinery',
+        'Plastic & Rubber Machinery',
+        'Woodworking Machinery',
+        'Metal Processing Machinery',
+        'Mining & Quarry Equipment',
+        'Road & Civil Construction Tools',
+        'Spare Parts Heavy Equipment',
+        'Industrial Supplies',
+        'Measurement & Testing Instruments',
+        'IoT Monitoring & Sensors',
+        'Safety Equipment / K3'
+      ];
+    }
+
+    function getBisnisHubServiceCategories() {
+      return [
+        'Jasa Engineering / Keteknikan',
+        'Jasa Fabrikasi & Welding',
+        'Jasa Machining / Bubut CNC',
+        'Jasa Service & Maintenance Mesin',
+        'Jasa Instalasi Mesin Industri',
+        'Jasa Instalasi Pompa & Irigasi',
+        'Jasa Hidrolik & Pneumatik',
+        'Jasa Electrical & Panel',
+        'Jasa Automation / PLC / IoT',
+        'Jasa Survey / SID Lapangan',
+        'Jasa Commissioning & Startup',
+        'Jasa Overhaul Engine / Powertrain',
+        'Jasa Kalibrasi & Testing',
+        'Jasa Desain Teknik / CAD',
+        'Jasa Konsultan TKDN',
+        'Jasa Legalitas Industri',
+        'Jasa Procurement / Sourcing',
+        'Jasa Rental Alat',
+        'Jasa Operator & Teknisi Lapangan',
+        'Jasa Training Teknis'
+      ];
+    }
+
+    function getBisnisHubAllMainCategories() {
+      return [...getBisnisHubProductCategories(), ...getBisnisHubServiceCategories()];
+    }
+
     function renderTaobaoQuickCategories() {
-      const categories = (typeof getProductCategories === 'function' ? getProductCategories() : [])
-        .filter(Boolean)
-        .slice(0, 12);
+      const productCategories = getBisnisHubProductCategories();
+      const serviceCategories = getBisnisHubServiceCategories();
 
-      if (!categories.length) {
-        return `
-          <div class="rounded-2xl bg-white/90 border border-orange-100 p-4 text-sm text-slate-500">
-            Kategori belum tersedia.
+      const renderItems = (items, icon, colorClass) => `
+        <div class="space-y-2 max-h-[245px] overflow-y-auto pr-1 taobao-category-scroll">
+          ${items.map((category) => `
+            <button onclick="state.marketCategory='${String(category).replace(/'/g, "\\'")}'; state.marketSearch=''; saveState(); renderMarketplace();" class="w-full text-left flex items-center justify-between gap-3 rounded-2xl px-3.5 py-2.5 bg-white/95 border border-orange-100 hover:border-orange-300 hover:bg-orange-50 transition text-[13px] font-bold text-slate-700">
+              <span class="flex items-center gap-2 min-w-0">
+                <span class="w-7 h-7 shrink-0 rounded-xl ${colorClass} flex items-center justify-center text-[11px] font-black">
+                  <i class="fa-solid ${icon}"></i>
+                </span>
+                <span class="truncate">${category}</span>
+              </span>
+              <i class="fa-solid fa-angle-right text-orange-400 text-xs"></i>
+            </button>
+          `).join('')}
+        </div>
+      `;
+
+      return `
+        <div class="space-y-4 h-full flex flex-col">
+          <div class="rounded-[22px] bg-white/15 border border-white/20 p-3 flex-1 min-h-0">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <div>
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-white/75">Barang Teknik</p>
+                <h4 class="text-white font-black">Produk Teknik</h4>
+              </div>
+              <span class="bg-white/20 text-white rounded-full px-2.5 py-1 text-[10px] font-black">${productCategories.length} kategori</span>
+            </div>
+            ${renderItems(productCategories, 'fa-gears', 'bg-orange-50 text-orange-500')}
           </div>
-        `;
-      }
 
-      return categories.map(category => `
-        <button onclick="state.marketCategory='${String(category).replace(/'/g, "\\'")}'; saveState(); renderMarketplace();" class="w-full text-left flex items-center justify-between gap-3 rounded-2xl px-4 py-3 bg-white/92 border border-orange-100 hover:border-orange-300 hover:bg-orange-50 transition text-sm font-bold text-slate-700">
-          <span class="truncate">${category}</span>
-          <i class="fa-solid fa-angle-right text-orange-400"></i>
-        </button>
-      `).join('');
+          <div class="rounded-[22px] bg-white/15 border border-white/20 p-3 flex-1 min-h-0">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <div>
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-white/75">Layanan Teknik</p>
+                <h4 class="text-white font-black">Jasa Teknik</h4>
+              </div>
+              <span class="bg-white/20 text-white rounded-full px-2.5 py-1 text-[10px] font-black">${serviceCategories.length} kategori</span>
+            </div>
+            ${renderItems(serviceCategories, 'fa-screwdriver-wrench', 'bg-indigo-50 text-indigo-500')}
+          </div>
+        </div>
+      `;
     }
 
     function renderTaobaoFlashDeals(products) {
       const picks = (products || []).slice(0, 3);
       if (!picks.length) {
         return `
-          <div class="rounded-[26px] bg-white p-5 border border-orange-100">
+          <div class="rounded-[26px] bg-white p-5 border border-orange-100 flex-shrink-0">
             <h3 class="text-lg font-black text-slate-900">Promo Pilihan</h3>
             <p class="text-sm text-slate-500 mt-2">Produk unggulan akan tampil di sini.</p>
           </div>
@@ -5591,9 +5694,9 @@
 
     function renderTaobaoHero(products) {
       return `
-        <section class="grid xl:grid-cols-[270px_1fr_320px] gap-4 mb-6">
-          <div class="rounded-[30px] bg-gradient-to-b from-orange-500 to-amber-500 p-4 shadow-lg shadow-orange-200">
-            <div class="rounded-[24px] bg-white/14 backdrop-blur-sm p-4 border border-white/20">
+        <section class="grid xl:grid-cols-[290px_1fr_330px] gap-4 mb-6 items-stretch">
+          <div class="taobao-main-frame rounded-[30px] bg-gradient-to-b from-orange-500 to-amber-500 p-4 shadow-lg shadow-orange-200 flex flex-col">
+            <div class="rounded-[24px] bg-white/14 backdrop-blur-sm p-4 border border-white/20 flex-1 flex flex-col">
               <div class="flex items-center justify-between gap-3 mb-4">
                 <h3 class="text-white text-lg font-black">Kategori Utama</h3>
                 <i class="fa-solid fa-grid-2 text-white"></i>
@@ -5603,8 +5706,8 @@
               </div>
             </div>
           </div>
-          <div class="space-y-4">
-            <div class="rounded-[32px] overflow-hidden bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 shadow-[0_24px_60px_rgba(251,146,60,0.35)]">
+          <div class="taobao-main-frame space-y-4 flex flex-col">
+            <div class="flex-1 rounded-[32px] overflow-hidden bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 shadow-[0_24px_60px_rgba(251,146,60,0.35)]">
               <div class="grid md:grid-cols-[1.2fr_0.8fr] gap-4 p-6 md:p-8 items-center">
                 <div>
                   <p class="text-xs font-black uppercase tracking-[0.25em] text-white/90">BisnisHUB Marketplace</p>
@@ -5639,9 +5742,9 @@
             </div>
             ${renderTaobaoMarketplaceSearch()}
           </div>
-          <div class="space-y-4">
+          <div class="taobao-main-frame space-y-4 flex flex-col">
             ${renderTaobaoFlashDeals(products)}
-            <div class="rounded-[26px] bg-white p-5 border border-orange-100">
+            <div class="rounded-[26px] bg-white p-5 border border-orange-100 flex-1">
               <h3 class="text-lg font-black text-slate-900">Layanan Cepat</h3>
               <div class="grid grid-cols-2 gap-3 mt-4">
                 <button onclick="rememberDashboardBeforePreview('tender')" class="rounded-2xl bg-orange-50 border border-orange-100 px-4 py-4 text-left hover:bg-orange-100 transition">
@@ -7056,6 +7159,7 @@
     ];
 
     function getProductCategories() {
+      const mainBhCategories = typeof getBisnisHubAllMainCategories === 'function' ? getBisnisHubAllMainCategories() : [];
       try {
         const saved = JSON.parse(localStorage.getItem('bisnishub_product_categories') || 'null');
         if (Array.isArray(saved) && saved.length) return saved;
