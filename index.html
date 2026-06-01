@@ -160,23 +160,26 @@
     }
     .toast.show { display: block; }
 
+
     .brand-logo.market {
-      width: 74px;
-      height: 74px;
-      object-fit: contain;
-      border-radius: 18px;
-      background: white;
-      padding: 6px;
-      box-shadow: 0 14px 35px rgba(251, 146, 60, .22);
-      border: 1px solid rgba(251, 146, 60, .18);
-      flex-shrink: 0;
+      width: 86px !important;
+      height: 86px !important;
+      object-fit: contain !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+      border: 0 !important;
+      flex-shrink: 0 !important;
     }
     @media (max-width: 640px) {
-      .brand-logo.market { width: 58px; height: 58px; border-radius: 16px; }
+      .brand-logo.market {
+        width: 68px !important;
+        height: 68px !important;
+      }
     }
 
-
-    .taobao-category-scroll::-webkit-scrollbar { width: 6px; }
+.taobao-category-scroll::-webkit-scrollbar { width: 6px; }
     .taobao-category-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,.25); border-radius: 999px; }
     .taobao-category-scroll::-webkit-scrollbar-thumb { background: rgba(251,146,60,.75); border-radius: 999px; }
 
