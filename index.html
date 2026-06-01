@@ -5761,6 +5761,64 @@
       `;
     }
 
+
+    // === BISNISHUB HERO MIDDLE AD SPACE FINAL ===
+    function renderHeroMiddleAdSpace(products = []) {
+      const picks = (products || []).slice(0, 3);
+      const ads = [
+        {
+          tag: 'PROMO PRODUK',
+          title: picks[0]?.name || 'Etalase Produk Teknik',
+          desc: picks[0]?.seller || 'Tampilkan produk industri, spare part, mesin, dan alat proyek.',
+          icon: 'fa-box-open',
+          tone: 'orange',
+          action: "document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth'})"
+        },
+        {
+          tag: 'JASA TEKNIK',
+          title: picks[1]?.name || 'Vendor Jasa Engineering',
+          desc: picks[1]?.seller || 'Engineering, fabrikasi, maintenance, survey, dan TKDN.',
+          icon: 'fa-screwdriver-wrench',
+          tone: 'indigo',
+          action: "state.marketSearch='jasa'; saveState(); renderMarketplace()"
+        },
+        {
+          tag: 'TENDER B2B',
+          title: 'Bursa Tender & Vendor',
+          desc: 'Promosikan kebutuhan proyek, cari vendor, dan ajukan penawaran.',
+          icon: 'fa-briefcase',
+          tone: 'emerald',
+          action: "rememberDashboardBeforePreview('tender')"
+        }
+      ];
+
+      const toneClass = {
+        orange: 'from-orange-50 to-amber-50 border-orange-100 text-orange-600',
+        indigo: 'from-indigo-50 to-blue-50 border-indigo-100 text-indigo-600',
+        emerald: 'from-emerald-50 to-teal-50 border-emerald-100 text-emerald-600'
+      };
+
+      return `
+        <div class="mt-4 grid md:grid-cols-3 gap-3">
+          ${ads.map(ad => `
+            <button onclick="${ad.action}" class="text-left rounded-[22px] bg-gradient-to-br ${toneClass[ad.tone]} border p-4 hover:-translate-y-0.5 hover:shadow-lg transition">
+              <div class="flex items-start gap-3">
+                <span class="w-11 h-11 shrink-0 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+                  <i class="fa-solid ${ad.icon}"></i>
+                </span>
+                <span class="min-w-0">
+                  <span class="block text-[10px] font-black uppercase tracking-[0.16em] opacity-80">${ad.tag}</span>
+                  <span class="block text-sm font-black text-slate-900 mt-1 line-clamp-1">${ad.title}</span>
+                  <span class="block text-[11px] text-slate-500 mt-1 leading-snug line-clamp-2">${ad.desc}</span>
+                </span>
+              </div>
+            </button>
+          `).join('')}
+        </div>
+      `;
+    }
+
+
     function renderTaobaoHero(products) {
       return `
         <section class="grid xl:grid-cols-[235px_1fr_320px] gap-4 mb-6 items-stretch">
@@ -5777,7 +5835,7 @@
           </div>
           <div class="taobao-main-frame space-y-4 flex flex-col">
             <div class="flex-1 rounded-[32px] overflow-hidden bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 shadow-[0_24px_60px_rgba(251,146,60,0.35)]">
-              <div class="grid md:grid-cols-[1.2fr_0.8fr] gap-4 p-6 md:p-8 items-center">
+              <div class="grid md:grid-cols-[1.2fr_0.8fr] gap-4 p-6 md:p-8 pb-2 items-center">
                 <div>
                   <p class="text-xs font-black uppercase tracking-[0.25em] text-white/90">BisnisHUB Marketplace</p>
                   <h2 class="text-3xl md:text-5xl font-black text-white leading-tight mt-3">Marketplace B2B bergaya modern untuk produk & jasa industri</h2>
@@ -5808,6 +5866,7 @@
                   </div>
                 </div>
               </div>
+              ${renderHeroMiddleAdSpace(products)}
             </div>
             ${renderTaobaoMarketplaceSearch()}
           </div>
