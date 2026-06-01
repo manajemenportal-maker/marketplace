@@ -6369,13 +6369,91 @@
     }
 
 
+
+    // === BISNISHUB MARKETPLACE LIMIT 50 + SEARCH DATABASE FINAL ===
+    function getMarketplaceFullProductDatabase() {
+      let base = [];
+
+      try {
+        if (typeof forceMarketplaceBaseProducts === 'function') {
+          base = forceMarketplaceBaseProducts();
+        } else if (typeof forceGetFilteredMarketplaceProducts === 'function') {
+          base = forceGetFilteredMarketplaceProducts();
+        } else if (Array.isArray(window.marketplaceProducts)) {
+          base = window.marketplaceProducts;
+        }
+      } catch (error) {
+        base = [];
+      }
+
+      if (typeof bhMergeSampleProducts === 'function') {
+        return bhMergeSampleProducts(base);
+      }
+
+      return Array.isArray(base) ? base : [];
+    }
+
+    function getMarketplaceProductsForDisplay() {
+      const allProducts = getMarketplaceFullProductDatabase();
+      const keyword = String(state.marketSearch || '').toLowerCase().trim();
+      const selectedCategory = state.marketCategory || '';
+      const isSearching = Boolean(keyword || selectedCategory);
+
+      const matched = allProducts.filter(product => {
+        const text = [
+          product.name,
+          product.seller,
+          product.category,
+          product.description,
+          product.specs,
+          product.city,
+          product.badge
+        ].join(' ').toLowerCase();
+
+        const matchKeyword = !keyword || text.includes(keyword);
+        const matchCategory = !selectedCategory || selectedCategory === 'Semua Kategori' || product.category === selectedCategory;
+
+        return matchKeyword && matchCategory;
+      });
+
+      return {
+        allProducts,
+        matchedProducts: matched,
+        displayProducts: isSearching ? matched : matched.slice(0, 50),
+        isSearching,
+        hiddenCount: isSearching ? 0 : Math.max(0, matched.length - 50)
+      };
+    }
+
+    function renderMarketplaceLimitInfo(meta) {
+      if (!meta) return '';
+
+      if (meta.isSearching) {
+        return `
+          <div class="rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-800 px-4 py-3 text-sm font-bold">
+            <i class="fa-solid fa-database mr-2"></i>
+            Pencarian membaca seluruh database: ${meta.matchedProducts.length} hasil ditemukan dari ${meta.allProducts.length} data produk/jasa.
+          </div>
+        `;
+      }
+
+      return `
+        <div class="rounded-2xl bg-orange-50 border border-orange-100 text-orange-800 px-4 py-3 text-sm font-bold">
+          <i class="fa-solid fa-layer-group mr-2"></i>
+          Display awal menampilkan 50 produk. Sisa ${meta.hiddenCount} produk tetap tersimpan di database dan muncul saat dicari.
+        </div>
+      `;
+    }
+
+
     function renderMarketplace() {
       if (firebaseIsReady() && !window.bisnisHubMarketplaceLoadedOnce) {
         window.bisnisHubMarketplaceLoadedOnce = true;
         refreshMarketplaceFromFirebase().then(() => renderMarketplace()).catch(() => {});
       }
 
-      const filteredProducts = bhMergeSampleProducts(forceGetFilteredMarketplaceProducts());
+      const marketDisplayMeta = getMarketplaceProductsForDisplay();
+      const filteredProducts = marketDisplayMeta.displayProducts;
       const productCards = filteredProducts.map(product => `
         <div class="group rounded-[26px] bg-white border border-orange-100 p-3 md:p-4 shadow-sm hover:shadow-[0_18px_38px_rgba(251,146,60,0.18)] transition hover:-translate-y-1">
           ${cpeMarketplaceThumb(product)}
@@ -6408,9 +6486,9 @@
         <main class="bg-gradient-to-b from-orange-50 via-white to-white min-h-screen">
           <div class="max-w-[1500px] mx-auto px-4 md:px-6 py-5 md:py-6">
             ${renderRunningAds()}
-            ${renderTaobaoHero(filteredProducts)}
+            ${renderTaobaoHero(marketDisplayMeta.allProducts)}
             <section class="mb-6">
-              ${renderTaobaoStats(filteredProducts)}
+              ${renderTaobaoStats(marketDisplayMeta.allProducts)}
             </section>
 
             <section id="marketProducts" class="rounded-[32px] bg-white border border-orange-100 shadow-sm p-4 md:p-6">
@@ -6426,8 +6504,9 @@
                 </div>
               </div>
 
+              ${renderMarketplaceLimitInfo(marketDisplayMeta)}
               ${filteredProducts.length ? `
-                <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">${productCards}</div>
+                <div class="mt-4 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">${productCards}</div>
               ` : `
                 <div class="rounded-[28px] border border-dashed border-orange-200 bg-orange-50/40 p-10 text-center">
                   <i class="fa-solid fa-magnifying-glass text-5xl text-orange-300 mb-4"></i>
