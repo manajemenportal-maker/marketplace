@@ -3951,9 +3951,11 @@
     }
 
     function cpeApproveProduct(productId) {
+      forceApprovedProductLive(productId);
       cpeUpdateProductStatus(productId, 'Aktif');
       renderAdminDashboard();
       setTimeout(cpeHydrateImages, 150);
+      showToast('Produk disetujui dan langsung tayang di marketplace');
     }
 
     function cpeRejectProduct(productId) {
@@ -4144,7 +4146,9 @@
     }
 
     function adminReportApproveProduct(productId) {
+      forceApprovedProductLive(productId);
       adminReportUpdateStatus(productId, 'Aktif');
+      showToast('Produk disetujui dan langsung tayang di marketplace');
     }
 
     function adminReportRejectProduct(productId) {
@@ -6446,7 +6450,111 @@
     }
 
 
+
+    // === BISNISHUB APPROVED PRODUCTS PINNED LIVE FIX ===
+    function getApprovedLiveProductsPriority() {
+      const sources = [];
+
+      try {
+        if (typeof cpeGetProducts === 'function') sources.push(...cpeGetProducts());
+      } catch (error) {}
+
+      try {
+        const reports = JSON.parse(localStorage.getItem('bisnishub_admin_product_reports_v1') || '[]');
+        if (Array.isArray(reports)) sources.push(...reports);
+      } catch (error) {}
+
+      try {
+        const userData = typeof getUserData === 'function' ? getUserData() : {};
+        if (Array.isArray(userData.products)) sources.push(...userData.products);
+      } catch (error) {}
+
+      try {
+        if (typeof bhGetAllSavedProducts === 'function') sources.push(...bhGetAllSavedProducts());
+      } catch (error) {}
+
+      try {
+        const approvedMirror = JSON.parse(localStorage.getItem('bisnishub_approved_marketplace_products') || '[]');
+        if (Array.isArray(approvedMirror)) sources.push(...approvedMirror);
+      } catch (error) {}
+
+      const seen = new Set();
+
+      return sources
+        .filter(product => {
+          const key = product.id || product.name;
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+
+          const status = product.status || product.reportStatus || '';
+          const source = product.source || '';
+          const isApproved = ['Aktif', 'Tayang', 'Admin'].includes(status);
+          const isNotSample = !String(source).includes('sample') && !String(product.id || '').startsWith('LAUNCH-50') && !String(product.id || '').startsWith('SAMPLE-');
+
+          return isApproved && isNotSample;
+        })
+        .map(product => ({
+          ...product,
+          status: product.status || 'Aktif',
+          source: product.source || 'approved-live',
+          badge: product.badge || 'Approved',
+          icon: product.icon || 'fa-box-open',
+          seller: product.seller || 'Seller BisnisHUB',
+          category: product.category || 'Produk Industri',
+          price: product.price || 'Hubungi Seller',
+          stock: product.stock || 'Ready'
+        }));
+    }
+
+    function forceApprovedProductLive(productId) {
+      const update = product => product.id === productId ? {
+        ...product,
+        status: 'Aktif',
+        reportStatus: 'Aktif',
+        approvedAt: new Date().toLocaleString('id-ID')
+      } : product;
+
+      try {
+        if (typeof cpeGetProducts === 'function' && typeof cpeSaveProducts === 'function') {
+          cpeSaveProducts(cpeGetProducts().map(update));
+        }
+      } catch (error) {}
+
+      try {
+        const reports = JSON.parse(localStorage.getItem('bisnishub_admin_product_reports_v1') || '[]');
+        if (Array.isArray(reports)) {
+          localStorage.setItem('bisnishub_admin_product_reports_v1', JSON.stringify(reports.map(update)));
+        }
+      } catch (error) {}
+
+      try {
+        const userData = typeof getUserData === 'function' ? getUserData() : null;
+        if (userData && Array.isArray(userData.products)) {
+          userData.products = userData.products.map(update);
+          if (typeof saveUserData === 'function') saveUserData(userData);
+          else localStorage.setItem('bisnishub_user_data', JSON.stringify(userData));
+        }
+      } catch (error) {}
+
+      try {
+        if (typeof bhGetAllSavedProducts === 'function' && typeof bhSaveAllProducts === 'function') {
+          bhSaveAllProducts(bhGetAllSavedProducts().map(update));
+        }
+      } catch (error) {}
+
+      try {
+        const live = getApprovedLiveProductsPriority();
+        localStorage.setItem('bisnishub_approved_marketplace_products', JSON.stringify(live));
+      } catch (error) {}
+
+      try {
+        if (typeof cpeMirrorToLegacyStores === 'function') cpeMirrorToLegacyStores();
+      } catch (error) {}
+    }
+
+
     function getMarketplaceFullProductDatabase() {
+      const approvedLive = getApprovedLiveProductsPriority();
       let base = [];
 
       try {
@@ -6466,7 +6574,7 @@
       if (typeof bhMergeSampleProducts === 'function') {
         const merged = bhMergeSampleProducts(base);
         const seen = new Set();
-        return [...launch50, ...merged].filter(product => {
+        return [...approvedLive, ...launch50, ...merged].filter(product => {
           const key = product.id || product.name;
           if (!key || seen.has(key)) return false;
           seen.add(key);
@@ -6475,7 +6583,7 @@
       }
 
       const seen = new Set();
-      return [...launch50, ...(Array.isArray(base) ? base : [])].filter(product => {
+      return [...approvedLive, ...launch50, ...(Array.isArray(base) ? base : [])].filter(product => {
         const key = product.id || product.name;
         if (!key || seen.has(key)) return false;
         seen.add(key);
@@ -6530,7 +6638,7 @@
       return `
         <div class="rounded-2xl bg-orange-50 border border-orange-100 text-orange-800 px-4 py-3 text-sm font-bold">
           <i class="fa-solid fa-layer-group mr-2"></i>
-          Display awal menampilkan 50 sample utama. Sisa ${meta.hiddenCount} produk/jasa tetap tersimpan di database dan muncul saat dicari.
+          Produk approved admin tampil prioritas paling atas. Display awal tetap dibatasi 50 item; sisa ${meta.hiddenCount} produk/jasa tersimpan di database dan muncul saat dicari.
         </div>
       `;
     }
@@ -9517,7 +9625,9 @@ service cloud.firestore {
     }
 
     function adminApproveProduct(productId) {
+      forceApprovedProductLive(productId);
       adminSaveProductStatus(productId, 'Aktif');
+      showToast('Produk disetujui dan langsung tayang di marketplace');
     }
 
     function adminRejectProduct(productId) {
