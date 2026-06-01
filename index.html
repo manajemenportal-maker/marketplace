@@ -1655,6 +1655,7 @@
       state.adminSub = 'Ringkasan';
       saveState();
       renderMarketplace();
+      scrollProductPageToTop();
     }
 
     function safeResetToUser() {
@@ -5855,7 +5856,7 @@
                         <p class="text-[10px] font-black text-slate-400 uppercase">Harga / Skema</p>
                         <b class="${text} text-sm md:text-base">${product.price || 'Hubungi Seller'}</b>
                       </div>
-                      <button onclick="product.id ? openProductDetail(product.id) : document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth'});" class="${button} text-white rounded-2xl px-4 py-2.5 text-xs font-black">
+                      <button onclick="${product.id ? `openProductDetailTop('${product.id}')` : `document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth'})`}" class="${button} text-white rounded-2xl px-4 py-2.5 text-xs font-black">
                         Lihat
                       </button>
                     </div>
@@ -6911,6 +6912,7 @@
       state.selectedProductDetail = product;
       saveState();
       renderProductDetailPage(product);
+      scrollProductPageToTop();
     }
 
     function closeProductDetail() {
@@ -6922,6 +6924,7 @@
     }
 
     function renderProductDetailPage(productArg = null) {
+      scrollProductPageToTop();
       const product = productArg || state.selectedProductDetail || findProductDetail(state.selectedProductId);
 
       if (!product) {
@@ -7033,7 +7036,7 @@
         ${renderFloatingHelp()}${renderMobileBottomDock()}
       `;
 
-      setTimeout(() => { if (typeof cpeHydrateImages === 'function') cpeHydrateImages(); }, 150);
+      setTimeout(() => { if (typeof cpeHydrateImages === 'function') cpeHydrateImages(); scrollProductPageToTop(); }, 150);
     }
 
     function installProductDetailPageEngine() {
@@ -7041,6 +7044,57 @@
       window.closeProductDetail = closeProductDetail;
       window.renderProductDetailPage = renderProductDetailPage;
       window.bhOpenProductDetail = openProductDetail;
+    }
+
+
+
+    // === BISNISHUB PRODUCT CLICK + SCROLL TOP FIX FINAL ===
+    function scrollProductPageToTop() {
+      try {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      } catch (error) {
+        window.scrollTo(0, 0);
+      }
+
+      setTimeout(() => {
+        try {
+          window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+        } catch (error) {
+          window.scrollTo(0, 0);
+        }
+      }, 50);
+    }
+
+    function openProductDetailTop(productId) {
+      openProductDetail(productId);
+      scrollProductPageToTop();
+    }
+
+    function addProductToCartSim(productId) {
+      const product = typeof findProductDetail === 'function' ? findProductDetail(productId) : null;
+      showToast(product ? `${product.name} masuk keranjang simulasi` : 'Produk masuk keranjang simulasi');
+    }
+
+    function makeProductCardClickable() {
+      // Fallback untuk elemen yang belum punya onclick eksplisit.
+      document.querySelectorAll('[data-product-open]').forEach(el => {
+        if (el.dataset.clickReady === 'true') return;
+        el.dataset.clickReady = 'true';
+        el.addEventListener('click', function(event) {
+          const id = el.getAttribute('data-product-open');
+          if (!id) return;
+          event.preventDefault();
+          event.stopPropagation();
+          openProductDetailTop(id);
+        });
+      });
+    }
+
+    function installProductClickTopFix() {
+      window.scrollProductPageToTop = scrollProductPageToTop;
+      window.openProductDetailTop = openProductDetailTop;
+      window.addProductToCartSim = addProductToCartSim;
+      window.makeProductCardClickable = makeProductCardClickable;
     }
 
 
@@ -7054,12 +7108,16 @@
       const filteredProducts = marketDisplayMeta.displayProducts;
       const productCards = filteredProducts.map(product => `
         <div class="group rounded-[26px] bg-white border border-orange-100 p-3 md:p-4 shadow-sm hover:shadow-[0_18px_38px_rgba(251,146,60,0.18)] transition hover:-translate-y-1">
-          ${cpeMarketplaceThumb(product)}
+          <button data-product-open="${product.id}" onclick="openProductDetailTop('${product.id}')" class="block w-full text-left cursor-pointer">
+            ${cpeMarketplaceThumb(product)}
+          </button>
           <div class="flex items-center justify-between gap-2 mb-2">
             ${badge(product.badge || 'Produk', product.source === 'user' ? 'emerald' : product.badge === 'TKDN' ? 'rose' : 'indigo')}
             <span class="text-[10px] font-black uppercase text-slate-400 truncate">${product.category || '-'}</span>
           </div>
-          <h3 class="font-black text-sm md:text-base text-slate-900 leading-tight min-h-[42px] line-clamp-2">${product.name}</h3>
+          <button data-product-open="${product.id}" onclick="openProductDetailTop('${product.id}')" class="block w-full text-left">
+            <h3 class="font-black text-sm md:text-base text-slate-900 leading-tight min-h-[42px] line-clamp-2 hover:text-orange-600 transition">${product.name}</h3>
+          </button>
           <p class="text-[11px] md:text-xs text-slate-500 mt-2 line-clamp-1"><i class="fa-solid fa-building mr-1"></i>${product.seller || 'Seller'}</p>
           <div class="mt-2 flex items-center gap-2 text-[11px] text-slate-400">
             <span class="truncate"><i class="fa-solid fa-location-dot mr-1 text-orange-400"></i>${product.city || 'Indonesia'}</span>
@@ -7072,8 +7130,8 @@
               <b class="block text-orange-600 text-base md:text-lg leading-tight truncate">${product.price || '-'}</b>
             </div>
             <div class="mt-3 grid grid-cols-2 gap-2 w-full">
-              <button onclick="openProductDetail('${product.id}')" class="w-full min-w-0 bg-slate-100 text-slate-700 rounded-xl px-2 py-2 text-[11px] font-black hover:bg-orange-100 transition truncate">Detail</button>
-              <button onclick="showToast('Produk masuk keranjang simulasi')" class="w-full min-w-0 bg-slate-950 text-white rounded-xl px-2 py-2 text-[11px] font-black group-hover:bg-orange-500 transition truncate">Tambah</button>
+              <button onclick="openProductDetailTop('${product.id}')" class="w-full min-w-0 bg-slate-100 text-slate-700 rounded-xl px-2 py-2 text-[11px] font-black hover:bg-orange-100 transition truncate">Detail</button>
+              <button onclick="addProductToCartSim('${product.id}')" class="w-full min-w-0 bg-slate-950 text-white rounded-xl px-2 py-2 text-[11px] font-black group-hover:bg-orange-500 transition truncate">Tambah</button>
             </div>
           </div>
         </div>
@@ -7128,7 +7186,7 @@
       `;
 
       setTimeout(() => { if (typeof cpeHydrateImages === 'function') cpeHydrateImages(); }, 180);
-      setTimeout(() => { if (typeof mandiriHydrateImages === 'function') mandiriHydrateImages(); if (typeof bhHydrateProductImages === 'function') bhHydrateProductImages(); }, 250);
+      setTimeout(() => { if (typeof mandiriHydrateImages === 'function') mandiriHydrateImages(); if (typeof bhHydrateProductImages === 'function') bhHydrateProductImages(); if (typeof makeProductCardClickable === 'function') makeProductCardClickable(); }, 250);
     }
 
 
@@ -12138,6 +12196,7 @@ service cloud.firestore {
     if (typeof installSessionPreviewFix === 'function') installSessionPreviewFix();
     if (typeof installAllMenuActiveSampleEngine === 'function') installAllMenuActiveSampleEngine();
     if (typeof installProductDetailPageEngine === 'function') installProductDetailPageEngine();
+    if (typeof installProductClickTopFix === 'function') installProductClickTopFix();
     renderApp();
     setTimeout(cpeHydrateImages, 300);
     setTimeout(mandiriHydrateImages, 300);
