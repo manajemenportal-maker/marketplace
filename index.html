@@ -6074,13 +6074,207 @@
     }
 
 
+
+    // === BISNISHUB ALL MENU ACTIVE + 3 SAMPLE PER CATEGORY ENGINE ===
+    function bhSlug(text) {
+      return String(text || '')
+        .toLowerCase()
+        .replace(/&/g, 'and')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+
+    function bhCategoryIcon(category, type = 'product') {
+      const c = String(category || '').toLowerCase();
+      if (c.includes('tractor')) return 'fa-tractor';
+      if (c.includes('pump') || c.includes('irrigation')) return 'fa-water';
+      if (c.includes('hydraulic') || c.includes('pneumatic')) return 'fa-gauge-high';
+      if (c.includes('construction') || c.includes('heavy')) return 'fa-truck-monster';
+      if (c.includes('electrical') || c.includes('panel')) return 'fa-bolt';
+      if (c.includes('automation') || c.includes('iot') || c.includes('sensor')) return 'fa-microchip';
+      if (c.includes('welding') || c.includes('fabrication')) return 'fa-industry';
+      if (c.includes('tools') || c.includes('workshop')) return 'fa-screwdriver-wrench';
+      if (c.includes('harvester')) return 'fa-wheat-awn';
+      if (c.includes('safety')) return 'fa-helmet-safety';
+      if (type === 'service') return 'fa-handshake-angle';
+      return 'fa-gears';
+    }
+
+    function bhSampleThumb(category, index, type = 'product') {
+      const label = type === 'service' ? 'JASA' : 'PRODUK';
+      const short = String(category || '').split('/')[0].trim().slice(0, 22);
+      const colors = [
+        ['#f97316', '#facc15'],
+        ['#2563eb', '#22c55e'],
+        ['#7c3aed', '#fb7185']
+      ][(index - 1) % 3];
+
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420">
+          <defs>
+            <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="${colors[0]}"/>
+              <stop offset="100%" stop-color="${colors[1]}"/>
+            </linearGradient>
+            <filter id="s" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#111827" flood-opacity=".25"/>
+            </filter>
+          </defs>
+          <rect width="640" height="420" fill="#f8fafc"/>
+          <rect x="36" y="34" width="568" height="352" rx="38" fill="url(#g)"/>
+          <circle cx="520" cy="96" r="70" fill="rgba(255,255,255,.24)"/>
+          <circle cx="98" cy="330" r="88" fill="rgba(255,255,255,.18)"/>
+          <g filter="url(#s)">
+            <rect x="92" y="105" width="456" height="210" rx="34" fill="rgba(255,255,255,.92)"/>
+          </g>
+          <text x="320" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="900" fill="#f97316">${label} ${index}</text>
+          <text x="320" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="900" fill="#0f172a">${short}</text>
+          <text x="320" y="252" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#475569">BisnisHUB Industrial B2B</text>
+          <text x="320" y="292" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#64748b">Sample untuk latihan kategori dan tampilan marketplace</text>
+        </svg>
+      `;
+
+      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    }
+
+    function getBisnisHubCategorySamples() {
+      const productCategories = typeof getBisnisHubProductCategories === 'function' ? getBisnisHubProductCategories() : [];
+      const serviceCategories = typeof getBisnisHubServiceCategories === 'function' ? getBisnisHubServiceCategories() : [];
+      const samples = [];
+
+      productCategories.forEach(category => {
+        for (let i = 1; i <= 3; i++) {
+          const base = category.split('/')[0].trim();
+          samples.push({
+            id: `SAMPLE-PRODUCT-${bhSlug(category)}-${i}`,
+            name: `${base} - Sample Produk ${i}`,
+            category,
+            price: i === 1 ? 'Hubungi Seller' : i === 2 ? 'Mulai Rp 25.000.000' : 'Tender / Nego',
+            stock: i === 1 ? 'Ready Stock' : i === 2 ? 'Pre Order' : 'By Request',
+            unit: 'Unit',
+            seller: i === 1 ? 'PT Kalimaja Surya Alam' : i === 2 ? 'Vendor Industri BisnisHUB' : 'Supplier Teknik Nasional',
+            city: i === 1 ? 'Kab. Tangerang' : i === 2 ? 'Jakarta' : 'Bogor',
+            description: `Contoh produk kategori ${category} untuk simulasi marketplace, filter kategori, kartu produk, dan tampilan detail.`,
+            specs: `Spesifikasi contoh ${category}; kapasitas dan model mengikuti kebutuhan buyer.`,
+            status: 'Aktif',
+            source: 'sample-category',
+            badge: 'Sample',
+            icon: bhCategoryIcon(category, 'product'),
+            thumb: bhSampleThumb(category, i, 'product')
+          });
+        }
+      });
+
+      serviceCategories.forEach(category => {
+        for (let i = 1; i <= 3; i++) {
+          const base = category.replace('Jasa ', '').split('/')[0].trim();
+          samples.push({
+            id: `SAMPLE-SERVICE-${bhSlug(category)}-${i}`,
+            name: `${base} - Sample Jasa ${i}`,
+            category,
+            price: i === 1 ? 'Survey Dulu' : i === 2 ? 'Mulai Rp 1.500.000' : 'Kontrak Proyek',
+            stock: 'Tim Siap',
+            unit: 'Paket',
+            seller: i === 1 ? 'CV Teknik Karya Mandiri' : i === 2 ? 'Mitra Survey Lapangan' : 'Konsultan Teknik BisnisHUB',
+            city: i === 1 ? 'Bogor' : i === 2 ? 'Jakarta' : 'Tangerang',
+            description: `Contoh layanan kategori ${category} untuk simulasi jasa teknik, pencarian vendor, dan kebutuhan proyek.`,
+            specs: `Ruang lingkup contoh ${category}; output dapat berupa laporan, instalasi, perbaikan, atau pendampingan teknis.`,
+            status: 'Aktif',
+            source: 'sample-category',
+            badge: 'Jasa',
+            icon: bhCategoryIcon(category, 'service'),
+            thumb: bhSampleThumb(category, i, 'service')
+          });
+        }
+      });
+
+      return samples;
+    }
+
+    function bhMergeSampleProducts(products = []) {
+      const samples = getBisnisHubCategorySamples();
+      const seen = new Set();
+
+      return [...products, ...samples].filter(product => {
+        const key = product.id || product.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function bhOpenProductDetail(productId) {
+      const products = typeof forceGetFilteredMarketplaceProducts === 'function'
+        ? bhMergeSampleProducts(forceGetFilteredMarketplaceProducts())
+        : bhMergeSampleProducts([]);
+      const product = products.find(item => item.id === productId);
+
+      if (!product) {
+        showToast('Detail produk belum ditemukan');
+        return;
+      }
+
+      const detail = `
+        ${product.name}
+        Kategori: ${product.category || '-'}
+        Seller: ${product.seller || '-'}
+        Harga: ${product.price || '-'}
+        Stok: ${product.stock || '-'}
+      `.trim();
+
+      alert(detail);
+    }
+
+    function bhActivateAllLooseButtons() {
+      if (window.__bhLooseButtonActivated) return;
+      window.__bhLooseButtonActivated = true;
+
+      document.addEventListener('click', function(event) {
+        const btn = event.target.closest('button');
+        if (!btn) return;
+
+        const hasHandler = btn.getAttribute('onclick');
+        const type = btn.getAttribute('type');
+
+        if (hasHandler || type === 'submit') return;
+
+        const label = (btn.textContent || '').trim().toLowerCase();
+
+        if (!label) return;
+
+        if (label.includes('detail')) {
+          showToast('Detail dibuka');
+        } else if (label.includes('hubungi') || label.includes('kontak')) {
+          if (typeof openSupportModal === 'function') openSupportModal();
+          else showToast('Kontak admin dibuka');
+        } else if (label.includes('tambah') || label.includes('keranjang')) {
+          showToast('Item masuk keranjang simulasi');
+        } else if (label.includes('penawaran') || label.includes('ajukan')) {
+          showToast('Form penawaran simulasi dibuka');
+        } else if (label.includes('compro')) {
+          showToast('Company profile dibuka');
+        } else {
+          showToast('Menu aktif: ' + (btn.textContent || 'Tombol'));
+        }
+      }, true);
+    }
+
+    function installAllMenuActiveSampleEngine() {
+      window.getBisnisHubCategorySamples = getBisnisHubCategorySamples;
+      window.bhMergeSampleProducts = bhMergeSampleProducts;
+      window.bhActivateAllLooseButtons = bhActivateAllLooseButtons;
+      window.bhOpenProductDetail = bhOpenProductDetail;
+      bhActivateAllLooseButtons();
+    }
+
+
     function renderMarketplace() {
       if (firebaseIsReady() && !window.bisnisHubMarketplaceLoadedOnce) {
         window.bisnisHubMarketplaceLoadedOnce = true;
         refreshMarketplaceFromFirebase().then(() => renderMarketplace()).catch(() => {});
       }
 
-      const filteredProducts = forceGetFilteredMarketplaceProducts();
+      const filteredProducts = bhMergeSampleProducts(forceGetFilteredMarketplaceProducts());
       const productCards = filteredProducts.map(product => `
         <div class="group rounded-[26px] bg-white border border-orange-100 p-3 md:p-4 shadow-sm hover:shadow-[0_18px_38px_rgba(251,146,60,0.18)] transition hover:-translate-y-1">
           ${cpeMarketplaceThumb(product)}
@@ -6100,9 +6294,10 @@
               <div class="text-[11px] font-bold uppercase text-slate-400">Harga</div>
               <b class="text-orange-600 text-lg md:text-xl leading-none">${product.price || '-'}</b>
             </div>
-            <button onclick="showToast('Produk masuk keranjang')" class="shrink-0 bg-slate-950 text-white rounded-2xl px-4 py-2.5 text-xs font-black group-hover:bg-orange-500 transition">
-              Tambah
-            </button>
+            <div class="flex gap-1">
+              <button onclick="bhOpenProductDetail('${product.id}')" class="shrink-0 bg-slate-100 text-slate-700 rounded-2xl px-3 py-2.5 text-xs font-black hover:bg-orange-100 transition">Detail</button>
+              <button onclick="showToast('Produk masuk keranjang simulasi')" class="shrink-0 bg-slate-950 text-white rounded-2xl px-3 py-2.5 text-xs font-black group-hover:bg-orange-500 transition">Tambah</button>
+            </div>
           </div>
         </div>
       `).join('');
@@ -11161,6 +11356,7 @@ service cloud.firestore {
     if (typeof cpeRepairMissingThumbs === 'function') cpeRepairMissingThumbs().then(() => { if (typeof cpeHydrateImages === 'function') cpeHydrateImages(); });
     if (typeof installTenderEngine === 'function') installTenderEngine();
     if (typeof installSessionPreviewFix === 'function') installSessionPreviewFix();
+    if (typeof installAllMenuActiveSampleEngine === 'function') installAllMenuActiveSampleEngine();
     renderApp();
     setTimeout(cpeHydrateImages, 300);
     setTimeout(mandiriHydrateImages, 300);
