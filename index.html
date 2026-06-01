@@ -160,6 +160,85 @@
     }
     .toast.show { display: block; }
 
+    /* === BISNISHUB REAL PRODUCT PHOTO DISPLAY STABILITY === */
+    img[src*="loremflickr.com"] {
+      background: #f1f5f9;
+      object-fit: cover;
+    }
+
+
+    /* === BISNISHUB HERO PRICE BUTTON REAL MOVE FIX === */
+    .bh-hero-feature-footer {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) 74px !important;
+      column-gap: 10px !important;
+      align-items: end !important;
+      width: 100% !important;
+      margin-top: 8px !important;
+    }
+    .bh-hero-feature-footer .bh-price-col {
+      min-width: 0 !important;
+      width: 100% !important;
+      overflow: hidden !important;
+      text-align: left !important;
+    }
+    .bh-hero-feature-footer .bh-action-col {
+      width: 74px !important;
+      min-width: 74px !important;
+      max-width: 74px !important;
+      justify-self: end !important;
+      display: flex !important;
+      justify-content: flex-end !important;
+      align-items: flex-end !important;
+      position: relative !important;
+    }
+    .bh-hero-feature-footer .bh-hero-feature-price {
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      font-size: 12px !important;
+      line-height: 1.15 !important;
+      padding-right: 4px !important;
+    }
+    .bh-hero-feature-footer .bh-hero-feature-btn {
+      width: 74px !important;
+      min-width: 74px !important;
+      max-width: 74px !important;
+      height: 30px !important;
+      padding: 0 6px !important;
+      border-radius: 10px !important;
+      font-size: 10px !important;
+      position: static !important;
+      inset: auto !important;
+      transform: none !important;
+      margin: 0 !important;
+      z-index: 1 !important;
+    }
+    .bh-hero-feature-card .bh-hero-feature-meta,
+    .bh-hero-feature-card .bh-hero-feature-actions {
+      position: static !important;
+      transform: none !important;
+    }
+    @media (max-width: 768px) {
+      .bh-hero-feature-footer {
+        grid-template-columns: minmax(0, 1fr) 64px !important;
+        column-gap: 7px !important;
+      }
+      .bh-hero-feature-footer .bh-action-col,
+      .bh-hero-feature-footer .bh-hero-feature-btn {
+        width: 64px !important;
+        min-width: 64px !important;
+        max-width: 64px !important;
+      }
+      .bh-hero-feature-footer .bh-hero-feature-price {
+        font-size: 11px !important;
+      }
+    }
+
+
     /* === BISNISHUB HERO PRICE LEFT BUTTON RIGHT FIX === */
     .bh-hero-feature-meta {
       display: grid !important;
@@ -1133,7 +1212,7 @@
       </div>
       <div class="p-5 grid gap-4">
         <div class="grid md:grid-cols-2 gap-4">
-          <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20bertanya%20tentang%20layanan%20BisnisHUB." target="_blank" class="rounded-2xl bg-green-500 hover:bg-green-600 text-green-950 font-black p-4 text-center no-underline">
+          <a href="https://wa.me/6281296629033?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20bertanya%20tentang%20layanan%20BisnisHUB." target="_blank" class="rounded-2xl bg-green-500 hover:bg-green-600 text-green-950 font-black p-4 text-center no-underline">
             <i class="fa-brands fa-whatsapp mr-2"></i>Chat Admin Kontak
           </a>
           <a href="mailto:adminbishub@gmail.com?subject=Bantuan%20BisnisHUB&body=Halo%20Admin%20BisnisHUB%2C%0A%0ASaya%20ingin%20bertanya%20tentang%3A%0A" class="rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black p-4 text-center no-underline">
@@ -1175,7 +1254,7 @@
 
         <div class="rounded-[24px] bg-slate-50 border border-slate-200 p-4">
           <h3 class="font-black mb-2">Kontak Admin BisnisHUB</h3>
-          <p class="text-sm text-slate-600"><b>Kontak:</b> 0851 1103 3789</p>
+          <p class="text-sm text-slate-600"><b>Kontak:</b> 081296629033</p>
           <p class="text-sm text-slate-600"><b>Email:</b> adminbishub@gmail.com</p>
         </div>
       </div>
@@ -5474,7 +5553,7 @@
             </div>
             <div class="flex flex-wrap gap-2">
               <button onclick="closeCompanyProfile()" class="px-4 py-2 rounded-xl text-xs font-black bg-slate-100 text-slate-700">Kembali</button>
-              <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menghubungi%20${encodeURIComponent(company.companyName)}" target="_blank" class="px-4 py-2 rounded-xl text-xs font-black bg-green-500 text-green-950 no-underline">Hubungi</a>
+              <a href="https://wa.me/6281296629033?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menghubungi%20${encodeURIComponent(company.companyName)}" target="_blank" class="px-4 py-2 rounded-xl text-xs font-black bg-green-500 text-green-950 no-underline">Hubungi</a>
             </div>
           </div>
         </header>
@@ -5558,7 +5637,7 @@
                     <section class="rounded-[28px] border bg-orange-50 border-orange-100 p-5">
                       <h3 class="font-black text-orange-800">Tertarik bekerja sama?</h3>
                       <p class="text-sm text-orange-700 mt-2">Hubungi admin BisnisHUB untuk mempertemukan Anda dengan perusahaan ini.</p>
-                      <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menghubungi%20${encodeURIComponent(company.companyName)}" target="_blank" class="mt-4 inline-flex bg-green-500 text-green-950 rounded-2xl px-5 py-3 font-black no-underline">
+                      <a href="https://wa.me/6281296629033?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menghubungi%20${encodeURIComponent(company.companyName)}" target="_blank" class="mt-4 inline-flex bg-green-500 text-green-950 rounded-2xl px-5 py-3 font-black no-underline">
                         Hubungi via Kontak
                       </a>
                     </section>
@@ -5641,7 +5720,7 @@
                   </div>
                   <div class="mt-4 flex flex-wrap gap-2">
                     <button onclick="openCompanyProfile('${company.id}')" class="bg-slate-900 text-white rounded-xl px-4 py-2 text-xs font-black">Lihat Compro</button>
-                    <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menghubungi%20${encodeURIComponent(company.companyName)}" target="_blank" class="bg-green-500 text-green-950 rounded-xl px-4 py-2 text-xs font-black no-underline">Hubungi</a>
+                    <a href="https://wa.me/6281296629033?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menghubungi%20${encodeURIComponent(company.companyName)}" target="_blank" class="bg-green-500 text-green-950 rounded-xl px-4 py-2 text-xs font-black no-underline">Hubungi</a>
                   </div>
                 </div>
               `).join('')}
@@ -6324,15 +6403,17 @@
                       <p class="text-xs text-slate-500 mt-2 leading-snug line-clamp-2">${product.description || product.seller || 'Produk atau jasa unggulan yang tersedia di BisnisHUB.'}</p>
                     </div>
                     <div class="mt-3 flex items-end justify-between gap-3">
-                      <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase">Harga / Skema</p>
-                        <b class="${text} text-sm md:text-base">${formatRupiahBisnisHub(product.price || 'Hubungi Seller')}</b>
+                      <div class="bh-hero-feature-footer">
+                      <div class="bh-price-col">
+                        <p class="text-[10px] font-black text-slate-400 uppercase leading-none">Harga / Skema</p>
+                        <b class="bh-hero-feature-price ${text}">${formatRupiahBisnisHub(price)}</b>
                       </div>
-                      <button onclick="${product.id ? `openHeroProductFromTopRight('${product.id}')` : `document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth'})`}" class="${button} text-white rounded-2xl px-4 py-2.5 text-xs font-black">
-                        Lihat
-                      </button>
+                      <div class="bh-action-col">
+                        <button onclick="${product.id ? `openHeroProductFromTopRight('${product.id}')` : `document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth'})`}" class="bh-hero-feature-btn ${button} text-white">
+                          Lihat
+                        </button>
+                      </div>
                     </div>
-                  </div>
                 </div>
               </div>
             `;
@@ -12406,7 +12487,7 @@ service cloud.firestore {
           <td>${badge(ticket.priority, ticket.priority === 'Mendesak' ? 'rose' : ticket.priority === 'Penting' ? 'amber' : 'indigo')}</td>
           <td>${badge(ticket.status, ticket.status === 'Selesai' ? 'emerald' : ticket.status === 'Diproses' ? 'amber' : 'rose')}</td>
           <td>
-            <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menanyakan%20tiket%20${ticket.id}" target="_blank" class="bg-green-500 text-green-950 rounded-xl px-3 py-2 text-xs font-black no-underline">Buat Tiket</a>
+            <a href="https://wa.me/6281296629033?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menanyakan%20tiket%20${ticket.id}" target="_blank" class="bg-green-500 text-green-950 rounded-xl px-3 py-2 text-xs font-black no-underline">Buat Tiket</a>
           </td>
         </tr>
       `);
@@ -12418,10 +12499,10 @@ service cloud.firestore {
             <b class="block text-lg">Buat Tiket</b>
             <p class="text-sm text-slate-500 mt-1">Komplain, pertanyaan, dan kendala akun.</p>
           </button>
-          <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20butuh%20bantuan." target="_blank" class="rounded-[22px] bg-green-50 border border-green-100 p-5 text-left hover:bg-green-100 no-underline text-slate-900">
+          <a href="https://wa.me/6281296629033?text=Halo%20Admin%20BisnisHUB%2C%20saya%20butuh%20bantuan." target="_blank" class="rounded-[22px] bg-green-50 border border-green-100 p-5 text-left hover:bg-green-100 no-underline text-slate-900">
             <i class="fa-brands fa-whatsapp text-3xl text-green-500 mb-3"></i>
             <b class="block text-lg">Kontak Admin</b>
-            <p class="text-sm text-slate-500 mt-1">Chat cepat ke 0851 1103 3789.</p>
+            <p class="text-sm text-slate-500 mt-1">Chat cepat ke 081296629033.</p>
           </a>
           <a href="mailto:adminbishub@gmail.com?subject=Bantuan%20BisnisHUB" class="rounded-[22px] bg-slate-50 border border-slate-200 p-5 text-left hover:bg-slate-100 no-underline text-slate-900">
             <i class="fa-solid fa-envelope text-3xl text-slate-700 mb-3"></i>
@@ -12599,7 +12680,7 @@ service cloud.firestore {
     function fillTicket() {
       const fields = {
         ticketName: state.name || 'Customer BisnisHUB',
-        ticketPhone: '085111033789',
+        ticketPhone: '081296629033',
         ticketSubject: 'Minta bantuan terkait pesanan / toko',
         ticketMessage: 'Halo Admin BisnisHUB, saya ingin menanyakan status pesanan dan pengaturan toko saya.'
       };
@@ -12999,6 +13080,112 @@ service cloud.firestore {
     if (typeof installUserProductMenuTidy === 'function') installUserProductMenuTidy();
     if (typeof installRupiahPriceFormat === 'function') installRupiahPriceFormat();
     if (typeof installCategoryClickSideResult === 'function') installCategoryClickSideResult();
+
+    // === BISNISHUB WA + REAL PRODUCT PHOTO REFERENCE FINAL ===
+    const BISNISHUB_MAIN_WA = '081296629033';
+    const BISNISHUB_MAIN_WA_INTL = '6281296629033';
+
+    function bhPhotoTagsFromProduct(name = '', category = '') {
+      const text = `${name} ${category}`.toLowerCase();
+
+      if (text.includes('traktor') || text.includes('tractor')) return 'tractor,agriculture,machinery';
+      if (text.includes('rotary') || text.includes('tiller')) return 'rotary,tiller,tractor,agriculture';
+      if (text.includes('disc plough') || text.includes('bajak')) return 'plough,tractor,agriculture';
+      if (text.includes('crawler')) return 'crawler,tractor,agriculture';
+      if (text.includes('combine') || text.includes('harvester')) return 'combine,harvester,agriculture';
+      if (text.includes('transplanter')) return 'rice,transplanter,agriculture';
+      if (text.includes('alkon') || text.includes('irrigation pump') || text.includes('pompa')) return 'water,pump,irrigation,machine';
+      if (text.includes('centrifugal')) return 'centrifugal,pump,industrial';
+      if (text.includes('hydraulic cylinder')) return 'hydraulic,cylinder,machine';
+      if (text.includes('hydraulic hose')) return 'hydraulic,hose,industrial';
+      if (text.includes('hydraulic power')) return 'hydraulic,powerpack,industrial';
+      if (text.includes('pneumatic')) return 'pneumatic,cylinder,automation';
+      if (text.includes('excavator')) return 'excavator,construction,machine';
+      if (text.includes('loader')) return 'wheel,loader,construction';
+      if (text.includes('vibro') || text.includes('roller')) return 'road,roller,construction';
+      if (text.includes('concrete mixer')) return 'concrete,mixer,construction';
+      if (text.includes('panel') || text.includes('electrical')) return 'electrical,panel,industrial';
+      if (text.includes('genset') || text.includes('generator')) return 'diesel,generator,industrial';
+      if (text.includes('electric motor')) return 'electric,motor,industrial';
+      if (text.includes('gearbox')) return 'gearbox,industrial,machine';
+      if (text.includes('bearing')) return 'bearing,industrial,machine';
+      if (text.includes('mechanical seal')) return 'mechanical,seal,pump';
+      if (text.includes('valve')) return 'industrial,valve,pipe';
+      if (text.includes('pipa') || text.includes('pipe')) return 'pipe,industrial,water';
+      if (text.includes('compressor')) return 'air,compressor,industrial';
+      if (text.includes('forklift')) return 'forklift,warehouse,industrial';
+      if (text.includes('hand pallet')) return 'pallet,jack,warehouse';
+      if (text.includes('chain block')) return 'chain,hoist,workshop';
+      if (text.includes('mesin las') || text.includes('welding')) return 'welding,machine,workshop';
+      if (text.includes('plasma')) return 'plasma,cutting,machine';
+      if (text.includes('tool cabinet')) return 'tool,cabinet,workshop';
+      if (text.includes('bubut') || text.includes('lathe')) return 'lathe,machine,workshop';
+      if (text.includes('cnc') || text.includes('milling')) return 'cnc,milling,machine';
+      if (text.includes('packaging') || text.includes('sealer')) return 'packaging,machine,industrial';
+      if (text.includes('food processing') || text.includes('mixer')) return 'food,processing,machine';
+      if (text.includes('plastic crusher')) return 'plastic,crusher,machine';
+      if (text.includes('wood')) return 'woodworking,machine';
+      if (text.includes('stone crusher')) return 'stone,crusher,machine';
+      if (text.includes('total station') || text.includes('survey')) return 'total,station,survey';
+      if (text.includes('iot') || text.includes('sensor')) return 'iot,sensor,monitoring';
+      if (text.includes('flow meter')) return 'flow,meter,industrial';
+      if (text.includes('safety') || text.includes('k3')) return 'safety,helmet,industrial';
+      if (text.includes('fabrikasi') || text.includes('fabrication')) return 'metal,fabrication,workshop';
+      if (text.includes('instalasi')) return 'industrial,installation,technician';
+      if (text.includes('maintenance')) return 'machine,maintenance,technician';
+      if (text.includes('tkdn') || text.includes('consultant')) return 'engineering,consultant,industrial';
+      if (text.includes('agricultural')) return 'agriculture,machinery';
+      if (text.includes('construction')) return 'construction,machinery';
+      if (text.includes('hydraulic')) return 'hydraulic,machine';
+      if (text.includes('electrical')) return 'electrical,industrial';
+      if (text.includes('jasa')) return 'engineering,service,industrial';
+
+      return 'industrial,machinery,equipment';
+    }
+
+    function bhRealProductPhotoUrl(name = '', category = '', index = 1) {
+      const tags = bhPhotoTagsFromProduct(name, category)
+        .split(',')
+        .map(tag => tag.trim().replace(/\s+/g, '-'))
+        .filter(Boolean)
+        .slice(0, 4)
+        .join(',');
+
+      const lockSeed = Math.abs(String(`${name}-${category}-${index}`).split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % 9999;
+      return `https://loremflickr.com/640/420/${encodeURIComponent(tags)}?lock=${lockSeed}`;
+    }
+
+    function bhSampleThumb(category, index, type = 'product') {
+      const queryName = type === 'service' ? `${category} service` : `${category} product`;
+      return bhRealProductPhotoUrl(queryName, category, index);
+    }
+
+    if (typeof getBisnisHubLaunch50Samples === 'function' && !window.__bhLaunch50PhotoPatched) {
+      window.__bhLaunch50PhotoPatched = true;
+      window.__getBisnisHubLaunch50SamplesOriginal = getBisnisHubLaunch50Samples;
+
+      getBisnisHubLaunch50Samples = function() {
+        return window.__getBisnisHubLaunch50SamplesOriginal().map((product, index) => {
+          const photo = bhRealProductPhotoUrl(product.name, product.category, index + 1);
+          return {
+            ...product,
+            thumb: photo,
+            image: product.image || '',
+            photoSource: 'reference-photo-by-product-keyword'
+          };
+        });
+      };
+    }
+
+    function installWaAndRealPhotoPatch() {
+      window.BISNISHUB_MAIN_WA = BISNISHUB_MAIN_WA;
+      window.BISNISHUB_MAIN_WA_INTL = BISNISHUB_MAIN_WA_INTL;
+      window.bhRealProductPhotoUrl = bhRealProductPhotoUrl;
+      window.bhPhotoTagsFromProduct = bhPhotoTagsFromProduct;
+    }
+
+
+    if (typeof installWaAndRealPhotoPatch === 'function') installWaAndRealPhotoPatch();
     renderApp();
     setTimeout(cpeHydrateImages, 300);
     setTimeout(mandiriHydrateImages, 300);
