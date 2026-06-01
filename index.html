@@ -160,6 +160,10 @@
     }
     .toast.show { display: block; }
 
+    #marketProducts .group button { max-width: 100%; overflow: hidden; }
+    #marketProducts .group { min-width: 0; }
+
+
 
     .brand-logo.market {
       width: 86px !important;
@@ -6644,13 +6648,197 @@
     }
 
 
+
+    // === BISNISHUB APPROVED + 50 SAMPLE + CARD BUTTON FIX FINAL ===
+    function normalizeMarketplaceProductFinal(product, fallbackSource = 'unknown') {
+      const id = product.id || product.productId || ('PRD-' + String(product.name || product.title || Date.now()).replace(/\s+/g, '-'));
+      return {
+        ...product,
+        id,
+        name: product.name || product.title || 'Produk BisnisHUB',
+        category: product.category || 'Produk Industri',
+        price: product.price || product.harga || 'Hubungi Seller',
+        seller: product.seller || product.storeName || product.companyName || 'Seller BisnisHUB',
+        city: product.city || product.location || 'Indonesia',
+        description: product.description || product.desc || 'Produk atau jasa BisnisHUB.',
+        stock: product.stock || 'Ready',
+        status: product.status || product.reportStatus || 'Aktif',
+        source: product.source || fallbackSource,
+        badge: product.badge || 'Approved',
+        icon: product.icon || 'fa-box-open',
+        thumb: product.thumb || product.thumbnail || '',
+        image: product.image || '',
+        imageKey: product.imageKey || product.id || id
+      };
+    }
+
+    function getApprovedProductsSuperPriority() {
+      const bucket = [];
+
+      const pushArray = (items, source) => {
+        if (Array.isArray(items)) {
+          items.forEach(item => bucket.push(normalizeMarketplaceProductFinal(item, source)));
+        }
+      };
+
+      try { if (typeof cpeGetProducts === 'function') pushArray(cpeGetProducts(), 'cpe-products'); } catch (error) {}
+      try { if (typeof bhGetAllSavedProducts === 'function') pushArray(bhGetAllSavedProducts(), 'saved-products'); } catch (error) {}
+
+      try {
+        const data = typeof getUserData === 'function' ? getUserData() : {};
+        pushArray(data.products, 'user-data-products');
+      } catch (error) {}
+
+      [
+        'bisnishub_admin_product_reports_v1',
+        'bisnishub_approved_marketplace_products',
+        'bisnishub_clean_products_v2',
+        'bisnishub_user_products',
+        'bisnishub_products',
+        'bisnishub_marketplace_products'
+      ].forEach(key => {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(key) || '[]');
+          pushArray(parsed, key);
+        } catch (error) {}
+      });
+
+      const seen = new Set();
+      return bucket.filter(product => {
+        const key = product.id || product.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+
+        const status = String(product.status || product.reportStatus || '').toLowerCase();
+        const source = String(product.source || '');
+        const id = String(product.id || '');
+
+        const approved = ['aktif', 'tayang', 'admin', 'approved', 'publish', 'published'].includes(status);
+        const notSample = !source.includes('sample') && !id.startsWith('LAUNCH-50') && !id.startsWith('SAMPLE-') && !source.includes('launch-50');
+
+        return approved && notSample;
+      });
+    }
+
+    function getFinalSample50Products() {
+      if (typeof getBisnisHubLaunch50Samples === 'function') {
+        return getBisnisHubLaunch50Samples().slice(0, 50).map(item => normalizeMarketplaceProductFinal(item, 'launch-50-sample'));
+      }
+
+      const categories = typeof getBisnisHubAllMainCategories === 'function'
+        ? getBisnisHubAllMainCategories()
+        : ['Tractor & Implement', 'Irrigation Pump / Alkon', 'Hydraulic & Pneumatic', 'Construction Machinery'];
+
+      const samples = [];
+      categories.forEach(category => {
+        for (let i = 1; i <= 3; i++) {
+          samples.push(normalizeMarketplaceProductFinal({
+            id: `FALLBACK-50-${samples.length + 1}`,
+            name: `${category} Sample ${i}`,
+            category,
+            price: i === 1 ? 'Hubungi Seller' : i === 2 ? 'Mulai Rp 25.000.000' : 'Nego',
+            seller: 'BisnisHUB Sample Vendor',
+            city: 'Indonesia',
+            description: `Sample produk kategori ${category}`,
+            status: 'Aktif',
+            source: 'launch-50-sample',
+            badge: 'Sample',
+            icon: typeof bhCategoryIcon === 'function' ? bhCategoryIcon(category, category.startsWith('Jasa') ? 'service' : 'product') : 'fa-box-open',
+            thumb: typeof bhSampleThumb === 'function' ? bhSampleThumb(category, i, category.startsWith('Jasa') ? 'service' : 'product') : ''
+          }, 'launch-50-sample'));
+        }
+      });
+
+      return samples.slice(0, 50);
+    }
+
+    function getMarketplaceProductsForDisplayFinal() {
+      const approved = getApprovedProductsSuperPriority();
+      const sample50 = getFinalSample50Products();
+
+      let extra = [];
+      try {
+        const raw = typeof getMarketplaceFullProductDatabase === 'function' ? getMarketplaceFullProductDatabase() : [];
+        extra = Array.isArray(raw) ? raw.map(item => normalizeMarketplaceProductFinal(item, item.source || 'database')) : [];
+      } catch (error) {
+        extra = [];
+      }
+
+      const seen = new Set();
+      const allProducts = [...approved, ...sample50, ...extra].filter(product => {
+        const key = product.id || product.name;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      const keyword = String(state.marketSearch || '').toLowerCase().trim();
+      const selectedCategory = state.marketCategory || '';
+      const isSearching = Boolean(keyword || selectedCategory);
+
+      const matchedProducts = allProducts.filter(product => {
+        const text = [
+          product.name,
+          product.seller,
+          product.category,
+          product.description,
+          product.specs,
+          product.city,
+          product.badge
+        ].join(' ').toLowerCase();
+
+        const matchKeyword = !keyword || text.includes(keyword);
+        const matchCategory = !selectedCategory || selectedCategory === 'Semua Kategori' || product.category === selectedCategory;
+
+        return matchKeyword && matchCategory;
+      });
+
+      const displayProducts = isSearching
+        ? matchedProducts
+        : [...approved, ...sample50].filter((product, index, arr) => {
+            const key = product.id || product.name;
+            return arr.findIndex(item => (item.id || item.name) === key) === index;
+          }).slice(0, Math.max(50, approved.length));
+
+      return {
+        allProducts,
+        matchedProducts,
+        displayProducts,
+        isSearching,
+        hiddenCount: isSearching ? 0 : Math.max(0, allProducts.length - displayProducts.length),
+        approvedCount: approved.length,
+        sampleCount: sample50.length
+      };
+    }
+
+    function renderMarketplaceLimitInfoFinal(meta) {
+      if (!meta) return '';
+
+      if (meta.isSearching) {
+        return `
+          <div class="rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-800 px-4 py-3 text-sm font-bold">
+            <i class="fa-solid fa-database mr-2"></i>
+            Pencarian membaca seluruh database: ${meta.matchedProducts.length} hasil ditemukan dari ${meta.allProducts.length} data produk/jasa.
+          </div>
+        `;
+      }
+
+      return `
+        <div class="rounded-2xl bg-orange-50 border border-orange-100 text-orange-800 px-4 py-3 text-sm font-bold">
+          <i class="fa-solid fa-layer-group mr-2"></i>
+          Produk approved admin tampil prioritas paling atas. Display awal menampilkan ${meta.displayProducts.length} item: ${meta.approvedCount} approved + hingga 50 sample utama. Sisa ${meta.hiddenCount} data tetap muncul saat dicari.
+        </div>
+      `;
+    }
+
+
     function renderMarketplace() {
       if (firebaseIsReady() && !window.bisnisHubMarketplaceLoadedOnce) {
         window.bisnisHubMarketplaceLoadedOnce = true;
         refreshMarketplaceFromFirebase().then(() => renderMarketplace()).catch(() => {});
       }
 
-      const marketDisplayMeta = getMarketplaceProductsForDisplay();
+      const marketDisplayMeta = getMarketplaceProductsForDisplayFinal();
       const filteredProducts = marketDisplayMeta.displayProducts;
       const productCards = filteredProducts.map(product => `
         <div class="group rounded-[26px] bg-white border border-orange-100 p-3 md:p-4 shadow-sm hover:shadow-[0_18px_38px_rgba(251,146,60,0.18)] transition hover:-translate-y-1">
@@ -6666,14 +6854,14 @@
             <span class="w-1 h-1 rounded-full bg-slate-300"></span>
             <span>${product.stock || 'Ready'}</span>
           </div>
-          <div class="mt-4 flex items-end justify-between gap-3">
-            <div>
+          <div class="mt-4">
+            <div class="min-w-0">
               <div class="text-[11px] font-bold uppercase text-slate-400">Harga</div>
-              <b class="text-orange-600 text-lg md:text-xl leading-none">${product.price || '-'}</b>
+              <b class="block text-orange-600 text-base md:text-lg leading-tight truncate">${product.price || '-'}</b>
             </div>
-            <div class="flex gap-1">
-              <button onclick="bhOpenProductDetail('${product.id}')" class="shrink-0 bg-slate-100 text-slate-700 rounded-2xl px-3 py-2.5 text-xs font-black hover:bg-orange-100 transition">Detail</button>
-              <button onclick="showToast('Produk masuk keranjang simulasi')" class="shrink-0 bg-slate-950 text-white rounded-2xl px-3 py-2.5 text-xs font-black group-hover:bg-orange-500 transition">Tambah</button>
+            <div class="mt-3 grid grid-cols-2 gap-2 w-full">
+              <button onclick="bhOpenProductDetail('${product.id}')" class="w-full min-w-0 bg-slate-100 text-slate-700 rounded-xl px-2 py-2 text-[11px] font-black hover:bg-orange-100 transition truncate">Detail</button>
+              <button onclick="showToast('Produk masuk keranjang simulasi')" class="w-full min-w-0 bg-slate-950 text-white rounded-xl px-2 py-2 text-[11px] font-black group-hover:bg-orange-500 transition truncate">Tambah</button>
             </div>
           </div>
         </div>
@@ -6702,7 +6890,7 @@
                 </div>
               </div>
 
-              ${renderMarketplaceLimitInfo(marketDisplayMeta)}
+              ${renderMarketplaceLimitInfoFinal(marketDisplayMeta)}
               ${filteredProducts.length ? `
                 <div class="mt-4 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">${productCards}</div>
               ` : `
