@@ -160,6 +160,40 @@
     }
     .toast.show { display: block; }
 
+    /* === BISNISHUB CLEAN STABLE HERO FINAL === */
+    .bh-clean-hero{display:grid;grid-template-columns:238px minmax(0,1fr)300px;gap:14px;align-items:stretch;margin-bottom:18px}
+    .bh-clean-card{border-radius:24px;overflow:hidden;min-width:0}
+    .bh-clean-category{background:linear-gradient(180deg,#f97316,#f59e0b);padding:12px;box-shadow:0 16px 34px rgba(249,115,22,.18)}
+    .bh-clean-category-inner{height:100%;min-height:565px;border-radius:20px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);padding:12px;display:flex;flex-direction:column;min-width:0}
+    .bh-clean-main{background:linear-gradient(135deg,#f97316,#f59e0b 62%,#facc15);box-shadow:0 22px 46px rgba(251,146,60,.24);padding:22px;display:flex;flex-direction:column;gap:14px;min-height:565px}
+    .bh-clean-main-top{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(210px,.85fr);gap:16px;align-items:center;min-width:0}
+    .bh-clean-title{font-size:clamp(28px,4vw,48px);line-height:1.02;color:#fff;font-weight:900;letter-spacing:-.04em}
+    .bh-clean-subtitle{color:rgba(255,255,255,.92);margin-top:12px;max-width:720px;font-size:14px;line-height:1.55}
+    .bh-clean-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .bh-clean-feature{background:rgba(255,255,255,.96);border:1px solid rgba(255,255,255,.7);border-radius:20px;padding:12px;display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;min-width:0;box-shadow:0 10px 22px rgba(15,23,42,.08)}
+    .bh-clean-feature-img{width:92px;height:92px;border-radius:16px;overflow:hidden;background:#f1f5f9;border:1px solid #e2e8f0}
+    .bh-clean-feature-img img{width:100%;height:100%;object-fit:cover}
+    .bh-clean-feature-title{font-size:14px;line-height:1.22;font-weight:900;color:#0f172a;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .bh-clean-feature-meta{margin-top:5px;font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .bh-clean-feature-bottom{margin-top:8px;display:grid;grid-template-columns:minmax(0,1fr) 64px;gap:8px;align-items:end}
+    .bh-clean-price{display:block;color:#ea580c;font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .bh-clean-see{height:30px;border-radius:10px;background:#0f172a;color:#fff;font-size:10px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;width:64px}
+    .bh-clean-side{display:flex;flex-direction:column;gap:12px;min-width:0}
+    .bh-clean-side-panel{background:#fff;border:1px solid #fed7aa;border-radius:22px;padding:14px;min-width:0;box-shadow:0 10px 22px rgba(15,23,42,.06)}
+    .bh-clean-promo-item{display:grid;grid-template-columns:54px minmax(0,1fr);gap:10px;padding:9px;border:1px solid #f1f5f9;border-radius:16px;width:100%;text-align:left;transition:.18s ease}
+    .bh-clean-promo-item:hover{background:#fff7ed;border-color:#fed7aa;transform:translateY(-1px)}
+    .bh-clean-promo-img{width:54px;height:54px;border-radius:14px;overflow:hidden;background:#f1f5f9;border:1px solid #e2e8f0}
+    .bh-clean-promo-img img{width:100%;height:100%;object-fit:cover}
+    .bh-clean-category-result{background:rgba(255,255,255,.96);border-radius:20px;border:1px solid rgba(255,255,255,.75);padding:12px;min-width:0}
+    .bh-clean-category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px}
+    .bh-clean-category-product{min-width:0;text-align:left;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0;padding:8px;transition:.18s ease}
+    .bh-clean-category-product:hover{background:#fff7ed;border-color:#fed7aa}
+    .bh-clean-category-product .img{height:76px;border-radius:12px;overflow:hidden;background:#fff;border:1px solid #e2e8f0;margin-bottom:7px}
+    .bh-clean-category-product img{width:100%;height:100%;object-fit:cover}
+    @media(max-width:1279px){.bh-clean-hero{grid-template-columns:1fr}.bh-clean-category-inner,.bh-clean-main{min-height:auto}.bh-clean-main-top{grid-template-columns:1fr}.bh-clean-side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:768px){.bh-clean-main{padding:16px}.bh-clean-feature-grid,.bh-clean-side,.bh-clean-category-grid{grid-template-columns:1fr}.bh-clean-feature{grid-template-columns:84px minmax(0,1fr)}.bh-clean-feature-img{width:84px;height:84px}}
+
+
     /* === BISNISHUB REAL PRODUCT PHOTO DISPLAY STABILITY === */
     img[src*="loremflickr.com"] {
       background: #f1f5f9;
@@ -13196,6 +13230,173 @@ service cloud.firestore {
 
 
     if (typeof installWaAndRealPhotoPatch === 'function') installWaAndRealPhotoPatch();
+
+    // === BISNISHUB CLEAN STABLE HERO FINAL ===
+    function bhCleanProductImage(product) {
+      if (!product) return `<div class="w-full h-full flex items-center justify-center"><i class="fa-solid fa-box-open text-orange-400"></i></div>`;
+      if (product.thumb) return `<img src="${product.thumb}" alt="${product.name || 'Produk'}">`;
+      if (product.image && product.image.startsWith('data:image/')) return `<img src="${product.image}" alt="${product.name || 'Produk'}">`;
+      if (product.image && (product.image.startsWith('http://') || product.image.startsWith('https://'))) return `<img src="${product.image}" alt="${product.name || 'Produk'}">`;
+      if (product.imageKey) return `<img data-cpe-img-key="${product.imageKey}" alt="${product.name || 'Produk'}">`;
+      return `<div class="w-full h-full flex items-center justify-center"><i class="fa-solid ${product.icon || 'fa-box-open'} text-orange-400"></i></div>`;
+    }
+
+    function bhHeroOpenById(productId) {
+      if (productId && typeof openHeroProductFromTopRight === 'function') return openHeroProductFromTopRight(productId);
+      if (productId && typeof openProductDetailTop === 'function') return openProductDetailTop(productId);
+      document.getElementById('marketProducts')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function renderHeroCategoryResultClean(products = []) {
+      const selected = state.marketCategory || '';
+      if (!selected) return '';
+      const items = (products || []).filter(product => product.category === selected).slice(0, 8);
+      return `
+        <section id="heroCategoryResult" class="bh-clean-category-result">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-500">Hasil Kategori</p>
+              <h3 class="text-lg font-black text-slate-900 truncate">${selected}</h3>
+            </div>
+            <button onclick="clearMainCategorySide ? clearMainCategorySide() : (state.marketCategory='', saveState(), renderMarketplace())" class="bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl px-3 py-2 text-[11px] font-black">Reset</button>
+          </div>
+          ${items.length ? `
+            <div class="bh-clean-category-grid">
+              ${items.map(product => `
+                <button onclick="bhHeroOpenById('${product.id || ''}')" class="bh-clean-category-product">
+                  <div class="img">${bhCleanProductImage(product)}</div>
+                  <p class="text-[11px] font-black text-slate-900 leading-tight line-clamp-2">${product.name || '-'}</p>
+                  <p class="bh-clean-price mt-1">${formatRupiahBisnisHub(product?.price || 'Hubungi Seller')}</p>
+                </button>
+              `).join('')}
+            </div>
+          ` : `
+            <div class="rounded-2xl bg-slate-50 border border-dashed p-5 text-center mt-3">
+              <i class="fa-solid fa-box-open text-3xl text-slate-300 mb-2"></i>
+              <p class="text-sm font-black text-slate-900">Produk kategori ini belum tersedia</p>
+            </div>
+          `}
+        </section>`;
+    }
+
+    function renderHeroFeaturedCardClean(product, index) {
+      const item = product || {
+        id: '',
+        name: index === 0 ? 'Produk Teknik Unggulan' : 'Jasa / Vendor Unggulan',
+        category: index === 0 ? 'Produk Teknik' : 'Jasa Teknik',
+        price: 'Hubungi Seller',
+        seller: 'BisnisHUB',
+        city: 'Indonesia',
+        icon: index === 0 ? 'fa-gears' : 'fa-screwdriver-wrench'
+      };
+      const badge = index === 0 ? 'PRODUK UNGGULAN' : 'JASA / VENDOR';
+      const badgeColor = index === 0 ? 'text-orange-600' : 'text-indigo-600';
+      return `
+        <article class="bh-clean-feature">
+          <button onclick="bhHeroOpenById('${item.id || ''}')" class="bh-clean-feature-img text-left">${bhCleanProductImage(item)}</button>
+          <div class="min-w-0">
+            <p class="text-[9px] font-black uppercase tracking-[0.14em] ${badgeColor}">${badge}</p>
+            <button onclick="bhHeroOpenById('${item.id || ''}')" class="block w-full text-left">
+              <h3 class="bh-clean-feature-title hover:text-orange-600">${item.name || '-'}</h3>
+            </button>
+            <p class="bh-clean-feature-meta">${item.category || '-'} • ${item.city || 'Indonesia'}</p>
+            <div class="bh-clean-feature-bottom">
+              <div class="min-w-0">
+                <p class="text-[9px] uppercase font-black text-slate-400 leading-none">Harga</p>
+                <b class="bh-clean-price">${formatRupiahBisnisHub(item?.price || 'Hubungi Seller')}</b>
+              </div>
+              <button onclick="bhHeroOpenById('${item.id || ''}')" class="bh-clean-see">Lihat</button>
+            </div>
+          </div>
+        </article>`;
+    }
+
+    function renderTaobaoHero(products) {
+      const list = Array.isArray(products) ? products : [];
+      const featured = list.slice(0, 2);
+      const promo = list.slice(0, 3);
+      const accountActionClean = state.previewMode ? 'returnToDashboardFromPreview()' : "switchRole('user')";
+
+      return `
+        <section id="marketHeroArea" class="bh-clean-hero">
+          <aside class="bh-clean-card bh-clean-category">
+            <div class="bh-clean-category-inner">
+              <div class="flex items-center justify-between gap-3 mb-3">
+                <h3 class="text-white text-base font-black">Kategori Utama</h3>
+                <i class="fa-solid fa-layer-group text-white/90"></i>
+              </div>
+              ${renderTaobaoQuickCategories()}
+            </div>
+          </aside>
+
+          <main class="bh-clean-card bh-clean-main">
+            <div class="bh-clean-main-top">
+              <div class="min-w-0">
+                <p class="text-xs font-black uppercase tracking-[0.25em] text-white/90">BisnisHUB Marketplace</p>
+                <h2 class="bh-clean-title mt-3">Marketplace B2B untuk produk & jasa industri</h2>
+                <p class="bh-clean-subtitle">Platform marketplace B2B untuk mempertemukan buyer, seller, vendor, penyedia jasa, dan peluang tender industri secara cepat, terarah, dan profesional.</p>
+                <div class="flex flex-wrap gap-3 mt-5">
+                  <button onclick="${accountActionClean}" class="bg-white text-orange-600 rounded-2xl px-5 py-3 font-black shadow-lg">Kelola Akun</button>
+                  <button onclick="rememberDashboardBeforePreview('tender')" class="bg-slate-950/85 text-white rounded-2xl px-5 py-3 font-black">Lihat Tender</button>
+                </div>
+              </div>
+              <div class="rounded-[22px] bg-white/15 border border-white/25 p-3 min-w-0">
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-white/80">Produk Pilihan</p>
+                <div class="grid grid-cols-2 gap-2 mt-3">
+                  ${list.slice(0, 4).map(product => `
+                    <button onclick="bhHeroOpenById('${product.id || ''}')" class="rounded-2xl bg-white p-2 text-left hover:-translate-y-0.5 hover:shadow-lg transition min-w-0">
+                      <div class="w-full h-16 rounded-xl overflow-hidden bg-slate-100 border">${bhCleanProductImage(product)}</div>
+                      <p class="text-[10px] font-black text-slate-800 mt-2 leading-tight line-clamp-2">${product.name || '-'}</p>
+                    </button>
+                  `).join('') || `<div class="col-span-2 rounded-2xl bg-white p-5 text-center text-sm text-slate-500">Produk segera tersedia.</div>`}
+                </div>
+              </div>
+            </div>
+
+            <div class="bh-clean-feature-grid">
+              ${renderHeroFeaturedCardClean(featured[0], 0)}
+              ${renderHeroFeaturedCardClean(featured[1], 1)}
+            </div>
+
+            ${renderHeroCategoryResultClean(list)}
+            ${renderTaobaoMarketplaceSearch()}
+          </main>
+
+          <aside class="bh-clean-side">
+            <section class="bh-clean-side-panel">
+              <div class="flex items-center justify-between gap-3 mb-3">
+                <div>
+                  <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-500">Promo Seller</p>
+                  <h3 class="text-lg font-black text-slate-900">Produk Pilihan Hari Ini</h3>
+                </div>
+              </div>
+              <div class="space-y-2">
+                ${promo.map(product => `
+                  <button onclick="bhHeroOpenById('${product.id || ''}')" class="bh-clean-promo-item">
+                    <div class="bh-clean-promo-img">${bhCleanProductImage(product)}</div>
+                    <div class="min-w-0">
+                      <p class="text-[10px] uppercase font-black text-slate-400 truncate">${product.category || 'Produk'}</p>
+                      <h4 class="text-xs font-black text-slate-900 leading-tight line-clamp-2">${product.name || '-'}</h4>
+                      <p class="bh-clean-price mt-1">${formatRupiahBisnisHub(product?.price || 'Hubungi Seller')}</p>
+                    </div>
+                  </button>
+                `).join('') || `<p class="text-sm text-slate-500">Produk pilihan segera tersedia.</p>`}
+              </div>
+            </section>
+            <section class="bh-clean-side-panel">
+              <h3 class="text-lg font-black text-slate-900">Layanan Cepat</h3>
+              <div class="grid grid-cols-2 gap-2 mt-3">
+                <button onclick="rememberDashboardBeforePreview('tender')" class="rounded-2xl bg-orange-50 border border-orange-100 px-3 py-3 text-left hover:bg-orange-100 transition"><i class="fa-solid fa-briefcase text-orange-500"></i><p class="font-black text-xs mt-2">Tender</p></button>
+                <button onclick="document.getElementById('companyDirectory')?.scrollIntoView({behavior:'smooth', block:'start'});" class="rounded-2xl bg-indigo-50 border border-indigo-100 px-3 py-3 text-left hover:bg-indigo-100 transition"><i class="fa-solid fa-building-user text-indigo-500"></i><p class="font-black text-xs mt-2">Vendor</p></button>
+                <button onclick="openSupportModal()" class="rounded-2xl bg-emerald-50 border border-emerald-100 px-3 py-3 text-left hover:bg-emerald-100 transition"><i class="fa-solid fa-headset text-emerald-500"></i><p class="font-black text-xs mt-2">Bantuan</p></button>
+                <button onclick="document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth', block:'start'});" class="rounded-2xl bg-amber-50 border border-amber-100 px-3 py-3 text-left hover:bg-amber-100 transition"><i class="fa-solid fa-box-open text-amber-500"></i><p class="font-black text-xs mt-2">Produk</p></button>
+              </div>
+            </section>
+          </aside>
+        </section>`;
+    }
+
+
     renderApp();
     setTimeout(cpeHydrateImages, 300);
     setTimeout(mandiriHydrateImages, 300);
