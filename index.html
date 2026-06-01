@@ -160,6 +160,48 @@
     }
     .toast.show { display: block; }
 
+    .bh-top-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .bh-top-action {
+      min-width: 118px;
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 16px;
+      padding: 0 14px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+      transition: all .18s ease;
+    }
+    .bh-top-action:hover {
+      transform: translateY(-1px);
+    }
+    @media (max-width: 768px) {
+      .bh-top-actions {
+        width: 100%;
+        justify-content: stretch;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .bh-top-action {
+        width: 100%;
+        min-width: 0;
+        height: 42px;
+        padding: 0 8px;
+        font-size: 11px;
+      }
+    }
+
+
     button[onclick*="openHeroProductFromTopRight"] { cursor: pointer; }
 
 
@@ -5997,10 +6039,16 @@
                 <p class="text-xs md:text-sm text-slate-500">Platform marketplace B2B untuk mempertemukan buyer, seller, vendor, penyedia jasa, dan peluang tender industri secara cepat, terarah, dan profesional.</p>
               </div>
             </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <button onclick="rememberDashboardBeforePreview('tender')" class="px-4 py-3 rounded-2xl text-xs font-black bg-orange-500 text-white shadow-lg shadow-orange-200">Bursa Tender</button>
-              <button onclick="document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth'});" class="px-4 py-3 rounded-2xl text-xs font-black bg-orange-50 text-orange-600 border border-orange-100">Produk</button>
-              <button onclick="${accountAction}" class="px-4 py-3 rounded-2xl text-xs font-black bg-slate-950 text-white">${accountLabel}</button>
+            <div class="bh-top-actions">
+              <button onclick="rememberDashboardBeforePreview('tender')" class="bh-top-action bg-orange-500 text-white shadow-lg shadow-orange-200">
+                <i class="fa-solid fa-briefcase"></i><span>Bursa Tender</span>
+              </button>
+              <button onclick="document.getElementById('marketProducts')?.scrollIntoView({behavior:'smooth', block:'start'});" class="bh-top-action bg-orange-50 text-orange-600 border border-orange-100">
+                <i class="fa-solid fa-box-open"></i><span>Produk</span>
+              </button>
+              <button onclick="${accountAction}" class="bh-top-action bg-slate-950 text-white">
+                <i class="fa-solid ${state.previewMode && state.lastDashboardRole ? 'fa-arrow-left' : 'fa-user'}"></i><span>${accountLabel}</span>
+              </button>
             </div>
           </div>
         </header>
@@ -7562,7 +7610,7 @@
                 <h1 class="text-3xl md:text-5xl font-black leading-tight mt-2">Bursa Tender & Proyek B2B</h1>
                 <p class="text-slate-600 mt-3 max-w-3xl">Tender aktif dari admin BisnisHUB dan peluang proyek untuk vendor, supplier, kontraktor, konsultan, dan penyedia jasa industri.</p>
               </div>
-              <button onclick="rememberDashboardBeforePreview('marketplace')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Kembali Marketplace</button>
+              <button onclick="rememberDashboardBeforePreview('marketplace')" class="bh-top-action bg-slate-950 text-white"><i class="fa-solid fa-arrow-left"></i><span>Kembali Marketplace</span></button>
             </div>
           </section>
           <section class="grid gap-4">
