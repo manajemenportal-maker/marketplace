@@ -160,6 +160,41 @@
     }
     .toast.show { display: block; }
 
+    /* === BISNISHUB FLOATING SUPPORT POSITION FIX === */
+    .floating-whatsapp,
+    .floating-wa,
+    .wa-floating,
+    a[href*="wa.me"],
+    a[href*="whatsapp.com"] {
+      display: none !important;
+    }
+
+    .floating-help,
+    .floating-ticket,
+    .support-floating,
+    .help-floating,
+    .fixed.bottom-4.right-4,
+    .fixed.bottom-5.right-5,
+    .fixed.bottom-6.right-6 {
+      bottom: 96px !important;
+      right: 18px !important;
+      z-index: 70 !important;
+    }
+
+    @media (max-width: 768px) {
+      .floating-help,
+      .floating-ticket,
+      .support-floating,
+      .help-floating,
+      .fixed.bottom-4.right-4,
+      .fixed.bottom-5.right-5,
+      .fixed.bottom-6.right-6 {
+        bottom: 108px !important;
+        right: 14px !important;
+      }
+    }
+
+
     .menu-button[data-menu-key="addProduct"],
     button[data-menu-key="addProduct"] {
       display: none !important;
@@ -975,7 +1010,7 @@
       <div class="p-5 grid gap-4">
         <div class="grid md:grid-cols-2 gap-4">
           <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20bertanya%20tentang%20layanan%20BisnisHUB." target="_blank" class="rounded-2xl bg-green-500 hover:bg-green-600 text-green-950 font-black p-4 text-center no-underline">
-            <i class="fa-brands fa-whatsapp mr-2"></i>Chat Admin WhatsApp
+            <i class="fa-brands fa-whatsapp mr-2"></i>Chat Admin Kontak
           </a>
           <a href="mailto:adminbishub@gmail.com?subject=Bantuan%20BisnisHUB&body=Halo%20Admin%20BisnisHUB%2C%0A%0ASaya%20ingin%20bertanya%20tentang%3A%0A" class="rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black p-4 text-center no-underline">
             <i class="fa-solid fa-envelope mr-2"></i>Email Admin
@@ -986,7 +1021,7 @@
           <h3 class="font-black text-lg mb-3">Buat Tiket Bantuan</h3>
           <div class="grid md:grid-cols-2 gap-3">
             <input id="ticketName" class="support-input" placeholder="Nama customer / user">
-            <input id="ticketPhone" class="support-input" placeholder="No. WhatsApp">
+            <input id="ticketPhone" class="support-input" placeholder="No. Kontak">
             <select id="ticketCategory" class="support-input">
               <option>Masalah Pesanan</option>
               <option>Pembayaran</option>
@@ -1016,7 +1051,7 @@
 
         <div class="rounded-[24px] bg-slate-50 border border-slate-200 p-4">
           <h3 class="font-black mb-2">Kontak Admin BisnisHUB</h3>
-          <p class="text-sm text-slate-600"><b>WhatsApp:</b> 0851 1103 3789</p>
+          <p class="text-sm text-slate-600"><b>Kontak:</b> 0851 1103 3789</p>
           <p class="text-sm text-slate-600"><b>Email:</b> adminbishub@gmail.com</p>
         </div>
       </div>
@@ -5331,7 +5366,7 @@
                       <p class="text-xs font-black uppercase tracking-widest text-orange-600">Kontak Resmi</p>
                       <div class="mt-4 grid gap-3 text-sm">
                         <div class="rounded-2xl bg-slate-50 border p-4"><b>PIC</b><p class="text-slate-500 mt-1">${company.pic}</p></div>
-                        <div class="rounded-2xl bg-slate-50 border p-4"><b>WhatsApp</b><p class="text-slate-500 mt-1">${company.phone}</p></div>
+                        <div class="rounded-2xl bg-slate-50 border p-4"><b>Kontak</b><p class="text-slate-500 mt-1">${company.phone}</p></div>
                         <div class="rounded-2xl bg-slate-50 border p-4"><b>Email</b><p class="text-slate-500 mt-1">${company.email}</p></div>
                         <div class="rounded-2xl bg-slate-50 border p-4"><b>Website</b><p class="text-slate-500 mt-1">${company.website}</p></div>
                       </div>
@@ -5346,7 +5381,7 @@
                       <h3 class="font-black text-orange-800">Tertarik bekerja sama?</h3>
                       <p class="text-sm text-orange-700 mt-2">Hubungi admin BisnisHUB untuk mempertemukan Anda dengan perusahaan ini.</p>
                       <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menghubungi%20${encodeURIComponent(company.companyName)}" target="_blank" class="mt-4 inline-flex bg-green-500 text-green-950 rounded-2xl px-5 py-3 font-black no-underline">
-                        Hubungi via WhatsApp
+                        Hubungi via Kontak
                       </a>
                     </section>
                   </aside>
@@ -5529,7 +5564,7 @@
               </div>
               <div class="min-w-0">
                 <h3 class="font-black text-sm md:text-base leading-tight">Bagikan BisnisHUB</h3>
-                <p class="text-xs text-slate-500 truncate">Share link dengan preview: FB, LinkedIn, X, WhatsApp, Telegram, dan lainnya.</p>
+                <p class="text-xs text-slate-500 truncate">Share link dengan preview: FB, LinkedIn, X, Kontak, Telegram, dan lainnya.</p>
               </div>
             </div>
             <div class="flex flex-wrap gap-2">
@@ -9343,9 +9378,9 @@
           `);
         }
         if (sub === 'Integrasi API') {
-          return panel('Integrasi API', 'Koneksi ke Firebase, payment, ongkir, dan WhatsApp.', `
+          return panel('Integrasi API', 'Koneksi ke Firebase, payment, ongkir, dan Kontak.', `
             <div class="grid gap-4">
-              ${['Firebase Auth','Firestore Database','WhatsApp Gateway','Payment Gateway','Email SMTP'].map(api => `
+              ${['Firebase Auth','Firestore Database','Kontak Gateway','Payment Gateway','Email SMTP'].map(api => `
                 <div class="border rounded-2xl p-4 bg-white flex justify-between items-center">
                   <div><b>${api}</b><p class="text-xs text-slate-500">Status konfigurasi siap dihubungkan.</p></div>
                   ${actionButton('Konfigurasi')}
@@ -9500,7 +9535,7 @@
             <div class="grid md:grid-cols-2 gap-4">
               <input class="border rounded-2xl p-3" placeholder="Nama lokasi">
               <input class="border rounded-2xl p-3" placeholder="PIC">
-              <input class="border rounded-2xl p-3" placeholder="No. WhatsApp">
+              <input class="border rounded-2xl p-3" placeholder="No. Kontak">
               <input class="border rounded-2xl p-3" placeholder="Kota/Kabupaten">
               <textarea class="border rounded-2xl p-3 md:col-span-2" rows="4" placeholder="Alamat lengkap"></textarea>
             </div>
@@ -9679,7 +9714,7 @@
       const checks = [
         ['Nama toko/perusahaan', store.name && !String(store.name).includes('BisnisHUB Anda'), 15],
         ['Kategori usaha', store.category, 8],
-        ['WhatsApp aktif', store.phone, 12],
+        ['Kontak aktif', store.phone, 12],
         ['Email resmi', store.email, 8],
         ['Kota/domisili', store.city, 8],
         ['Alamat/gudang', store.address || store.warehouse, 10],
@@ -9967,7 +10002,7 @@ service cloud.firestore {
           <div class="mt-5 rounded-[24px] border bg-white p-5">
             <h3 class="font-black text-lg">Checklist Legalitas</h3>
             <div class="grid md:grid-cols-2 gap-3 mt-4">
-              ${['NIB', 'NPWP', 'Alamat kantor/gudang', 'Email resmi', 'Nomor WhatsApp aktif', 'Company profile', 'Portofolio', 'Dokumen pendukung'].map(item => `
+              ${['NIB', 'NPWP', 'Alamat kantor/gudang', 'Email resmi', 'Nomor Kontak aktif', 'Company profile', 'Portofolio', 'Dokumen pendukung'].map(item => `
                 <label class="flex items-center justify-between rounded-2xl bg-slate-50 border p-4">
                   <span class="font-bold">${item}</span>
                   <input type="checkbox" class="accent-orange-500">
@@ -10005,7 +10040,7 @@ service cloud.firestore {
           </div>
           <div class="rounded-[24px] bg-orange-50 border border-orange-100 p-5">
             <h3 class="font-black text-lg text-orange-800">Cara menaikkan skor trust</h3>
-            <p class="text-sm text-orange-700 mt-2">Lengkapi nama toko, alamat, WhatsApp, NIB, NPWP, company profile, portofolio, produk/jasa, dan kebijakan transaksi.</p>
+            <p class="text-sm text-orange-700 mt-2">Lengkapi nama toko, alamat, Kontak, NIB, NPWP, company profile, portofolio, produk/jasa, dan kebijakan transaksi.</p>
             <div class="mt-4 flex flex-wrap gap-2">
               <button onclick="syncUserDashboardView('store','Profil Toko')" class="bg-orange-500 text-white rounded-2xl px-5 py-3 font-black">Lengkapi Toko</button>
               <button onclick="syncUserDashboardView('companyProfile','Compro Utama')" class="bg-slate-900 text-white rounded-2xl px-5 py-3 font-black">Lengkapi Compro</button>
@@ -10659,8 +10694,8 @@ service cloud.firestore {
                   <input id="frontRegEmail" class="mt-1 border rounded-2xl p-3 w-full" placeholder="Email aktif">
                 </div>
                 <div>
-                  <label class="text-xs font-black uppercase text-slate-500">No. WhatsApp</label>
-                  <input id="frontRegPhone" class="mt-1 border rounded-2xl p-3 w-full" placeholder="No. WhatsApp">
+                  <label class="text-xs font-black uppercase text-slate-500">No. Kontak</label>
+                  <input id="frontRegPhone" class="mt-1 border rounded-2xl p-3 w-full" placeholder="No. Kontak">
                 </div>
                 <div>
                   <label class="text-xs font-black uppercase text-slate-500">Jenis Akun</label>
@@ -10730,7 +10765,7 @@ service cloud.firestore {
       const note = document.getElementById('frontRegNote')?.value?.trim();
 
       if (!name || !email || !phone) {
-        showToast('Nama, email, dan WhatsApp wajib diisi');
+        showToast('Nama, email, dan Kontak wajib diisi');
         return;
       }
 
@@ -11376,7 +11411,7 @@ service cloud.firestore {
             <p class="text-sm text-slate-600 mt-4 leading-relaxed">${store.description}</p>
             <div class="grid md:grid-cols-3 gap-3 mt-5 text-sm">
               <div class="rounded-2xl bg-slate-50 border p-4"><b>Kota</b><p class="text-slate-500 mt-1">${store.city || '-'}</p></div>
-              <div class="rounded-2xl bg-slate-50 border p-4"><b>WhatsApp</b><p class="text-slate-500 mt-1">${store.phone || '-'}</p></div>
+              <div class="rounded-2xl bg-slate-50 border p-4"><b>Kontak</b><p class="text-slate-500 mt-1">${store.phone || '-'}</p></div>
               <div class="rounded-2xl bg-slate-50 border p-4"><b>Email</b><p class="text-slate-500 mt-1">${store.email || '-'}</p></div>
               <div class="rounded-2xl bg-slate-50 border p-4"><b>NIB</b><p class="text-slate-500 mt-1">${store.nib || '-'}</p></div>
               <div class="rounded-2xl bg-slate-50 border p-4"><b>Kurir</b><p class="text-slate-500 mt-1">${store.courier || '-'}</p></div>
@@ -11531,7 +11566,7 @@ service cloud.firestore {
           ${header}
           <div class="grid md:grid-cols-2 gap-4">
             <input id="regFullName" class="border rounded-2xl p-3" placeholder="Nama lengkap" value="${state.name || ''}">
-            <input id="regPhone" class="border rounded-2xl p-3" placeholder="No. WhatsApp">
+            <input id="regPhone" class="border rounded-2xl p-3" placeholder="No. Kontak">
             <input id="regEmail" class="border rounded-2xl p-3" placeholder="Email aktif">
             <select id="regType" class="border rounded-2xl p-3 bg-white">
               <option>Customer / Pembeli</option>
@@ -11994,7 +12029,7 @@ service cloud.firestore {
             <input id="storeName" class="border rounded-2xl p-3" placeholder="Nama toko" value="${store.name || ''}">
             <select id="storeCategory" class="border rounded-2xl p-3 bg-white">${categoryOptions(store.category)}</select>
             <input id="storeTagline" class="border rounded-2xl p-3" placeholder="Tagline toko" value="${store.tagline || ''}">
-            <input id="storePhone" class="border rounded-2xl p-3" placeholder="WhatsApp toko" value="${store.phone || ''}">
+            <input id="storePhone" class="border rounded-2xl p-3" placeholder="Kontak toko" value="${store.phone || ''}">
             <input id="storeEmail" class="border rounded-2xl p-3" placeholder="Email toko" value="${store.email || ''}">
             <input id="storeCity" class="border rounded-2xl p-3" placeholder="Kota / domisili" value="${store.city || ''}">
             <textarea id="storeAddress" class="border rounded-2xl p-3 md:col-span-2" rows="3" placeholder="Alamat toko / gudang">${store.address || ''}</textarea>
@@ -12103,7 +12138,7 @@ service cloud.firestore {
           <td>${badge(ticket.priority, ticket.priority === 'Mendesak' ? 'rose' : ticket.priority === 'Penting' ? 'amber' : 'indigo')}</td>
           <td>${badge(ticket.status, ticket.status === 'Selesai' ? 'emerald' : ticket.status === 'Diproses' ? 'amber' : 'rose')}</td>
           <td>
-            <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menanyakan%20tiket%20${ticket.id}" target="_blank" class="bg-green-500 text-green-950 rounded-xl px-3 py-2 text-xs font-black no-underline">WA Admin</a>
+            <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menanyakan%20tiket%20${ticket.id}" target="_blank" class="bg-green-500 text-green-950 rounded-xl px-3 py-2 text-xs font-black no-underline">Buat Tiket</a>
           </td>
         </tr>
       `);
@@ -12117,7 +12152,7 @@ service cloud.firestore {
           </button>
           <a href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20butuh%20bantuan." target="_blank" class="rounded-[22px] bg-green-50 border border-green-100 p-5 text-left hover:bg-green-100 no-underline text-slate-900">
             <i class="fa-brands fa-whatsapp text-3xl text-green-500 mb-3"></i>
-            <b class="block text-lg">WhatsApp Admin</b>
+            <b class="block text-lg">Kontak Admin</b>
             <p class="text-sm text-slate-500 mt-1">Chat cepat ke 0851 1103 3789.</p>
           </a>
           <a href="mailto:adminbishub@gmail.com?subject=Bantuan%20BisnisHUB" class="rounded-[22px] bg-slate-50 border border-slate-200 p-5 text-left hover:bg-slate-100 no-underline text-slate-900">
@@ -12168,7 +12203,7 @@ service cloud.firestore {
         <div class="grid md:grid-cols-2 gap-4">
           <input id="profileName" class="border rounded-2xl p-3" value="${state.name}">
           <input class="border rounded-2xl p-3" value="user@.id">
-          <input class="border rounded-2xl p-3" placeholder="No. WhatsApp">
+          <input class="border rounded-2xl p-3" placeholder="No. Kontak">
           <select class="border rounded-2xl p-3">
             <option>Perusahaan</option>
             <option>Perorangan</option>
@@ -12400,9 +12435,7 @@ service cloud.firestore {
     function renderFloatingHelp() {
       return `
         <div class="floating-help">
-          <a class="btn-whatsapp" href="https://wa.me/6285111033789?text=Halo%20Admin%20BisnisHUB%2C%20saya%20ingin%20menghubungi%20admin." target="_blank">
-            <i class="fa-brands fa-whatsapp"></i><span>WhatsApp Admin</span>
-          </a>
+          
           <button class="btn-ticket" onclick="openSupportModal()">
             <i class="fa-solid fa-headset"></i><span>Buat Tiket</span>
           </button>
