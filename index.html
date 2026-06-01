@@ -165,7 +165,10 @@
     .taobao-category-scroll::-webkit-scrollbar-thumb { background: rgba(251,146,60,.75); border-radius: 999px; }
 
     .taobao-category-scroll { scrollbar-width: thin; scrollbar-color: rgba(251,146,60,.75) rgba(255,255,255,.25); }
-    .taobao-main-frame { min-height: 700px; }
+
+    .taobao-category-scroll button { min-height: 42px; }
+    .taobao-category-scroll { overscroll-behavior: contain; }
+    .taobao-main-frame { min-height: 660px; }
     @media (max-width: 1279px) { .taobao-main-frame { min-height: auto; } }
 
 
@@ -5570,41 +5573,38 @@
       const serviceCategories = getBisnisHubServiceCategories();
 
       const renderItems = (items, icon, colorClass) => `
-        <div class="space-y-2 max-h-[245px] overflow-y-auto pr-1 taobao-category-scroll">
+        <div class="space-y-1.5 max-h-[285px] overflow-y-auto pr-1 taobao-category-scroll">
           ${items.map((category) => `
-            <button onclick="state.marketCategory='${String(category).replace(/'/g, "\\'")}'; state.marketSearch=''; saveState(); renderMarketplace();" class="w-full text-left flex items-center justify-between gap-3 rounded-2xl px-3.5 py-2.5 bg-white/95 border border-orange-100 hover:border-orange-300 hover:bg-orange-50 transition text-[13px] font-bold text-slate-700">
-              <span class="flex items-center gap-2 min-w-0">
-                <span class="w-7 h-7 shrink-0 rounded-xl ${colorClass} flex items-center justify-center text-[11px] font-black">
-                  <i class="fa-solid ${icon}"></i>
-                </span>
-                <span class="truncate">${category}</span>
+            <button onclick="state.marketCategory='${String(category).replace(/'/g, "\\'")}'; state.marketSearch=''; saveState(); renderMarketplace();" class="w-full text-left flex items-start gap-2 rounded-xl px-2.5 py-2 bg-white/95 border border-orange-100 hover:border-orange-300 hover:bg-orange-50 transition text-[12px] font-bold text-slate-700 leading-snug">
+              <span class="w-6 h-6 mt-0.5 shrink-0 rounded-lg ${colorClass} flex items-center justify-center text-[10px]">
+                <i class="fa-solid ${icon}"></i>
               </span>
-              <i class="fa-solid fa-angle-right text-orange-400 text-xs"></i>
+              <span class="flex-1 whitespace-normal break-words">${category}</span>
             </button>
           `).join('')}
         </div>
       `;
 
       return `
-        <div class="space-y-4 h-full flex flex-col">
-          <div class="rounded-[22px] bg-white/15 border border-white/20 p-3 flex-1 min-h-0">
-            <div class="flex items-center justify-between gap-3 mb-3">
+        <div class="space-y-3 h-full flex flex-col">
+          <div class="rounded-2xl bg-white/14 border border-white/20 p-2.5 flex-1 min-h-0">
+            <div class="flex items-center justify-between gap-2 mb-2">
               <div>
-                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-white/75">Barang Teknik</p>
-                <h4 class="text-white font-black">Produk Teknik</h4>
+                <p class="text-[9px] font-black uppercase tracking-[0.15em] text-white/70">Barang</p>
+                <h4 class="text-white font-black text-sm">Produk Teknik</h4>
               </div>
-              <span class="bg-white/20 text-white rounded-full px-2.5 py-1 text-[10px] font-black">${productCategories.length} kategori</span>
+              <span class="bg-white/20 text-white rounded-full px-2 py-0.5 text-[9px] font-black">${productCategories.length}</span>
             </div>
             ${renderItems(productCategories, 'fa-gears', 'bg-orange-50 text-orange-500')}
           </div>
 
-          <div class="rounded-[22px] bg-white/15 border border-white/20 p-3 flex-1 min-h-0">
-            <div class="flex items-center justify-between gap-3 mb-3">
+          <div class="rounded-2xl bg-white/14 border border-white/20 p-2.5 flex-1 min-h-0">
+            <div class="flex items-center justify-between gap-2 mb-2">
               <div>
-                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-white/75">Layanan Teknik</p>
-                <h4 class="text-white font-black">Jasa Teknik</h4>
+                <p class="text-[9px] font-black uppercase tracking-[0.15em] text-white/70">Layanan</p>
+                <h4 class="text-white font-black text-sm">Jasa Teknik</h4>
               </div>
-              <span class="bg-white/20 text-white rounded-full px-2.5 py-1 text-[10px] font-black">${serviceCategories.length} kategori</span>
+              <span class="bg-white/20 text-white rounded-full px-2 py-0.5 text-[9px] font-black">${serviceCategories.length}</span>
             </div>
             ${renderItems(serviceCategories, 'fa-screwdriver-wrench', 'bg-indigo-50 text-indigo-500')}
           </div>
@@ -5694,11 +5694,11 @@
 
     function renderTaobaoHero(products) {
       return `
-        <section class="grid xl:grid-cols-[290px_1fr_330px] gap-4 mb-6 items-stretch">
-          <div class="taobao-main-frame rounded-[30px] bg-gradient-to-b from-orange-500 to-amber-500 p-4 shadow-lg shadow-orange-200 flex flex-col">
-            <div class="rounded-[24px] bg-white/14 backdrop-blur-sm p-4 border border-white/20 flex-1 flex flex-col">
+        <section class="grid xl:grid-cols-[235px_1fr_320px] gap-4 mb-6 items-stretch">
+          <div class="taobao-main-frame rounded-[26px] bg-gradient-to-b from-orange-500 to-amber-500 p-3 shadow-lg shadow-orange-200 flex flex-col">
+            <div class="rounded-[20px] bg-white/14 backdrop-blur-sm p-3 border border-white/20 flex-1 flex flex-col">
               <div class="flex items-center justify-between gap-3 mb-4">
-                <h3 class="text-white text-lg font-black">Kategori Utama</h3>
+                <h3 class="text-white text-base font-black">Kategori Utama</h3>
                 <i class="fa-solid fa-grid-2 text-white"></i>
               </div>
               <div class="space-y-2">
