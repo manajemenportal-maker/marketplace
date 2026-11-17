@@ -87,10 +87,172 @@
         <section class="container mx-auto px-4 max-w-5xl py-4 bg-white border-b">
             <div class="max-w-xl mx-auto">
                 <label for="categorySearch" class="block text-sm font-bold text-gray-700 mb-2">Cari Kategori Kendaraan</label>
-                <input id="categorySearch" type="search" placeholder="Ketik kategori, misalnya Sedan atau SUV..." autocomplete="off" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" oninput="filterCategoryOptions(this.value)">
-                <select id="categorySelect" size="1" aria-label="Pilih kategori kendaraan" onchange="filterCars(this.value)" class="mt-2 w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400">
+                <input id="categorySearch" type="search" placeholder="Cari kategori, merek, atau tipe: Toyota Avanza..." autocomplete="off" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" oninput="filterCategoryOptions(this.value)">
+                <select id="categorySelect" size="1" aria-label="Pilih kategori, merek, atau tipe kendaraan" onchange="selectVehicleSearch(this.value)" class="mt-2 w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400">
                     <option value="">Semua Kendaraan</option>
-                    <option>City Car</option><option>Hatchback</option><option>Sedan</option><option>MPV</option><option>SUV</option><option>Crossover</option><option>Pickup</option><option>Double Cabin</option><option>Van/Minibus</option><option>Mobil Listrik/Hybrid</option><option>Sport/Luxury</option><option>Kendaraan Niaga</option><option>Keluarga</option>
+                    <optgroup label="Kategori Kendaraan">
+                    <option value="@cat:City Car">City Car</option>
+                    <option value="@cat:Hatchback">Hatchback</option>
+                    <option value="@cat:Sedan">Sedan</option>
+                    <option value="@cat:MPV">MPV</option>
+                    <option value="@cat:SUV">SUV</option>
+                    <option value="@cat:Crossover">Crossover</option>
+                    <option value="@cat:Pickup">Pickup</option>
+                    <option value="@cat:Double Cabin">Double Cabin</option>
+                    <option value="@cat:Van/Minibus">Van/Minibus</option>
+                    <option value="@cat:Mobil Listrik/Hybrid">Mobil Listrik/Hybrid</option>
+                    <option value="@cat:Sport/Luxury">Sport/Luxury</option>
+                    <option value="@cat:Kendaraan Niaga">Kendaraan Niaga</option>
+                    <option value="@cat:Keluarga">Keluarga</option>
+                    </optgroup>
+                    <optgroup label="Toyota">
+                    <option value="@search:Toyota Agya">Toyota Agya</option>
+                    <option value="@search:Toyota Calya">Toyota Calya</option>
+                    <option value="@search:Toyota Avanza">Toyota Avanza</option>
+                    <option value="@search:Toyota Veloz">Toyota Veloz</option>
+                    <option value="@search:Toyota Innova">Toyota Innova</option>
+                    <option value="@search:Toyota Innova Zenix">Toyota Innova Zenix</option>
+                    <option value="@search:Toyota Fortuner">Toyota Fortuner</option>
+                    <option value="@search:Toyota Rush">Toyota Rush</option>
+                    <option value="@search:Toyota Yaris">Toyota Yaris</option>
+                    <option value="@search:Toyota Vios">Toyota Vios</option>
+                    <option value="@search:Toyota Corolla Altis">Toyota Corolla Altis</option>
+                    <option value="@search:Toyota Camry">Toyota Camry</option>
+                    <option value="@search:Toyota Raize">Toyota Raize</option>
+                    <option value="@search:Toyota Rocky">Toyota Rocky</option>
+                    <option value="@search:Toyota Hilux">Toyota Hilux</option>
+                    <option value="@search:Toyota HiAce">Toyota HiAce</option>
+                    <option value="@search:Toyota Alphard">Toyota Alphard</option>
+                    <option value="@search:Toyota Land Cruiser">Toyota Land Cruiser</option>
+                    </optgroup>
+                    <optgroup label="Honda">
+                    <option value="@search:Honda Brio">Honda Brio</option>
+                    <option value="@search:Honda Mobilio">Honda Mobilio</option>
+                    <option value="@search:Honda BR-V">Honda BR-V</option>
+                    <option value="@search:Honda HR-V">Honda HR-V</option>
+                    <option value="@search:Honda CR-V">Honda CR-V</option>
+                    <option value="@search:Honda WR-V">Honda WR-V</option>
+                    <option value="@search:Honda City Hatchback">Honda City Hatchback</option>
+                    <option value="@search:Honda Civic">Honda Civic</option>
+                    <option value="@search:Honda Accord">Honda Accord</option>
+                    <option value="@search:Honda Jazz">Honda Jazz</option>
+                    <option value="@search:Honda Freed">Honda Freed</option>
+                    </optgroup>
+                    <optgroup label="Mitsubishi">
+                    <option value="@search:Mitsubishi Xpander">Mitsubishi Xpander</option>
+                    <option value="@search:Mitsubishi Xpander Cross">Mitsubishi Xpander Cross</option>
+                    <option value="@search:Mitsubishi Pajero Sport">Mitsubishi Pajero Sport</option>
+                    <option value="@search:Mitsubishi Outlander">Mitsubishi Outlander</option>
+                    <option value="@search:Mitsubishi Xforce">Mitsubishi Xforce</option>
+                    <option value="@search:Mitsubishi L300">Mitsubishi L300</option>
+                    <option value="@search:Mitsubishi Triton">Mitsubishi Triton</option>
+                    <option value="@search:Mitsubishi Colt Diesel">Mitsubishi Colt Diesel</option>
+                    </optgroup>
+                    <optgroup label="Suzuki">
+                    <option value="@search:Suzuki Carry">Suzuki Carry</option>
+                    <option value="@search:Suzuki APV">Suzuki APV</option>
+                    <option value="@search:Suzuki Ertiga">Suzuki Ertiga</option>
+                    <option value="@search:Suzuki XL7">Suzuki XL7</option>
+                    <option value="@search:Suzuki Baleno">Suzuki Baleno</option>
+                    <option value="@search:Suzuki Swift">Suzuki Swift</option>
+                    <option value="@search:Suzuki Ignis">Suzuki Ignis</option>
+                    <option value="@search:Suzuki Jimny">Suzuki Jimny</option>
+                    <option value="@search:Suzuki Grand Vitara">Suzuki Grand Vitara</option>
+                    <option value="@search:Suzuki S-Presso">Suzuki S-Presso</option>
+                    </optgroup>
+                    <optgroup label="Daihatsu">
+                    <option value="@search:Daihatsu Ayla">Daihatsu Ayla</option>
+                    <option value="@search:Daihatsu Sigra">Daihatsu Sigra</option>
+                    <option value="@search:Daihatsu Xenia">Daihatsu Xenia</option>
+                    <option value="@search:Daihatsu Terios">Daihatsu Terios</option>
+                    <option value="@search:Daihatsu Rocky">Daihatsu Rocky</option>
+                    <option value="@search:Daihatsu Sirion">Daihatsu Sirion</option>
+                    <option value="@search:Daihatsu Gran Max">Daihatsu Gran Max</option>
+                    </optgroup>
+                    <optgroup label="Nissan">
+                    <option value="@search:Nissan Livina">Nissan Livina</option>
+                    <option value="@search:Nissan Serena">Nissan Serena</option>
+                    <option value="@search:Nissan X-Trail">Nissan X-Trail</option>
+                    <option value="@search:Nissan Juke">Nissan Juke</option>
+                    <option value="@search:Nissan Terra">Nissan Terra</option>
+                    <option value="@search:Nissan Magnite">Nissan Magnite</option>
+                    </optgroup>
+                    <optgroup label="Hyundai">
+                    <option value="@search:Hyundai Stargazer">Hyundai Stargazer</option>
+                    <option value="@search:Hyundai Creta">Hyundai Creta</option>
+                    <option value="@search:Hyundai Palisade">Hyundai Palisade</option>
+                    <option value="@search:Hyundai Santa Fe">Hyundai Santa Fe</option>
+                    <option value="@search:Hyundai Ioniq 5">Hyundai Ioniq 5</option>
+                    <option value="@search:Hyundai Ioniq 6">Hyundai Ioniq 6</option>
+                    <option value="@search:Hyundai Kona Electric">Hyundai Kona Electric</option>
+                    </optgroup>
+                    <optgroup label="Wuling">
+                    <option value="@search:Wuling Air EV">Wuling Air EV</option>
+                    <option value="@search:Wuling Binguo EV">Wuling Binguo EV</option>
+                    <option value="@search:Wuling Cloud EV">Wuling Cloud EV</option>
+                    <option value="@search:Wuling Confero">Wuling Confero</option>
+                    <option value="@search:Wuling Almaz">Wuling Almaz</option>
+                    <option value="@search:Wuling Cortez">Wuling Cortez</option>
+                    </optgroup>
+                    <optgroup label="Mazda">
+                    <option value="@search:Mazda 2">Mazda 2</option>
+                    <option value="@search:Mazda 3">Mazda 3</option>
+                    <option value="@search:Mazda CX-3">Mazda CX-3</option>
+                    <option value="@search:Mazda CX-5">Mazda CX-5</option>
+                    <option value="@search:Mazda CX-8">Mazda CX-8</option>
+                    <option value="@search:Mazda CX-9">Mazda CX-9</option>
+                    <option value="@search:Mazda MX-5">Mazda MX-5</option>
+                    </optgroup>
+                    <optgroup label="BMW">
+                    <option value="@search:BMW Seri 3">BMW Seri 3</option>
+                    <option value="@search:BMW Seri 5">BMW Seri 5</option>
+                    <option value="@search:BMW Seri 7">BMW Seri 7</option>
+                    <option value="@search:BMW X1">BMW X1</option>
+                    <option value="@search:BMW X3">BMW X3</option>
+                    <option value="@search:BMW X5">BMW X5</option>
+                    </optgroup>
+                    <optgroup label="Mercedes-Benz">
+                    <option value="@search:Mercedes-Benz A-Class">Mercedes-Benz A-Class</option>
+                    <option value="@search:Mercedes-Benz C-Class">Mercedes-Benz C-Class</option>
+                    <option value="@search:Mercedes-Benz E-Class">Mercedes-Benz E-Class</option>
+                    <option value="@search:Mercedes-Benz S-Class">Mercedes-Benz S-Class</option>
+                    <option value="@search:Mercedes-Benz GLA">Mercedes-Benz GLA</option>
+                    <option value="@search:Mercedes-Benz GLC">Mercedes-Benz GLC</option>
+                    <option value="@search:Mercedes-Benz GLE">Mercedes-Benz GLE</option>
+                    </optgroup>
+                    <optgroup label="Isuzu">
+                    <option value="@search:Isuzu Panther">Isuzu Panther</option>
+                    <option value="@search:Isuzu MU-X">Isuzu MU-X</option>
+                    <option value="@search:Isuzu D-Max">Isuzu D-Max</option>
+                    <option value="@search:Isuzu Traga">Isuzu Traga</option>
+                    </optgroup>
+                    <optgroup label="Chevrolet">
+                    <option value="@search:Chevrolet Spin">Chevrolet Spin</option>
+                    <option value="@search:Chevrolet Captiva">Chevrolet Captiva</option>
+                    <option value="@search:Chevrolet Trailblazer">Chevrolet Trailblazer</option>
+                    <option value="@search:Chevrolet Colorado">Chevrolet Colorado</option>
+                    </optgroup>
+                    <optgroup label="Kia">
+                    <option value="@search:Kia Picanto">Kia Picanto</option>
+                    <option value="@search:Kia Sonet">Kia Sonet</option>
+                    <option value="@search:Kia Seltos">Kia Seltos</option>
+                    <option value="@search:Kia Carens">Kia Carens</option>
+                    <option value="@search:Kia Carnival">Kia Carnival</option>
+                    <option value="@search:Kia EV6">Kia EV6</option>
+                    </optgroup>
+                    <optgroup label="BYD">
+                    <option value="@search:BYD Dolphin">BYD Dolphin</option>
+                    <option value="@search:BYD Atto 3">BYD Atto 3</option>
+                    <option value="@search:BYD Seal">BYD Seal</option>
+                    <option value="@search:BYD M6">BYD M6</option>
+                    </optgroup>
+                    <optgroup label="Chery">
+                    <option value="@search:Chery Tiggo 5X">Chery Tiggo 5X</option>
+                    <option value="@search:Chery Tiggo 7 Pro">Chery Tiggo 7 Pro</option>
+                    <option value="@search:Chery Tiggo 8 Pro">Chery Tiggo 8 Pro</option>
+                    <option value="@search:Chery Omoda 5">Chery Omoda 5</option>
+                    <option value="@search:Chery J6">Chery J6</option>
+                    </optgroup>
                 </select>
                 <p class="text-xs text-gray-500 mt-1">Pilih kategori dari daftar. Geser daftar ke bawah untuk melihat pilihan lainnya.</p>
             </div>
@@ -1033,7 +1195,7 @@
                 if (window.currentSearch) {
                     const searchable = window.normalizeCarSearchText([
                         car.name, car.category, car.location, car.address, car.city, car.province,
-                        car.description, car.transmission, car.fuel, car.seat, car.brand, car.model,
+                        car.description, car.transmission, car.fuel, car.seat, car.brand, car.model, car.variant, car.trim,
                         car.ownerName, car.service, ...(Array.isArray(car.features)?car.features:[])
                     ].filter(Boolean).join(' '));
                     if (!searchable.includes(window.currentSearch)) return false;
@@ -1141,6 +1303,33 @@
             });
             if (q) select.size = Math.min(6, Math.max(2, Array.from(select.options).filter(o => !o.hidden).length));
             else select.size = 1;
+        };
+        window.selectVehicleSearch = function(value) {
+            const v = String(value || '');
+            const input = document.getElementById('categorySearch');
+            const select = document.getElementById('categorySelect');
+            window.currentPage = 1;
+            if (v.startsWith('@cat:')) {
+                if(input) input.value = '';
+                window.filterCars(v.slice(5));
+                return;
+            }
+            if (v.startsWith('@search:')) {
+                const term = v.slice(8);
+                if(input) input.value = term;
+                window.currentCategory = '';
+                window.currentSearch = window.normalizeCarSearchText(term);
+                const desktop=document.getElementById('searchInput'), mobile=document.getElementById('searchInputKendaraane');
+                if(desktop) desktop.value=term; if(mobile) mobile.value=term;
+                if(select) select.value=v;
+                window.renderCars();
+                document.getElementById('mainCarSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+                return;
+            }
+            if(input) input.value='';
+            const desktop=document.getElementById('searchInput'); if(desktop) desktop.value='';
+            const mobile=document.getElementById('searchInputKendaraane'); if(mobile) mobile.value='';
+            window.filterCars('');
         };
 
         window.filterCars = function(cat) {
